@@ -145,7 +145,6 @@ def register_view(request):
         )
 
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-        # If they skipped specialty in step 2 send to onboarding
         if not specialty:
             return redirect('onboarding')
 
