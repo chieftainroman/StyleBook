@@ -495,7 +495,7 @@
         return;
       }
 
-      fetch(`/portfolio/instagram/status/${jobId}/`)
+      fetch(`/instagram/status/${jobId}/`)
         .then(async r => {
           const data = await r.json().catch(() => ({}));
           if (!r.ok && data.status !== 'error') {
