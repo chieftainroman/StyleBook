@@ -189,7 +189,7 @@ def create_image(template_id, layers):
     url     = f'{PLACID_API_BASE}/images'
     payload = {'template_uuid': template_id, 'layers': layers}
 
-    r = requests.post(url, headers=_headers(), json=payload, timeout=30)
+    r = requests.post(url, headers=_headers(), json=payload, timeout=20)
     r.raise_for_status()
     data = r.json()
     return {
@@ -203,7 +203,7 @@ def create_image(template_id, layers):
 def check_status(placid_id):
     """GET /images/{id} → returns current status + image_url when finished."""
     url = f'{PLACID_API_BASE}/images/{placid_id}'
-    r   = requests.get(url, headers=_headers(), timeout=30)
+    r   = requests.get(url, headers=_headers(), timeout=20)
     r.raise_for_status()
     data = r.json()
     return {
