@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authentication error — StyleBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        sidebar: '#1C1917', cream: '#FAFAF7', 'cream-card': '#FFFFFF',
+        'cream-border': '#E5E3DC', gold: '#C9A96E', 'gold-light': '#F5EDD8',
+        'gold-dark': '#8B6914', ink: '#1C1917', muted: '#888780',
+      }, fontFamily: { sans: ['Inter','sans-serif'], serif: ['Instrument Serif','serif'] } } }
+    }
+  </script>
+</head>
+<body class="bg-cream font-sans antialiased min-h-screen flex items-center justify-center px-6">
+  <div class="w-full max-w-sm text-center">
+    <a href="/" class="text-2xl font-semibold mb-10 block">
+      <span class="text-ink">Style</span><span class="text-gold">Book</span>
+    </a>
+    <div class="bg-cream-card border border-cream-border rounded-2xl p-8">
+      <div class="w-14 h-14 rounded-full bg-red-50 flex items-center
+                  justify-center mx-auto mb-4">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.5"/>
+          <path d="M15 9l-6 6M9 9l6 6" stroke="#DC2626" stroke-width="1.5"
+                stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1 class="text-xl font-semibold text-ink mb-2">Something went wrong</h1>
+      <p class="text-sm text-muted mb-6 leading-relaxed">
+        We couldn't sign you in with Google. This sometimes happens when
+        the request times out or access is denied. Please try again.
+      </p>
+      <a href="/accounts/google/login/?process=login"
+         class="block w-full bg-ink text-white text-sm font-medium
+                py-3 rounded-lg hover:bg-sidebar transition-colors mb-3">
+        Try Google again
+      </a>
+      <a href="/auth/login/"
+         class="block w-full border border-cream-border text-ink text-sm
+                font-medium py-3 rounded-lg hover:bg-cream transition-colors mb-3">
+        Sign in with password
+      </a>
+      <a href="/"
+         class="block text-xs text-muted hover:text-ink transition-colors py-2">
+        Back to home
+      </a>
+    </div>
+  </div>
+</body>
+</html>

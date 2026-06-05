@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Something went wrong — StyleBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        sidebar: '#1C1917', cream: '#FAFAF7', 'cream-card': '#FFFFFF',
+        'cream-border': '#E5E3DC', gold: '#C9A96E',
+        ink: '#1C1917', muted: '#888780',
+      }, fontFamily: { sans: ['Inter','sans-serif'], serif: ['Instrument Serif','serif'] } } }
+    }
+  </script>
+</head>
+<body class="bg-cream font-sans antialiased min-h-screen flex items-center justify-center px-6">
+  <div class="w-full max-w-sm text-center">
+    <a href="/" class="text-2xl font-semibold mb-10 block">
+      <span class="text-ink">Style</span><span class="text-gold">Book</span>
+    </a>
+    <p class="font-serif italic text-7xl text-gold mb-4">500</p>
+    <h1 class="text-xl font-semibold text-ink mb-2">Something went wrong</h1>
+    <p class="text-sm text-muted mb-8 leading-relaxed">
+      Our server ran into an unexpected error. We've been notified
+      and are working on a fix. Please try again in a moment.
+    </p>
+    <a href="/"
+       class="inline-block bg-ink text-white text-sm font-medium
+              px-6 py-3 rounded-lg hover:bg-sidebar transition-colors">
+      Back to home
+    </a>
+  </div>
+</body>
+</html>

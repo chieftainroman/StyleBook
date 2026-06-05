@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reservations — StyleBook{% endblock %}
+{% block page_title %}Reservations{% endblock %}
+{% block page_sub %}Manage your bookings & client notes{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+  <!-- ── Add reservation form ─────────────────────── -->
+  <div class="lg:col-span-2">
+    <p class="section-title">New reservation</p>
+    <div class="card">
+      <form method="POST" action="{% url 'reservations' %}">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="form-label" for="client_name">Client name</label>
+            <input class="form-input" type="text" id="client_name" name="client_name"
+                   placeholder="e.g. Marcus T." required>
+          </div>
+          <div>
+            <label class="form-label" for="date">Date</label>
+            <input class="form-input" type="date" id="date" name="date" required>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="form-label" for="time">Time</label>
+            <input class="form-input" type="time" id="time" name="time" required>
+          </div>
+          <div>
+            <label class="form-label" for="service">Service</label>
+            <input class="form-input" type="text" id="service" name="service"
+                   placeholder="e.g. Skin fade" required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label" for="notes">Client notes & special requests</label>
+          <textarea class="form-input resize-none" id="notes" name="notes" rows="3"
+                    placeholder="e.g. Sensitive scalp, prefers scissor on top..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-gold w-full justify-center">
+          Save booking
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Bookings tabs ────────────────────────────── -->
+  <div class="lg:col-span-3">
+    <p class="section-title">Your bookings</p>
+
+    <!-- Tab buttons -->
+    <div class="flex gap-1 bg-cream-card border border-cream-border rounded-lg p-1 mb-4 w-fit">
+      <button onclick="switchTab('upcoming', this)"
+              id="tab-btn-upcoming"
+              class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium transition-all
+                     bg-ink text-white">
+        Upcoming
+      </button>
+      <button onclick="switchTab('completed', this)"
+              id="tab-btn-completed"
+              class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium transition-all
+                     text-muted hover:text-ink">
+        Completed
+      </button>
+      <button onclick="switchTab('all', this)"
+              id="tab-btn-all"
+              class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium transition-all
+                     text-muted hover:text-ink">
+        All
+      </button>
+    </div>
+
+    <!-- Upcoming tab -->
+    <div id="tab-upcoming" class="tab-content">
+      {% if upcoming %}
+        <div class="card p-0 overflow-hidden">
+          {% for res in upcoming %}
+            <div class="flex items-start gap-4 px-5 py-4
+                        {% if not forloop.last %}border-b border-cream-border{% endif %}">
+              <div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
+                   style="background: {{ res.dot_color }}"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-ink">{{ res.client_name }}</p>
+                <p class="text-xs text-muted mt-0.5">{{ res.service }}</p>
+                {% if res.notes %}
+                  <p class="text-xs text-muted mt-0.5 italic">{{ res.notes }}</p>
+                {% endif %}
+                <p class="text-xs text-muted mt-1 font-medium">
+                  {{ res.date }} · {{ res.time }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <form method="POST" action="{% url 'complete_reservation' res.id %}">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-xs
+                                 font-medium rounded-lg hover:bg-emerald-100 transition-colors">
+                    Done
+                  </button>
+                </form>
+                <form method="POST" action="{% url 'delete_reservation' res.id %}">
+                  {% csrf_token %}
+                  <button type="submit"
+                          onclick="return confirm('Delete this booking?')"
+                          class="px-3 py-1.5 bg-red-50 text-red-600 text-xs
+                                 font-medium rounded-lg hover:bg-red-100 transition-colors">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card flex flex-col items-center justify-center py-12 text-center">
+          <div class="w-10 h-10 rounded-full bg-cream flex items-center justify-center mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-muted">
+              <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M7 3v4M17 3v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="text-sm font-medium text-ink mb-1">No upcoming bookings</p>
+          <p class="text-xs text-muted">Use the form to add your next reservation.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Completed tab -->
+    <div id="tab-completed" class="tab-content hidden">
+      {% if completed %}
+        <div class="card p-0 overflow-hidden">
+          {% for res in completed %}
+            <div class="flex items-start gap-4 px-5 py-4
+                        {% if not forloop.last %}border-b border-cream-border{% endif %}">
+              <div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 bg-emerald-400"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-ink">{{ res.client_name }}</p>
+                <p class="text-xs text-muted mt-0.5">{{ res.service }}</p>
+                <p class="text-xs text-muted mt-1 font-medium">{{ res.date }} · {{ res.time }}</p>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs
+                             font-medium rounded-full">
+                  Done
+                </span>
+                {% if not res.has_portfolio %}
+                  <a href="{% url 'instagram' %}?reservation_id={{ res.id }}"
+                     class="px-3 py-1.5 bg-gold-light text-gold-dark text-xs
+                            font-medium rounded-lg hover:bg-gold hover:text-sidebar
+                            transition-colors flex items-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                      <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.2"/>
+                      <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/>
+                    </svg>
+                    Post
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card flex flex-col items-center justify-center py-12 text-center">
+          <p class="text-sm font-medium text-ink mb-1">No completed bookings yet</p>
+          <p class="text-xs text-muted">Mark a booking as done to see it here.</p>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- All tab -->
+    <div id="tab-all" class="tab-content hidden">
+      {% if all_reservations %}
+        <div class="card p-0 overflow-hidden">
+          {% for res in all_reservations %}
+            <div class="flex items-start gap-4 px-5 py-4
+                        {% if not forloop.last %}border-b border-cream-border{% endif %}">
+              <div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
+                   style="background: {% if res.status == 'completed' %}#34D399{% else %}#F59E0B{% endif %}">
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-ink">{{ res.client_name }}</p>
+                <p class="text-xs text-muted mt-0.5">{{ res.service }}</p>
+                <p class="text-xs text-muted mt-1 font-medium">{{ res.date }} · {{ res.time }}</p>
+              </div>
+              <span class="flex-shrink-0 px-2.5 py-1 text-xs font-medium rounded-full
+                           {% if res.status == 'completed' %}bg-emerald-50 text-emerald-700
+                           {% else %}bg-gold-light text-gold-dark{% endif %}">
+                {% if res.status == 'completed' %}Done{% else %}Upcoming{% endif %}
+              </span>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="card flex flex-col items-center justify-center py-12 text-center">
+          <p class="text-sm font-medium text-ink mb-1">No reservations yet</p>
+          <p class="text-xs text-muted">Add your first booking above.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.tab-btn').forEach(el => {
+    el.classList.remove('bg-ink', 'text-white');
+    el.classList.add('text-muted', 'hover:text-ink');
+  });
+  document.getElementById('tab-' + name).classList.remove('hidden');
+  btn.classList.add('bg-ink', 'text-white');
+  btn.classList.remove('text-muted', 'hover:text-ink');
+}
+</script>
+{% endblock %}

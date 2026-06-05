@@ -1,0 +1,52 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign in cancelled — StyleBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: {
+        sidebar: '#1C1917', cream: '#FAFAF7', 'cream-card': '#FFFFFF',
+        'cream-border': '#E5E3DC', gold: '#C9A96E', 'gold-light': '#F5EDD8',
+        'gold-dark': '#8B6914', ink: '#1C1917', muted: '#888780',
+      }, fontFamily: { sans: ['Inter','sans-serif'], serif: ['Instrument Serif','serif'] } } }
+    }
+  </script>
+</head>
+<body class="bg-cream font-sans antialiased min-h-screen flex items-center justify-center px-6">
+  <div class="w-full max-w-sm text-center">
+    <a href="/" class="text-2xl font-semibold mb-10 block">
+      <span class="text-ink">Style</span><span class="text-gold">Book</span>
+    </a>
+    <div class="bg-cream-card border border-cream-border rounded-2xl p-8">
+      <div class="w-14 h-14 rounded-full bg-gold-light flex items-center
+                  justify-center mx-auto mb-4">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 9v4M12 17h.01" stroke="#8B6914" stroke-width="1.5"
+                stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="9" stroke="#8B6914" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h1 class="text-xl font-semibold text-ink mb-2">Sign in cancelled</h1>
+      <p class="text-sm text-muted mb-6 leading-relaxed">
+        You cancelled the Google sign in. No worries — you can try again
+        or sign in with your username and password.
+      </p>
+      <a href="/auth/login/"
+         class="block w-full bg-ink text-white text-sm font-medium
+                py-3 rounded-lg hover:bg-sidebar transition-colors mb-3">
+        Try again
+      </a>
+      <a href="/"
+         class="block w-full border border-cream-border text-ink text-sm
+                font-medium py-3 rounded-lg hover:bg-cream transition-colors">
+        Back to home
+      </a>
+    </div>
+  </div>
+</body>
+</html>

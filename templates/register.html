@@ -1,0 +1,446 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create account — StyleBook</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sidebar:        '#1C1917',
+            'sidebar-active':'#333330',
+            cream:          '#FAFAF7',
+            'cream-card':   '#FFFFFF',
+            'cream-border': '#E5E3DC',
+            gold:           '#C9A96E',
+            'gold-light':   '#F5EDD8',
+            'gold-dark':    '#8B6914',
+            ink:            '#1C1917',
+            muted:          '#888780',
+          },
+          fontFamily: {
+            sans:  ['Inter', 'sans-serif'],
+            serif: ['Instrument Serif', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .form-input {
+      display: block; width: 100%;
+      background: #fff; border: 1px solid #E5E3DC;
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 14px; color: #1C1917;
+      outline: none; transition: border-color .15s;
+      font-family: inherit;
+    }
+    .form-input:focus { border-color: #1C1917; }
+    .form-input::placeholder { color: #888780; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .specialty-card input[type="radio"] { display: none; }
+    .specialty-card input[type="radio"]:checked + .specialty-inner {
+      border-color: #1C1917;
+      background: #1C1917;
+      color: #fff;
+    }
+    .specialty-inner {
+      border: 1px solid #E5E3DC;
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      background: #fff;
+    }
+    .specialty-inner:hover { border-color: #888780; }
+  </style>
+</head>
+
+<body class="bg-cream font-sans antialiased min-h-screen">
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+
+  <!-- ── Left panel ───────────────────────────────── -->
+  <div class="hidden lg:flex flex-col justify-between
+              bg-sidebar px-12 py-10">
+
+    <!-- Brand -->
+    <a href="/" class="text-2xl font-semibold tracking-tight">
+      <span class="text-white">Style</span><span class="text-gold">Book</span>
+    </a>
+
+    <!-- Steps indicator -->
+    <div>
+      <p class="text-xs text-muted uppercase tracking-widest mb-6">
+        Getting started
+      </p>
+      <div class="space-y-4" id="stepsList">
+        <div class="step-indicator flex items-center gap-3" data-step="1">
+          <div class="step-dot w-6 h-6 rounded-full border border-muted
+                      flex items-center justify-center text-xs text-muted
+                      transition-all">
+            1
+          </div>
+          <span class="text-sm text-muted">Your account</span>
+        </div>
+        <div class="step-indicator flex items-center gap-3" data-step="2">
+          <div class="step-dot w-6 h-6 rounded-full border border-muted
+                      flex items-center justify-center text-xs text-muted
+                      transition-all">
+            2
+          </div>
+          <span class="text-sm text-muted">Your specialty</span>
+        </div>
+        <div class="step-indicator flex items-center gap-3" data-step="3">
+          <div class="step-dot w-6 h-6 rounded-full border border-muted
+                      flex items-center justify-center text-xs text-muted
+                      transition-all">
+            3
+          </div>
+          <span class="text-sm text-muted">Your profile</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonial -->
+    <div class="border-t border-sidebar-active pt-6">
+      <p class="font-serif italic text-white text-sm leading-relaxed mb-4">
+        "StyleBook changed how I run my shop. Everything in one place — bookings, posts, portfolio."
+      </p>
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-gold flex items-center
+                    justify-center text-xs font-semibold text-sidebar">
+          SR
+        </div>
+        <div>
+          <p class="text-white text-sm font-medium">Sofia Reyes</p>
+          <p class="text-muted text-xs">Hair Stylist, Miami</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Right panel ──────────────────────────────── -->
+  <div class="flex items-center justify-center px-6 py-12">
+    <div class="w-full max-w-sm">
+
+      <!-- Mobile logo -->
+      <div class="lg:hidden mb-8 text-center">
+        <span class="text-2xl font-semibold">
+          <span class="text-ink">Style</span><span class="text-gold">Book</span>
+        </span>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs text-muted" id="stepLabel">Step 1 of 3</p>
+          <p class="text-xs text-muted" id="stepName">Your account</p>
+        </div>
+        <div class="h-1 bg-cream-border rounded-full overflow-hidden">
+          <div id="progressBar"
+               class="h-full bg-gold rounded-full transition-all duration-300"
+               style="width: 33%"></div>
+        </div>
+      </div>
+
+      <!-- Flash messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
+                      {% if message.tags == 'error' %}bg-red-50 text-red-700
+                      {% else %}bg-emerald-50 text-emerald-700{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="{% url 'register' %}" id="registerForm">
+        {% csrf_token %}
+
+        <!-- ── Step 1: Account ───────────────────── -->
+        <div class="step active" id="step-1">
+          <h1 class="text-2xl font-semibold text-ink mb-1">Create your account</h1>
+          <p class="text-sm text-muted mb-6">Start with the basics</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Username
+              </label>
+              <input class="form-input" type="text" name="username"
+                     placeholder="e.g. alex.cuts" required>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Email address
+              </label>
+              <input class="form-input" type="email" name="email"
+                     placeholder="you@email.com" required>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Password
+              </label>
+              <input class="form-input" type="password" name="password"
+                     placeholder="Min. 6 characters" required minlength="6">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Confirm password
+              </label>
+              <input class="form-input" type="password" id="confirmPassword"
+                     placeholder="Repeat your password" required>
+              <p id="passwordError"
+                 class="hidden text-xs text-red-500 mt-1">
+                Passwords do not match
+              </p>
+            </div>
+          </div>
+
+          <button type="button" onclick="goToStep(2)"
+                  class="w-full bg-ink text-white text-sm font-medium
+                         py-3 rounded-lg hover:bg-sidebar-active
+                         transition-colors mt-6">
+            Continue →
+          </button>
+        </div>
+
+        <!-- ── Step 2: Specialty ─────────────────── -->
+        <div class="step" id="step-2">
+          <h1 class="text-2xl font-semibold text-ink mb-1">Your specialty</h1>
+          <p class="text-sm text-muted mb-6">What kind of work do you do?</p>
+
+          <div class="grid grid-cols-2 gap-3 mb-6">
+
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Barber">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">✂️</div>
+                <p class="text-sm font-medium">Barber</p>
+                <p class="text-xs text-muted mt-0.5">Cuts & fades</p>
+              </div>
+            </label>
+
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Hair Stylist">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">💇</div>
+                <p class="text-sm font-medium">Hair Stylist</p>
+                <p class="text-xs text-muted mt-0.5">Color & styling</p>
+              </div>
+            </label>
+
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Nail Master">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">💅</div>
+                <p class="text-sm font-medium">Nail Master</p>
+                <p class="text-xs text-muted mt-0.5">Gel & nail art</p>
+              </div>
+            </label>
+
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Makeup Artist">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">💄</div>
+                <p class="text-sm font-medium">Makeup Artist</p>
+                <p class="text-xs text-muted mt-0.5">Beauty & looks</p>
+              </div>
+            </label>
+
+            <label class="specialty-card col-span-2">
+              <input type="radio" name="specialty" value="Tattoo Artist">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">🎨</div>
+                <p class="text-sm font-medium">Tattoo Artist</p>
+                <p class="text-xs text-muted mt-0.5">Ink & body art</p>
+              </div>
+            </label>
+
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" onclick="goToStep(1)"
+                    class="flex-1 border border-cream-border text-ink text-sm
+                           font-medium py-3 rounded-lg hover:bg-cream-card
+                           transition-colors">
+              ← Back
+            </button>
+            <button type="button" onclick="goToStep(3)"
+                    class="flex-1 bg-ink text-white text-sm font-medium
+                           py-3 rounded-lg hover:bg-sidebar-active
+                           transition-colors">
+              Continue →
+            </button>
+          </div>
+        </div>
+
+        <!-- ── Step 3: Profile ───────────────────── -->
+        <div class="step" id="step-3">
+          <h1 class="text-2xl font-semibold text-ink mb-1">Your profile</h1>
+          <p class="text-sm text-muted mb-6">
+            Help clients find and trust you — you can always edit this later
+          </p>
+
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Location
+              </label>
+              <input class="form-input" type="text" name="location"
+                     placeholder="e.g. Brooklyn, NY">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Years of experience
+              </label>
+              <input class="form-input" type="number" name="years_exp"
+                     placeholder="e.g. 5" min="0" max="50">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Instagram handle (optional)
+              </label>
+              <input class="form-input" type="text" name="ig_handle"
+                     placeholder="@alex.cuts">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Short bio (optional)
+              </label>
+              <textarea class="form-input" name="bio" rows="3"
+                        maxlength="200"
+                        placeholder="e.g. 7 years in Brooklyn. Specializing in skin fades and beard work."></textarea>
+              <p class="text-xs text-muted mt-1">Max 200 characters</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" onclick="goToStep(2)"
+                    class="flex-1 border border-cream-border text-ink text-sm
+                           font-medium py-3 rounded-lg hover:bg-cream-card
+                           transition-colors">
+              ← Back
+            </button>
+            <button type="submit"
+                    class="flex-1 bg-gold text-sidebar text-sm font-medium
+                           py-3 rounded-lg hover:bg-gold-dark hover:text-white
+                           transition-colors">
+              Create account
+            </button>
+          </div>
+        </div>
+
+      </form>
+      <!-- Divider -->
+    <div class="flex items-center gap-3 my-4">
+      <div class="flex-1 h-px bg-cream-border"></div>
+      <span class="text-xs text-muted">or</span>
+      <div class="flex-1 h-px bg-cream-border"></div>
+    </div>
+
+    <!-- Google button -->
+    <a href="/accounts/google/login/?process=signup"
+      class="w-full flex items-center justify-center gap-3
+              border border-cream-border bg-white text-ink text-sm
+              font-medium py-3 rounded-lg hover:bg-cream
+              transition-colors">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+        <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Sign up with Google
+    </a>
+      <p class="text-sm text-muted text-center mt-6">
+        Already have an account?
+        <a href="{% url 'login' %}"
+           class="text-ink font-medium hover:text-gold transition-colors">
+          Sign in →
+        </a>
+      </p>
+
+    </div>
+  </div>
+
+</div>
+
+{% block extra_scripts %}{% endblock %}
+
+<script>
+const stepMeta = {
+  1: { label: 'Step 1 of 3', name: 'Your account',   progress: '33%'  },
+  2: { label: 'Step 2 of 3', name: 'Your specialty', progress: '66%'  },
+  3: { label: 'Step 3 of 3', name: 'Your profile',   progress: '100%' },
+};
+
+function goToStep(n) {
+  if (n === 2) {
+    const pw  = document.querySelector('input[name="password"]').value;
+    const cpw = document.getElementById('confirmPassword').value;
+    const err = document.getElementById('passwordError');
+    if (cpw && pw !== cpw) {
+      err.classList.remove('hidden');
+      return;
+    }
+    err.classList.add('hidden');
+  }
+
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+
+  document.getElementById('stepLabel').textContent    = stepMeta[n].label;
+  document.getElementById('stepName').textContent     = stepMeta[n].name;
+  document.getElementById('progressBar').style.width  = stepMeta[n].progress;
+
+  document.querySelectorAll('.step-indicator').forEach(el => {
+    const num  = parseInt(el.dataset.step);
+    const dot  = el.querySelector('.step-dot');
+    const text = el.querySelector('span');
+    if (num < n) {
+      dot.classList.remove('border-muted', 'text-muted');
+      dot.classList.add('bg-gold', 'border-gold', 'text-sidebar');
+      dot.innerHTML = '✓';
+      text.classList.remove('text-muted');
+      text.classList.add('text-white');
+    } else if (num === n) {
+      dot.classList.remove('border-muted', 'text-muted', 'bg-gold', 'border-gold');
+      dot.classList.add('border-white', 'text-white');
+      text.classList.remove('text-muted');
+      text.classList.add('text-white');
+    } else {
+      dot.classList.remove('bg-gold', 'border-gold', 'text-sidebar',
+                           'border-white', 'text-white');
+      dot.classList.add('border-muted', 'text-muted');
+      text.classList.remove('text-white');
+      text.classList.add('text-muted');
+    }
+  });
+}
+
+goToStep(1);
+</script>
+</body>
+</html>

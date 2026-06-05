@@ -1,0 +1,333 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome — StyleBook</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sidebar:        '#1C1917',
+            'sidebar-active':'#333330',
+            cream:          '#FAFAF7',
+            'cream-card':   '#FFFFFF',
+            'cream-border': '#E5E3DC',
+            gold:           '#C9A96E',
+            'gold-light':   '#F5EDD8',
+            'gold-dark':    '#8B6914',
+            ink:            '#1C1917',
+            muted:          '#888780',
+          },
+          fontFamily: {
+            sans:  ['Inter', 'sans-serif'],
+            serif: ['Instrument Serif', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .form-input {
+      display: block; width: 100%;
+      background: #fff; border: 1px solid #E5E3DC;
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 14px; color: #1C1917;
+      outline: none; transition: border-color .15s;
+      font-family: inherit;
+    }
+    .form-input:focus { border-color: #1C1917; }
+    .form-input::placeholder { color: #888780; }
+    .step { display: none; }
+    .step.active { display: block; }
+    .specialty-card input[type="radio"] { display: none; }
+    .specialty-card input[type="radio"]:checked + .specialty-inner {
+      border-color: #1C1917;
+      background: #1C1917;
+      color: #fff;
+    }
+    .specialty-inner {
+      border: 1px solid #E5E3DC;
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      background: #fff;
+    }
+    .specialty-inner:hover { border-color: #888780; }
+    .specialty-inner p { color: inherit; }
+  </style>
+</head>
+
+<body class="bg-cream font-sans antialiased min-h-screen">
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
+
+  <!-- Left panel -->
+  <div class="hidden lg:flex flex-col justify-between bg-sidebar px-12 py-10">
+    <a href="/" class="text-2xl font-semibold">
+      <span class="text-white">Style</span><span class="text-gold">Book</span>
+    </a>
+
+    <div>
+      <p class="text-xs text-muted uppercase tracking-widest mb-6">
+        Setting up your profile
+      </p>
+      <div class="space-y-4" id="stepsList">
+        <div class="step-indicator flex items-center gap-3" data-step="1">
+          <div class="step-dot w-6 h-6 rounded-full border border-muted
+                      flex items-center justify-center text-xs text-muted">1</div>
+          <span class="text-sm text-muted">Your specialty</span>
+        </div>
+        <div class="step-indicator flex items-center gap-3" data-step="2">
+          <div class="step-dot w-6 h-6 rounded-full border border-muted
+                      flex items-center justify-center text-xs text-muted">2</div>
+          <span class="text-sm text-muted">Experience & location</span>
+        </div>
+        <div class="step-indicator flex items-center gap-3" data-step="3">
+          <div class="step-dot w-6 h-6 rounded-full border border-muted
+                      flex items-center justify-center text-xs text-muted">3</div>
+          <span class="text-sm text-muted">Your bio</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-t border-sidebar-active pt-6">
+      <p class="font-serif italic text-white text-sm leading-relaxed mb-4">
+        "A complete profile gets 3× more bookings from new clients."
+      </p>
+      <p class="text-muted text-xs">StyleBook internal data, 2025</p>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="flex items-center justify-center px-6 py-12">
+    <div class="w-full max-w-sm">
+
+      <!-- Mobile logo -->
+      <div class="lg:hidden mb-8 text-center">
+        <span class="text-2xl font-semibold">
+          <span class="text-ink">Style</span><span class="text-gold">Book</span>
+        </span>
+      </div>
+
+      <!-- Welcome message -->
+      <div class="mb-6 text-center">
+        <div class="w-14 h-14 rounded-full bg-gold flex items-center justify-center
+                    text-xl font-semibold text-sidebar mx-auto mb-3">
+          {{ user.username|slice:":2"|upper }}
+        </div>
+        <p class="text-sm text-muted">Welcome, <strong class="text-ink font-medium">{{ user.username }}</strong></p>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs text-muted" id="stepLabel">Step 1 of 3</p>
+          <p class="text-xs text-muted" id="stepName">Your specialty</p>
+        </div>
+        <div class="h-1 bg-cream-border rounded-full overflow-hidden">
+          <div id="progressBar"
+               class="h-full bg-gold rounded-full transition-all duration-300"
+               style="width: 33%"></div>
+        </div>
+      </div>
+
+      <form method="POST" action="{% url 'onboarding' %}">
+        {% csrf_token %}
+
+        <!-- Step 1: Specialty -->
+        <div class="step active" id="step-1">
+          <h1 class="text-2xl font-semibold text-ink mb-1">Your specialty</h1>
+          <p class="text-sm text-muted mb-6">What kind of work do you do?</p>
+
+          <div class="grid grid-cols-2 gap-3 mb-6">
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Barber">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">✂️</div>
+                <p class="text-sm font-medium">Barber</p>
+                <p class="text-xs text-muted mt-0.5">Cuts & fades</p>
+              </div>
+            </label>
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Hair Stylist">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">💇</div>
+                <p class="text-sm font-medium">Hair Stylist</p>
+                <p class="text-xs text-muted mt-0.5">Color & styling</p>
+              </div>
+            </label>
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Nail Master">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">💅</div>
+                <p class="text-sm font-medium">Nail Master</p>
+                <p class="text-xs text-muted mt-0.5">Gel & nail art</p>
+              </div>
+            </label>
+            <label class="specialty-card">
+              <input type="radio" name="specialty" value="Makeup Artist">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">💄</div>
+                <p class="text-sm font-medium">Makeup Artist</p>
+                <p class="text-xs text-muted mt-0.5">Beauty & looks</p>
+              </div>
+            </label>
+            <label class="specialty-card col-span-2">
+              <input type="radio" name="specialty" value="Tattoo Artist">
+              <div class="specialty-inner">
+                <div class="text-2xl mb-2">🎨</div>
+                <p class="text-sm font-medium">Tattoo Artist</p>
+                <p class="text-xs text-muted mt-0.5">Ink & body art</p>
+              </div>
+            </label>
+          </div>
+
+          <button type="button" onclick="goToStep(2)"
+                  class="w-full bg-ink text-white text-sm font-medium
+                         py-3 rounded-lg hover:bg-sidebar-active transition-colors">
+            Continue →
+          </button>
+        </div>
+
+        <!-- Step 2: Experience & location -->
+        <div class="step" id="step-2">
+          <h1 class="text-2xl font-semibold text-ink mb-1">Experience & location</h1>
+          <p class="text-sm text-muted mb-6">Help clients find and trust you</p>
+
+          <div class="space-y-4 mb-6">
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Years of experience
+              </label>
+              <input class="form-input" type="number" name="years_exp"
+                     placeholder="e.g. 5" min="0" max="50">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Location
+              </label>
+              <input class="form-input" type="text" name="location"
+                     placeholder="e.g. Brooklyn, NY">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-muted uppercase
+                            tracking-wide mb-1.5">
+                Instagram handle (optional)
+              </label>
+              <input class="form-input" type="text" name="ig_handle"
+                     placeholder="@alex.cuts">
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" onclick="goToStep(1)"
+                    class="flex-1 border border-cream-border text-ink text-sm
+                           font-medium py-3 rounded-lg hover:bg-cream-card transition-colors">
+              ← Back
+            </button>
+            <button type="button" onclick="goToStep(3)"
+                    class="flex-1 bg-ink text-white text-sm font-medium
+                           py-3 rounded-lg hover:bg-sidebar-active transition-colors">
+              Continue →
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Bio -->
+        <div class="step" id="step-3">
+          <h1 class="text-2xl font-semibold text-ink mb-1">Your bio</h1>
+          <p class="text-sm text-muted mb-6">
+            Tell clients what makes you different
+          </p>
+
+          <div class="mb-6">
+            <label class="block text-xs font-medium text-muted uppercase
+                          tracking-wide mb-1.5">
+              Short bio (optional)
+            </label>
+            <textarea class="form-input" name="bio" rows="4"
+                      maxlength="200"
+                      placeholder="e.g. 7 years in Brooklyn. Specializing in skin fades and beard work. Every cut is personal."></textarea>
+            <p class="text-xs text-muted mt-1">Max 200 characters</p>
+          </div>
+
+          <div class="flex gap-3">
+            <button type="button" onclick="goToStep(2)"
+                    class="flex-1 border border-cream-border text-ink text-sm
+                           font-medium py-3 rounded-lg hover:bg-cream-card transition-colors">
+              ← Back
+            </button>
+            <button type="submit"
+                    class="flex-1 bg-gold text-sidebar text-sm font-medium
+                           py-3 rounded-lg hover:bg-gold-dark hover:text-white transition-colors">
+              Go to dashboard →
+            </button>
+          </div>
+
+          <button type="submit" name="skip" value="1"
+                  class="w-full text-xs text-muted hover:text-ink transition-colors
+                         mt-3 py-2">
+            Skip for now
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const stepMeta = {
+  1: { label: 'Step 1 of 3', name: 'Your specialty',         progress: '33%'  },
+  2: { label: 'Step 2 of 3', name: 'Experience & location',  progress: '66%'  },
+  3: { label: 'Step 3 of 3', name: 'Your bio',               progress: '100%' },
+};
+
+function goToStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById('step-' + n).classList.add('active');
+
+  document.getElementById('stepLabel').textContent   = stepMeta[n].label;
+  document.getElementById('stepName').textContent    = stepMeta[n].name;
+  document.getElementById('progressBar').style.width = stepMeta[n].progress;
+
+  document.querySelectorAll('.step-indicator').forEach(el => {
+    const num  = parseInt(el.dataset.step);
+    const dot  = el.querySelector('.step-dot');
+    const text = el.querySelector('span');
+    if (num < n) {
+      dot.classList.remove('border-muted','text-muted','border-white','text-white');
+      dot.classList.add('bg-gold','border-gold','text-sidebar');
+      dot.innerHTML = '✓';
+      text.classList.replace('text-muted','text-white');
+    } else if (num === n) {
+      dot.classList.remove('border-muted','text-muted','bg-gold','border-gold','text-sidebar');
+      dot.classList.add('border-white','text-white');
+      text.classList.replace('text-muted','text-white');
+    } else {
+      dot.classList.remove('bg-gold','border-gold','text-sidebar','border-white','text-white');
+      dot.classList.add('border-muted','text-muted');
+      if (text.classList.contains('text-white'))
+        text.classList.replace('text-white','text-muted');
+    }
+  });
+}
+
+goToStep(1);
+</script>
+</body>
+</html>

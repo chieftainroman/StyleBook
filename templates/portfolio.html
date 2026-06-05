@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Portfolio — StyleBook{% endblock %}
+{% block page_title %}Portfolio{% endblock %}
+{% block page_sub %}Your work history — {{ portfolio_items|length }} post{{ portfolio_items|length|pluralize }}{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'instagram' %}" class="btn-gold">+ Upload work</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filter buttons -->
+<div class="flex items-center gap-2 mb-6">
+  <button onclick="filterPortfolio('all', this)"
+          class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all
+                 bg-ink text-white">
+    All
+  </button>
+  <button onclick="filterPortfolio('Barber', this)"
+          class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all
+                 bg-cream-card border border-cream-border text-muted hover:text-ink">
+    Barber
+  </button>
+  <button onclick="filterPortfolio('Hair Stylist', this)"
+          class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all
+                 bg-cream-card border border-cream-border text-muted hover:text-ink">
+    Hair
+  </button>
+  <button onclick="filterPortfolio('Nail Master', this)"
+          class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium transition-all
+                 bg-cream-card border border-cream-border text-muted hover:text-ink">
+    Nails
+  </button>
+</div>
+
+{% if portfolio_items %}
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="portfolio-grid">
+    {% for item in portfolio_items %}
+      <div class="portfolio-item group" data-category="{{ item.category|default:'Other' }}">
+        <div class="card p-0 overflow-hidden">
+
+          <!-- Image -->
+          <div class="relative aspect-square overflow-hidden bg-cream">
+            <img src="/media/uploads/{{ item.image }}"
+                 alt="{{ item.service }}"
+                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+
+            <!-- Overlay on hover -->
+            <div class="absolute inset-0 bg-ink bg-opacity-0 group-hover:bg-opacity-40
+                        transition-all duration-300 flex items-center justify-center">
+              <a href="/media/generated/{{ item.generated_image }}"
+                 download
+                 class="opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                        flex items-center gap-1.5 bg-white text-ink text-xs font-medium
+                        px-3 py-1.5 rounded-full">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 3v7M5 7.5L8 10l3-2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M3 11v2a1 1 0 001 1h8a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                </svg>
+                Download PNG
+              </a>
+            </div>
+          </div>
+
+          <!-- Meta -->
+          <div class="p-3">
+            <p class="text-sm font-medium text-ink truncate">{{ item.service }}</p>
+            <div class="flex items-center justify-between mt-1">
+              <p class="text-xs text-muted">{{ item.client_name }}</p>
+              <p class="text-xs text-muted">{{ item.date }}</p>
+            </div>
+            {% if item.template_style %}
+              <span class="inline-block mt-2 px-2 py-0.5 bg-gold-light text-gold-dark
+                           text-xs font-medium rounded-full">
+                {{ item.template_style }}
+              </span>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+{% else %}
+  <div class="card flex flex-col items-center justify-center py-20 text-center">
+    <div class="w-14 h-14 rounded-full bg-cream flex items-center justify-center mb-4">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-muted">
+        <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="12" cy="11" r="3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M3 17l4-4 3 3 4-5 4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <p class="text-sm font-medium text-ink mb-1">No work uploaded yet</p>
+    <p class="text-sm text-muted mb-6 max-w-xs">
+      Complete a reservation, upload a photo, and your portfolio builds itself.
+    </p>
+    <a href="{% url 'instagram' %}" class="btn-gold">+ Upload your first work</a>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function filterPortfolio(category, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('bg-ink', 'text-white');
+    b.classList.add('bg-cream-card', 'border', 'border-cream-border', 'text-muted');
+  });
+  btn.classList.add('bg-ink', 'text-white');
+  btn.classList.remove('bg-cream-card', 'border', 'border-cream-border', 'text-muted');
+
+  document.querySelectorAll('.portfolio-item').forEach(item => {
+    if (category === 'all' || item.dataset.category === category) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+</script>
+{% endblock %}

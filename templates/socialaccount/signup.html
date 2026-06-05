@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Complete signup — StyleBook</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sidebar:       '#1C1917',
+            cream:         '#FAFAF7',
+            'cream-card':  '#FFFFFF',
+            'cream-border':'#E5E3DC',
+            gold:          '#C9A96E',
+            'gold-light':  '#F5EDD8',
+            'gold-dark':   '#8B6914',
+            ink:           '#1C1917',
+            muted:         '#888780',
+          },
+          fontFamily: {
+            sans:  ['Inter', 'sans-serif'],
+            serif: ['Instrument Serif', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .form-input {
+      display: block; width: 100%;
+      background: #fff; border: 1px solid #E5E3DC;
+      border-radius: 8px; padding: 10px 14px;
+      font-size: 14px; color: #1C1917;
+      outline: none; transition: border-color .15s;
+      font-family: inherit;
+    }
+    .form-input:focus { border-color: #1C1917; }
+    .form-input::placeholder { color: #888780; }
+  </style>
+</head>
+
+<body class="bg-cream font-sans antialiased min-h-screen
+             flex items-center justify-center px-6">
+
+  <div class="w-full max-w-sm">
+
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <a href="/" class="text-2xl font-semibold">
+        <span class="text-ink">Style</span><span class="text-gold">Book</span>
+      </a>
+    </div>
+
+    <!-- Card -->
+    <div class="bg-cream-card border border-cream-border rounded-2xl p-8">
+
+      <!-- Google avatar placeholder -->
+      <div class="flex items-center justify-center mb-6">
+        <div class="w-14 h-14 rounded-full bg-gold-light border-2 border-gold
+                    flex items-center justify-center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke="#8B6914" stroke-width="1.5"/>
+            <path d="M4 20c0-4 3.582-7 8-7s8 3 8 7"
+                  stroke="#8B6914" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <h1 class="text-xl font-semibold text-ink text-center mb-1">
+        Almost there
+      </h1>
+      <p class="text-sm text-muted text-center mb-6">
+        Confirm your email to finish creating your StyleBook account
+      </p>
+
+      <form method="POST" action="{% url 'socialaccount_signup' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit"
+                class="w-full bg-ink text-white text-sm font-medium
+                       py-3 rounded-lg hover:bg-sidebar
+                       transition-colors mt-4">
+          Complete sign up
+        </button>
+      </form>
+
+    </div>
+
+    <p class="text-xs text-muted text-center mt-6">
+      By signing up you agree to our terms of service.
+    </p>
+
+  </div>
+
+</body>
+</html>

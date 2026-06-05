@@ -1,0 +1,332 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ profile_user.username }} — StyleBook{% endblock %}
+{% block page_title %}{% if is_own_profile %}My profile{% else %}{{ profile_user.username }}{% endif %}{% endblock %}
+{% block page_sub %}{% if is_own_profile %}Public portfolio — shareable link{% else %}{{ profile_user.profile.get_specialty_display|default:'Professional' }}{% endif %}{% endblock %}
+
+{% block topbar_actions %}
+  {% if is_own_profile %}
+    <button onclick="copyProfileLink()" class="btn-ghost">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+        <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5l-1 1"
+              stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+        <path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1"
+              stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      Share profile
+    </button>
+    <button onclick="toggleEditProfile()" class="btn-gold">
+      Edit profile
+    </button>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<div class="card mb-6">
+  <div class="flex flex-col sm:flex-row items-start gap-6">
+
+    <!-- Avatar -->
+    <div class="w-16 h-16 rounded-full bg-gold flex items-center justify-center
+                text-xl font-semibold text-sidebar flex-shrink-0">
+      {{ profile_user.username|slice:":2"|upper }}
+    </div>
+
+    <!-- Info -->
+    <div class="flex-1 min-w-0">
+      <div class="flex flex-wrap items-center gap-2 mb-1">
+        <h2 class="text-xl font-semibold text-ink">{{ profile_user.username }}</h2>
+        {% if profile_user.profile.specialty %}
+          <span class="px-2.5 py-0.5 bg-gold-light text-gold-dark text-xs
+                       font-medium rounded-full">
+            {{ profile_user.profile.get_specialty_display }}
+          </span>
+        {% endif %}
+      </div>
+
+      {% if profile_user.profile.years_exp %}
+        <p class="text-sm text-muted mb-2">
+          {{ profile_user.profile.years_exp }} years experience
+        </p>
+      {% endif %}
+
+      {% if profile_user.profile.bio %}
+        <p class="text-sm text-ink leading-relaxed mb-3 max-w-xl">
+          {{ profile_user.profile.bio }}
+        </p>
+      {% endif %}
+
+      {% if profile_user.profile.skills %}
+        <div class="flex flex-wrap gap-2">
+          {% for skill in profile_user.profile.skills.split %}
+            <span class="px-2.5 py-1 bg-cream border border-cream-border
+                         text-xs text-muted rounded-full">
+              {{ skill }}
+            </span>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Stats -->
+    <div class="flex gap-6 flex-shrink-0">
+      <div class="text-center">
+        <p class="text-2xl font-semibold text-ink">{{ portfolio_count }}</p>
+        <p class="text-xs text-muted mt-0.5">Works</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-semibold text-ink">{{ client_count }}</p>
+        <p class="text-xs text-muted mt-0.5">Clients</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-semibold text-ink">
+          {{ profile_user.profile.years_exp|default:'—' }}
+        </p>
+        <p class="text-xs text-muted mt-0.5">Years</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Edit panel -->
+{% if is_own_profile %}
+  <div id="editPanel" class="hidden mb-6">
+    <div class="card">
+      <p class="section-title">Edit your profile</p>
+      <form method="POST" action="{% url 'profile_edit' %}">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="form-label" for="specialty">Specialty</label>
+            <select class="form-input" id="specialty" name="specialty">
+              <option value="Barber"
+                {% if profile_user.profile.specialty == 'Barber' %}selected{% endif %}>
+                Barber
+              </option>
+              <option value="Hair Stylist"
+                {% if profile_user.profile.specialty == 'Hair Stylist' %}selected{% endif %}>
+                Hair Stylist
+              </option>
+              <option value="Nail Master"
+                {% if profile_user.profile.specialty == 'Nail Master' %}selected{% endif %}>
+                Nail Master
+              </option>
+              <option value="Makeup Artist"
+                {% if profile_user.profile.specialty == 'Makeup Artist' %}selected{% endif %}>
+                Makeup Artist
+              </option>
+              <option value="Other"
+                {% if profile_user.profile.specialty == 'Other' %}selected{% endif %}>
+                Other
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="years_exp">Years of experience</label>
+            <input class="form-input" type="number" id="years_exp" name="years_exp"
+                   min="0" max="50"
+                   value="{{ profile_user.profile.years_exp|default:'' }}"
+                   placeholder="e.g. 7">
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label" for="bio">Bio</label>
+          <textarea class="form-input" id="bio" name="bio" rows="3"
+                    placeholder="Tell clients about your craft...">{{ profile_user.profile.bio|default:'' }}</textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="form-label" for="skills">Skills (comma separated)</label>
+            <input class="form-input" type="text" id="skills" name="skills"
+                   placeholder="Skin fade, Beard design, Balayage"
+                   value="{{ profile_user.profile.skills|default:'' }}">
+          </div>
+          <div>
+            <label class="form-label" for="ig_handle">Instagram handle</label>
+            <input class="form-input" type="text" id="ig_handle" name="ig_handle"
+                   placeholder="@alex.cuts"
+                   value="{{ profile_user.profile.ig_handle|default:'' }}">
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <label class="form-label" for="location">Location</label>
+          <input class="form-input" type="text" id="location" name="location"
+                 placeholder="e.g. Brooklyn, NY"
+                 value="{{ profile_user.profile.location|default:'' }}">
+        </div>
+
+        <div class="flex items-center justify-end gap-3">
+          <button type="button" onclick="toggleEditProfile()"
+                  class="btn-ghost">
+            Cancel
+          </button>
+          <button type="submit" class="btn-gold">
+            Save changes
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Content grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Left col: details + experience -->
+  <div class="space-y-4">
+
+    <div class="card">
+      <p class="section-title">Details</p>
+      <div class="space-y-3">
+
+        <div class="flex items-center justify-between py-2
+                    border-b border-cream-border">
+          <span class="text-xs text-muted">Specialty</span>
+          <span class="text-sm text-ink font-medium">
+            {{ profile_user.profile.get_specialty_display|default:'—' }}
+          </span>
+        </div>
+
+        {% if profile_user.profile.location %}
+          <div class="flex items-center justify-between py-2
+                      border-b border-cream-border">
+            <span class="text-xs text-muted">Location</span>
+            <span class="text-sm text-ink font-medium">
+              {{ profile_user.profile.location }}
+            </span>
+          </div>
+        {% endif %}
+
+        {% if profile_user.profile.ig_handle %}
+          <div class="flex items-center justify-between py-2
+                      border-b border-cream-border">
+            <span class="text-xs text-muted">Instagram</span>
+            <span class="text-sm text-gold font-medium">
+              {{ profile_user.profile.ig_handle }}
+            </span>
+          </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between py-2">
+          <span class="text-xs text-muted">Member since</span>
+          <span class="text-sm text-ink font-medium">
+            {{ profile_user.date_joined|date:"M Y" }}
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    {% if is_own_profile and experience_items %}
+      <div class="card">
+        <p class="section-title">Experience</p>
+        <div class="space-y-4">
+          {% for exp in experience_items %}
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center">
+                <div class="w-2 h-2 rounded-full mt-1 flex-shrink-0
+                            {% if forloop.first %}bg-gold{% else %}bg-cream-border{% endif %}">
+                </div>
+                {% if not forloop.last %}
+                  <div class="w-px flex-1 bg-cream-border mt-1"></div>
+                {% endif %}
+              </div>
+              <div class="pb-4">
+                <p class="text-sm font-medium text-ink">{{ exp.title }}</p>
+                <p class="text-xs text-muted mt-0.5">{{ exp.period }}</p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Right col: recent work grid -->
+  <div class="lg:col-span-2">
+    <div class="flex items-center justify-between mb-4">
+      <p class="section-title mb-0">Recent work</p>
+      {% if portfolio_count > 6 %}
+        <a href="{% url 'portfolio' %}"
+           class="text-xs text-muted hover:text-ink transition-colors">
+          View all {{ portfolio_count }} →
+        </a>
+      {% endif %}
+    </div>
+
+    {% if portfolio_items %}
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        {% for item in portfolio_items %}
+          <div class="group">
+            <div class="card p-0 overflow-hidden">
+              <div class="aspect-square overflow-hidden bg-cream">
+                <img src="/media/uploads/{{ item.image }}"
+                     alt="{{ item.service }}"
+                     class="w-full h-full object-cover
+                            group-hover:scale-105 transition-transform duration-300">
+              </div>
+              <div class="p-3">
+                <p class="text-sm font-medium text-ink truncate">
+                  {{ item.service }}
+                </p>
+                <p class="text-xs text-muted mt-0.5">{{ item.date }}</p>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+    {% else %}
+      <div class="card flex flex-col items-center justify-center py-16 text-center">
+        <p class="text-sm font-medium text-ink mb-1">No work uploaded yet</p>
+        <p class="text-sm text-muted">Portfolio items will appear here.</p>
+        {% if is_own_profile %}
+          <a href="{% url 'instagram' %}" class="btn-primary mt-4">
+            Upload first work
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Copy link toast -->
+<div id="linkBanner"
+     class="hidden fixed bottom-6 left-1/2 -translate-x-1/2
+            bg-ink text-white text-sm font-medium
+            px-5 py-3 rounded-full shadow-lg">
+  Profile link copied to clipboard
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleEditProfile() {
+  const panel = document.getElementById('editPanel');
+  panel.classList.toggle('hidden');
+  if (!panel.classList.contains('hidden')) {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function copyProfileLink() {
+  const url = window.location.origin + '/profile/{{ profile_user.username }}/';
+  navigator.clipboard.writeText(url).then(() => {
+    const banner = document.getElementById('linkBanner');
+    banner.classList.remove('hidden');
+    setTimeout(() => banner.classList.add('hidden'), 2500);
+  });
+}
+</script>
+{% endblock %}

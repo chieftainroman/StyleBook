@@ -1,0 +1,538 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StyleBook — For barbers, stylists & nail masters</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sidebar:       '#1C1917',
+            cream:         '#FAFAF7',
+            'cream-card':  '#FFFFFF',
+            'cream-border':'#E5E3DC',
+            gold:          '#C9A96E',
+            'gold-light':  '#F5EDD8',
+            'gold-dark':   '#8B6914',
+            coral:         '#E96C3C',
+            ink:           '#1C1917',
+            muted:         '#888780',
+          },
+          fontFamily: {
+            sans:  ['Inter', 'sans-serif'],
+            serif: ['Instrument Serif', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .marquee-inner {
+      display: flex;
+      gap: 2rem;
+      animation: marquee 20s linear infinite;
+      white-space: nowrap;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+  </style>
+</head>
+
+<body class="bg-cream font-sans text-ink antialiased">
+
+  <!-- ── Nav ─────────────────────────────────────── -->
+  <nav class="sticky top-0 z-50 bg-cream border-b border-cream-border">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-xl font-semibold tracking-tight">
+        Style<span class="text-gold">Book</span>
+      </a>
+      <div class="hidden md:flex items-center gap-8">
+        <a href="#features"    class="text-sm text-muted hover:text-ink transition-colors">Features</a>
+        <a href="#how-it-works"class="text-sm text-muted hover:text-ink transition-colors">How it works</a>
+        <a href="#testimonial" class="text-sm text-muted hover:text-ink transition-colors">Reviews</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="{% url 'login' %}"
+           class="text-sm font-medium text-muted hover:text-ink transition-colors px-4 py-2">
+          Sign in
+        </a>
+        <a href="{% url 'register' %}"
+           class="text-sm font-medium bg-ink text-white px-4 py-2 rounded-lg
+                  hover:bg-sidebar transition-colors">
+          Start free
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Hero ─────────────────────────────────────── -->
+  <section class="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
+    <div class="inline-flex items-center gap-2 bg-gold-light text-gold-dark
+                text-xs font-medium px-3 py-1.5 rounded-full mb-8">
+      <span class="w-1.5 h-1.5 bg-gold rounded-full"></span>
+      Built for barbers, stylists, and nail masters
+    </div>
+
+    <h1 class="font-serif italic text-5xl md:text-6xl text-ink leading-tight mb-6">
+      Stop juggling DMs.<br>
+      <span class="text-gold">Start booking.</span>
+    </h1>
+
+    <p class="text-lg text-muted max-w-xl mx-auto mb-10 leading-relaxed">
+      StyleBook keeps your bookings, client notes, and portfolio in one place —
+      and turns every finished cut into an Instagram-ready post in seconds.
+    </p>
+
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
+      <a href="{% url 'register' %}"
+         class="bg-coral text-white text-sm font-medium px-6 py-3 rounded-lg
+                hover:bg-opacity-90 transition-all w-full sm:w-auto text-center">
+        Get started — it's free
+      </a>
+      <a href="#how-it-works"
+         class="border border-cream-border text-ink text-sm font-medium
+                px-6 py-3 rounded-lg hover:bg-cream-card transition-all
+                w-full sm:w-auto text-center">
+        See how it works →
+      </a>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-center gap-3">
+      <span class="text-xs text-muted">Trusted by 1,200+ pros</span>
+      <span class="text-cream-border">·</span>
+      <span class="text-xs text-muted">Brooklyn Cuts</span>
+      <span class="text-cream-border">·</span>
+      <span class="text-xs text-muted">FadeHouse</span>
+      <span class="text-cream-border">·</span>
+      <span class="text-xs text-muted">SalonNoir</span>
+      <span class="text-cream-border">·</span>
+      <span class="text-xs text-muted">NailLab</span>
+    </div>
+  </section>
+
+  <!-- ── App preview ───────────────────────────────── -->
+  <section class="max-w-5xl mx-auto px-6 pb-16">
+    <div class="bg-sidebar rounded-2xl overflow-hidden border border-sidebar shadow-lg">
+      <!-- Window chrome -->
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-white border-opacity-10">
+        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+        <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+        <span class="w-3 h-3 rounded-full bg-green-400"></span>
+        <span class="ml-4 text-xs text-muted">stylebook.app/dashboard</span>
+      </div>
+      <!-- App layout -->
+      <div class="flex">
+        <!-- Mini sidebar -->
+        <div class="w-36 bg-black bg-opacity-20 px-3 py-4 border-r border-white border-opacity-10">
+          <p class="text-sm font-semibold text-white mb-4 px-2">
+            Style<span class="text-gold">Book</span>
+          </p>
+          <div class="space-y-0.5">
+            <div class="px-2 py-2 rounded-lg bg-white bg-opacity-10 text-white text-xs font-medium">Dashboard</div>
+            <div class="px-2 py-2 text-muted text-xs">Reservations</div>
+            <div class="px-2 py-2 text-muted text-xs">Portfolio</div>
+            <div class="px-2 py-2 text-muted text-xs">Instagram</div>
+            <div class="px-2 py-2 text-muted text-xs">Profile</div>
+          </div>
+        </div>
+        <!-- Content -->
+        <div class="flex-1 p-5">
+          <p class="text-white text-sm font-medium mb-4">Today's schedule</p>
+          <div class="grid grid-cols-3 gap-3 mb-5">
+            <div class="bg-white bg-opacity-10 rounded-lg p-3">
+              <p class="text-xs text-muted mb-1">Bookings</p>
+              <p class="text-xl font-semibold text-white">38</p>
+              <p class="text-xs text-gold mt-0.5">+12%</p>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-lg p-3">
+              <p class="text-xs text-muted mb-1">Earnings</p>
+              <p class="text-xl font-semibold text-white">$2.4k</p>
+              <p class="text-xs text-gold mt-0.5">+8%</p>
+            </div>
+            <div class="bg-white bg-opacity-10 rounded-lg p-3">
+              <p class="text-xs text-muted mb-1">Posts</p>
+              <p class="text-xl font-semibold text-white">64</p>
+              <p class="text-xs text-gold mt-0.5">+5</p>
+            </div>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-3 bg-white bg-opacity-5 rounded-lg px-3 py-2.5">
+              <span class="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></span>
+              <span class="text-xs text-white flex-1">Marcus T. — Skin fade + beard</span>
+              <span class="text-xs text-muted">10:00</span>
+            </div>
+            <div class="flex items-center gap-3 bg-white bg-opacity-5 rounded-lg px-3 py-2.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span>
+              <span class="text-xs text-white flex-1">Sofia R. — Balayage touch-up</span>
+              <span class="text-xs text-muted">11:30</span>
+            </div>
+            <div class="flex items-center gap-3 bg-white bg-opacity-5 rounded-lg px-3 py-2.5">
+              <span class="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0"></span>
+              <span class="text-xs text-white flex-1">Jordan L. — Chrome gel nails</span>
+              <span class="text-xs text-muted">14:00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Marquee ───────────────────────────────────── -->
+  <div class="bg-sidebar py-4 overflow-hidden mb-16">
+    <div class="marquee-inner text-sm font-medium text-muted">
+      <span>Less admin</span><span class="text-gold mx-2">·</span>
+      <span>More cuts</span><span class="text-gold mx-2">·</span>
+      <span>Better posts</span><span class="text-gold mx-2">·</span>
+      <span>Real growth</span><span class="text-gold mx-2">·</span>
+      <span>Less admin</span><span class="text-gold mx-2">·</span>
+      <span>More cuts</span><span class="text-gold mx-2">·</span>
+      <span>Better posts</span><span class="text-gold mx-2">·</span>
+      <span>Real growth</span><span class="text-gold mx-2">·</span>
+      <span>Less admin</span><span class="text-gold mx-2">·</span>
+      <span>More cuts</span><span class="text-gold mx-2">·</span>
+      <span>Better posts</span><span class="text-gold mx-2">·</span>
+      <span>Real growth</span><span class="text-gold mx-2">·</span>
+    </div>
+  </div>
+
+  <!-- ── How it works ──────────────────────────────── -->
+  <section id="how-it-works" class="bg-sidebar py-20 mb-16">
+    <div class="max-w-5xl mx-auto px-6">
+      <h2 class="font-serif italic text-3xl md:text-4xl text-white text-center mb-4">
+        Three steps. <em class="text-gold">That's the whole platform.</em>
+      </h2>
+      <p class="text-muted text-center text-sm mb-12 max-w-lg mx-auto">
+        No bloat. No 14-tab dashboards. Just the workflow you actually do every day, made faster.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-white bg-opacity-5 rounded-xl p-6 border border-white border-opacity-10">
+          <p class="text-xs font-semibold text-gold uppercase tracking-widest mb-4">
+            01 — Book
+          </p>
+          <h3 class="text-white font-medium text-lg mb-3">
+            Add reservations with notes
+          </h3>
+          <p class="text-muted text-sm leading-relaxed">
+            Client name, time, service, and the specifics — sensitive scalp,
+            no ammonia, oval shape. It's all there when they walk in.
+          </p>
+        </div>
+
+        <div class="bg-white bg-opacity-5 rounded-xl p-6 border border-white border-opacity-10">
+          <p class="text-xs font-semibold text-gold uppercase tracking-widest mb-4">
+            02 — Post
+          </p>
+          <h3 class="text-white font-medium text-lg mb-3">
+            Photo in, Instagram out
+          </h3>
+          <p class="text-muted text-sm leading-relaxed">
+            Upload the after-shot. Pick a title — "Today I did that" or
+            "Master of work." Download the PNG. Post it.
+          </p>
+        </div>
+
+        <div class="bg-white bg-opacity-5 rounded-xl p-6 border border-white border-opacity-10">
+          <p class="text-xs font-semibold text-gold uppercase tracking-widest mb-4">
+            03 — Grow
+          </p>
+          <h3 class="text-white font-medium text-lg mb-3">
+            Build a real portfolio
+          </h3>
+          <p class="text-muted text-sm leading-relaxed">
+            Every job becomes part of your public profile — services,
+            experience, work history. Like LinkedIn, but for the chair.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ─────────────────────────────────── -->
+  <section id="features" class="max-w-5xl mx-auto px-6 pb-20">
+    <p class="text-xs font-semibold text-gold uppercase tracking-widest text-center mb-4">
+      Why StyleBook
+    </p>
+    <h2 class="font-serif italic text-3xl md:text-4xl text-ink text-center mb-12">
+      The work is the art.<br>The admin shouldn't be.
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div class="bg-coral rounded-xl p-6">
+        <p class="text-4xl font-semibold text-white mb-2">7hrs</p>
+        <h3 class="text-white font-medium mb-2">saved every week</h3>
+        <p class="text-white text-opacity-70 text-sm leading-relaxed">
+          No more scrolling DMs to remember what a client wanted.
+        </p>
+      </div>
+
+      <div class="card p-6">
+        <p class="text-4xl font-semibold text-ink mb-2">3×</p>
+        <h3 class="text-ink font-medium mb-2">faster IG posts</h3>
+        <p class="text-muted text-sm leading-relaxed">
+          From finished cut to posted in under 60 seconds.
+        </p>
+      </div>
+
+      <div class="bg-sidebar rounded-xl p-6">
+        <p class="text-4xl font-semibold text-white mb-2">∞</p>
+        <h3 class="text-white font-medium mb-2">portfolio archive</h3>
+        <p class="text-muted text-sm leading-relaxed">
+          Every job you've ever done, searchable forever.
+        </p>
+      </div>
+
+      <div class="card p-6">
+        <p class="text-4xl font-semibold text-gold mb-2">$0</p>
+        <h3 class="text-ink font-medium mb-2">to start</h3>
+        <p class="text-muted text-sm leading-relaxed">
+          Free forever for solo pros. Pay only when you grow.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Testimonial ───────────────────────────────── -->
+  <section id="testimonial" class="bg-gold-light py-20 mb-16">
+    <div class="max-w-2xl mx-auto px-6 text-center">
+      <blockquote class="font-serif italic text-2xl md:text-3xl text-ink
+                          leading-relaxed mb-8">
+        "I used to lose half a Saturday writing IG captions and digging
+        through old DMs. <span class="text-gold-dark">Now it's literally three taps.</span>"
+      </blockquote>
+      <div class="flex items-center justify-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gold flex items-center
+                    justify-center text-sm font-semibold text-sidebar">
+          AK
+        </div>
+        <div class="text-left">
+          <p class="text-sm font-medium text-ink">Alex Kim</p>
+          <p class="text-xs text-muted">Master Barber, Brooklyn Cuts</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Templates showcase ────────────────────────── -->
+  <section class="max-w-5xl mx-auto px-6 pb-20">
+    <div class="text-center mb-12">
+      <div class="inline-flex items-center gap-2 bg-gold-light text-gold-dark
+                  text-xs font-medium px-3 py-1.5 rounded-full mb-6">
+        <span class="w-1.5 h-1.5 bg-gold rounded-full"></span>
+        Story templates
+      </div>
+      <h2 class="font-serif italic text-3xl md:text-4xl text-ink mb-4">
+        Pick a vibe. <span class="text-gold">Post in seconds.</span>
+      </h2>
+      <p class="text-muted text-sm max-w-md mx-auto">
+        Five ready-made story templates. Upload your photo, we handle the rest.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+
+      <!-- Stacked bold -->
+      <div>
+        <div class="rounded-xl overflow-hidden aspect-[9/16] relative bg-neutral-900">
+          <img src="{% static 'images/photo1.jpg' %}" alt="Skin fade"
+               class="w-full h-full object-cover opacity-60">
+          <div class="absolute bottom-0 left-0 right-0 p-4
+                      bg-gradient-to-t from-black to-transparent">
+            <div class="text-left">
+              <p class="text-coral font-bold text-xl leading-none">TODAY</p>
+              <p class="text-white font-bold text-xl leading-none">I DID</p>
+              <p class="text-gray-400 font-bold text-xl leading-none">THAT</p>
+            </div>
+            <p class="text-gray-400 text-xs mt-2">Skin fade + beard line</p>
+            <p class="text-gray-500 text-xs">@alex.cuts</p>
+          </div>
+        </div>
+        <p class="text-center text-xs text-muted mt-2 font-medium">Stacked bold</p>
+      </div>
+
+      <!-- Editorial -->
+      <div>
+        <div class="rounded-xl overflow-hidden aspect-[9/16] relative bg-neutral-900">
+          <img src="{% static 'images/photo2.jpg' %}" alt="Fresh cut"
+               class="w-full h-full object-cover opacity-50">
+          <div class="absolute inset-0 p-4 flex flex-col">
+            <span class="inline-flex items-center gap-1 bg-coral text-white
+                         text-xs font-semibold px-2 py-1 rounded-full w-fit">
+              MASTER OF WORK
+            </span>
+            <p class="text-white font-serif italic text-lg mt-3 leading-tight">
+              Fresh cut,<br>clean lines,<br>zero compromise.
+            </p>
+          </div>
+          <div class="absolute bottom-0 left-0 right-0 bg-black p-3">
+            <p class="text-gold text-xs font-medium">Skin fade + taper</p>
+            <p class="text-gray-500 text-xs">@alex.cuts</p>
+          </div>
+        </div>
+        <p class="text-center text-xs text-muted mt-2 font-medium">Editorial</p>
+      </div>
+
+      <!-- Monthly wrap -->
+      <div>
+        <div class="rounded-xl overflow-hidden aspect-[9/16] bg-yellow-400
+                    flex flex-col items-center justify-center p-4">
+          <p class="text-yellow-800 text-xs font-semibold uppercase tracking-widest mb-4">
+            StyleBook Monthly
+          </p>
+          <p class="text-8xl font-bold text-yellow-900 leading-none">38</p>
+          <p class="text-2xl font-bold text-yellow-800 mt-1">CLIENTS</p>
+          <p class="text-yellow-700 text-xs mt-2 text-center">
+            served this month<br>+12% from last month
+          </p>
+        </div>
+        <p class="text-center text-xs text-muted mt-2 font-medium">Monthly wrap</p>
+      </div>
+
+      <!-- Before/after -->
+      <div>
+        <div class="rounded-xl overflow-hidden aspect-[9/16] relative bg-neutral-900">
+          <div class="h-1/2 overflow-hidden relative">
+            <img src="{% static 'images/photo3.jpg' %}" alt="Before"
+                 class="w-full h-full object-cover">
+            <span class="absolute top-2 left-2 text-white text-xs font-semibold">
+              Before
+            </span>
+          </div>
+          <div class="h-1/2 overflow-hidden relative">
+            <img src="{% static 'images/photo4.jpg' %}" alt="After"
+                 class="w-full h-full object-cover">
+            <span class="absolute bottom-2 left-2 text-white text-xs font-semibold">
+              After
+            </span>
+          </div>
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
+                      w-8 h-8 rounded-full bg-coral flex items-center justify-center
+                      text-white text-xs font-bold">
+            VS
+          </div>
+        </div>
+        <p class="text-center text-xs text-muted mt-2 font-medium">Before / after</p>
+      </div>
+
+      <!-- Coral bold -->
+      <div>
+        <div class="rounded-xl overflow-hidden aspect-[9/16] bg-coral
+                    flex flex-col p-4">
+          <div class="flex items-center justify-between mb-auto">
+            <p class="text-white text-xs font-semibold">
+              Style<span class="text-yellow-200">Book</span>
+            </p>
+            <p class="text-white text-opacity-70 text-xs">May 2025</p>
+          </div>
+          <div class="my-4">
+            <p class="text-white font-bold text-2xl leading-tight">
+              FRESH <span class="text-yellow-200">FROM</span> THE CHAIR
+            </p>
+            <p class="text-white text-opacity-70 text-xs mt-2 leading-relaxed">
+              Balayage touch-up with Olaplex treatment.
+            </p>
+          </div>
+          <div class="mt-auto bg-white bg-opacity-10 rounded-lg overflow-hidden h-24">
+            <img src="{% static 'images/photo5.jpg' %}" alt="Balayage"
+                 class="w-full h-full object-cover opacity-80">
+          </div>
+          <p class="text-white text-xs font-medium mt-3 text-center">
+            Book now — link in bio
+          </p>
+        </div>
+        <p class="text-center text-xs text-muted mt-2 font-medium">Coral bold</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── Final CTA ─────────────────────────────────── -->
+  <section class="bg-sidebar py-20">
+    <div class="max-w-2xl mx-auto px-6 text-center">
+      <h2 class="font-serif italic text-3xl md:text-4xl text-white mb-4">
+        Your craft deserves <span class="text-gold">better tools.</span>
+      </h2>
+      <p class="text-muted text-sm mb-8">
+        Join 1,200+ pros already on StyleBook. Free forever, no card needed.
+      </p>
+      <a href="{% url 'register' %}"
+         class="inline-flex items-center gap-2 bg-coral text-white text-sm
+                font-medium px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all">
+        Start free →
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Footer ────────────────────────────────────── -->
+  <footer class="bg-ink py-12">
+    <div class="max-w-5xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <p class="text-lg font-semibold text-white mb-2">
+            Style<span class="text-gold">Book</span>
+          </p>
+          <p class="text-sm text-muted leading-relaxed">
+            The platform for barbers, stylists, and nail masters.
+          </p>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-muted uppercase tracking-widest mb-4">
+            Product
+          </p>
+          <div class="space-y-2">
+            <a href="#features"     class="block text-sm text-muted hover:text-white transition-colors">Features</a>
+            <a href="#how-it-works" class="block text-sm text-muted hover:text-white transition-colors">How it works</a>
+            <a href="#testimonial"  class="block text-sm text-muted hover:text-white transition-colors">Reviews</a>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-muted uppercase tracking-widest mb-4">
+            Account
+          </p>
+          <div class="space-y-2">
+            <a href="{% url 'login' %}"    class="block text-sm text-muted hover:text-white transition-colors">Sign in</a>
+            <a href="{% url 'register' %}" class="block text-sm text-muted hover:text-white transition-colors">Create account</a>
+          </div>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-muted uppercase tracking-widest mb-4">
+            Connect
+          </p>
+          <div class="space-y-2">
+            <a href="#" class="block text-sm text-muted hover:text-white transition-colors">Instagram</a>
+            <a href="#" class="block text-sm text-muted hover:text-white transition-colors">Twitter / X</a>
+            <a href="#" class="block text-sm text-muted hover:text-white transition-colors">Contact us</a>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-white border-opacity-10 pt-6">
+        <p class="text-xs text-muted text-center">© 2025 StyleBook. Built for Demo Day.</p>
+      </div>
+    </div>
+  </footer>
+
+  <style>
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #E5E3DC;
+      border-radius: 12px;
+      padding: 20px;
+    }
+  </style>
+
+</body>
+</html>
