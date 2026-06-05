@@ -76,6 +76,65 @@ def register_view(request):
         except ValueError:
             years = 0
 
+        # ── FIX: use get_or_create, signal already made the profile ──
+        profile, _ = MasterProfile.objects.get_or_create(user=user)
+        profile.specialty = specialty
+        profile.location  = location
+        profile.years_exp = years
+        profile.ig_handle = ig_handle
+        profile.bio       = bio
+        profile.save()
+
+        login(request, user)
+
+        # If they skipped specialty in step 2 send to onboarding
+        if not specialty:
+            return redirect('onboarding')
+
+        messages.success(request, 'Welcome to StyleBook!')
+        return redirect('dashboard')
+
+    return render(request, 'register.html')
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        username  = request.POST.get('username', '').strip()
+        email     = request.POST.get('email', '').strip()
+        password  = request.POST.get('password', '')
+        specialty = request.POST.get('specialty', '')
+        location  = request.POST.get('location', '').strip()
+        years_exp = request.POST.get('years_exp', '0').strip()
+        ig_handle = request.POST.get('ig_handle', '').strip()
+        bio       = request.POST.get('bio', '').strip()
+
+        if not username or not email or not password:
+            messages.error(request, 'All fields are required.')
+            return redirect('register')
+
+        if len(password) < 6:
+            messages.error(request, 'Password must be at least 6 characters.')
+            return redirect('register')
+
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Username already taken.')
+            return redirect('register')
+
+        if User.objects.filter(email=email).exists():
+            messages.error(request, 'Email already registered.')
+            return redirect('register')
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+        )
+
+        try:
+            years = int(years_exp)
+        except ValueError:
+            years = 0
+
         MasterProfile.objects.create(
             user=user,
             specialty=specialty,
