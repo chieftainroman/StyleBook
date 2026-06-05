@@ -7,6 +7,9 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-secret-change-this')
 PLACID_API_KEY = os.environ.get('PLACID_API_KEY', '')
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
 

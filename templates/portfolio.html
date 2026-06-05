@@ -41,26 +41,50 @@
       <div class="portfolio-item group" data-category="{{ item.category|default:'Other' }}">
         <div class="card p-0 overflow-hidden">
 
-          <!-- Image -->
+          <!-- Image — prefer generated (Cloudinary), fall back to original -->
           <div class="relative aspect-square overflow-hidden bg-cream">
-            <img src="/media/uploads/{{ item.image }}"
-                 alt="{{ item.service }}"
-                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% if item.generated_image %}
+              {% if 'http' in item.generated_image %}
+                <img src="{{ item.generated_image }}"
+                     alt="{{ item.service }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              {% else %}
+                <img src="/media/generated/{{ item.generated_image }}"
+                     alt="{{ item.service }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              {% endif %}
+            {% else %}
+              {% if 'http' in item.image %}
+                <img src="{{ item.image }}"
+                     alt="{{ item.service }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              {% else %}
+                <img src="/media/uploads/{{ item.image }}"
+                     alt="{{ item.service }}"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+              {% endif %}
+            {% endif %}
 
             <!-- Overlay on hover -->
             <div class="absolute inset-0 bg-ink bg-opacity-0 group-hover:bg-opacity-40
                         transition-all duration-300 flex items-center justify-center">
-              <a href="/media/generated/{{ item.generated_image }}"
-                 download
-                 class="opacity-0 group-hover:opacity-100 transition-opacity duration-300
-                        flex items-center gap-1.5 bg-white text-ink text-xs font-medium
-                        px-3 py-1.5 rounded-full">
-                <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                  <path d="M8 3v7M5 7.5L8 10l3-2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M3 11v2a1 1 0 001 1h8a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-                </svg>
-                Download PNG
-              </a>
+              {% if item.generated_image %}
+                {% if 'http' in item.generated_image %}
+                  <a href="{{ item.generated_image }}"
+                {% else %}
+                  <a href="/media/generated/{{ item.generated_image }}"
+                {% endif %}
+                  download
+                  class="opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                         flex items-center gap-1.5 bg-white text-ink text-xs font-medium
+                         px-3 py-1.5 rounded-full">
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                    <path d="M8 3v7M5 7.5L8 10l3-2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M3 11v2a1 1 0 001 1h8a1 1 0 001-1v-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                  </svg>
+                  Download PNG
+                </a>
+              {% endif %}
             </div>
           </div>
 

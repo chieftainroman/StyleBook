@@ -11,7 +11,8 @@ from django.conf import settings
 
 from .models import PortfolioItem
 from .utils import generate_instagram_image           # Pillow fallback
-from . import placid                                   # NEW: Placid client
+from . import placid    
+import cloudinary.uploader
 from bookings.models import Reservation
 from accounts.models import MasterProfile
 
@@ -175,9 +176,30 @@ def instagram_generate(request):
         for chunk in photo.chunks():
             f.write(chunk)
 
-    # Build public URL — Placid needs to fetch this from the internet
-    base_url  = request.build_absolute_uri('/').rstrip('/')
-    photo_url = f"{base_url}{settings.MEDIA_URL}uploads/{safe_name}"
+    # Upload to Cloudinary so Placid can fetch a public URL
+    try:
+        upload_result = cloudinary.uploader.upload(
+            photo_path,
+            folder='stylebook/uploads',
+            public_id=safe_name.rsplit('.', 1)[0],   # strip extension
+            overwrite=True,
+            resource_type='image',
+        )
+        photo_url = upload_result.get('secure_url')
+    except Exception as e:
+        # Cloudinary failed — fall back to Pillow immediately
+        return _pillow_fallback(
+            None, photo_path, template_id, service,
+            ig_handle or request.user.username, fmt,
+            reservation_id, error=f'Cloudinary upload failed: {e}',
+        )
+
+    if not photo_url:
+        return _pillow_fallback(
+            None, photo_path, template_id, service,
+            ig_handle or request.user.username, fmt,
+            reservation_id, error='Cloudinary returned no URL',
+        )
 
     # Build layer payload
     profile, _  = MasterProfile.objects.get_or_create(user=request.user)
@@ -300,14 +322,24 @@ def instagram_status(request, job_id):
     return JsonResponse({'status': status or 'processing'})
 
 def _finalize(item, placid_image_url):
-    """Download the finished Placid image and update the PortfolioItem."""
-    generated_folder = os.path.join(settings.MEDIA_ROOT, 'generated')
-    filename = placid.download_image(
-        placid_image_url,
-        output_dir    = generated_folder,
-        filename_hint = item.template_style or 'ig',
-    )
-    item.generated_image = filename
+    """
+    Placid has rendered the image. Upload the result to Cloudinary
+    so it survives container restarts, and store the public URL.
+    """
+    try:
+        up = cloudinary.uploader.upload(
+            placid_image_url,                          # Cloudinary can fetch from URL
+            folder='stylebook/generated',
+            public_id=f'placid_{item.id}_{datetime.now().strftime("%Y%m%d%H%M%S")}',
+            overwrite=True,
+            resource_type='image',
+        )
+        item.generated_image = up.get('secure_url') or placid_image_url
+    except Exception:
+        # If Cloudinary upload fails, store Placid's CDN URL directly.
+        # It won't survive forever but works short-term.
+        item.generated_image = placid_image_url
+
     item.save(update_fields=['generated_image'])
 
 
@@ -327,7 +359,7 @@ def _pillow_fallback(item, photo_path, template_id, service, ig_handle,
                     fmt, reservation_id, error=''):
     """If Placid fails, generate with Pillow so user still gets a result."""
     pillow_templates = ['stacked', 'editorial', 'coral', 'dark_minimal', 'split']
-    idx              = abs(hash(template_id)) % len(pillow_templates)
+    idx              = abs(hash(template_id or 'x')) % len(pillow_templates)
     pillow_style     = pillow_templates[idx]
 
     generated_folder = os.path.join(settings.MEDIA_ROOT, 'generated')
@@ -346,18 +378,42 @@ def _pillow_fallback(item, photo_path, template_id, service, ig_handle,
             ig_handle      = ig_handle,
             fmt            = fmt,
         )
-        item.generated_image = generated_name
-        item.save(update_fields=['generated_image'])
-        _mark_reservation(reservation_id, item.user)
+
+        # Upload the generated image to Cloudinary too so it's publicly viewable
+        try:
+            up = cloudinary.uploader.upload(
+                generated_path,
+                folder='stylebook/generated',
+                public_id=generated_name.rsplit('.', 1)[0],
+                overwrite=True,
+                resource_type='image',
+            )
+            cloudinary_url = up.get('secure_url') or ''
+        except Exception:
+            cloudinary_url = ''
+
+        # If we already have a PortfolioItem, update it. Otherwise create one.
+        if item:
+            item.generated_image = cloudinary_url or generated_name
+            item.save(update_fields=['generated_image'])
+        else:
+            # Item wasn't created yet (Cloudinary upload of original failed)
+            # Don't create one here — user will need to retry
+            pass
+
+        if item:
+            _mark_reservation(reservation_id, item.user)
+
         return JsonResponse({
-            'job_id':    item.id,
+            'job_id':    item.id if item else 0,
             'status':    'finished',
-            'image_url': f'{settings.MEDIA_URL}generated/{generated_name}',
+            'image_url': cloudinary_url or f'{settings.MEDIA_URL}generated/{generated_name}',
             'fallback':  True,
             'warning':   'Used backup template — premium templates unavailable right now.',
         })
     except Exception as fallback_err:
-        item.delete()
+        if item:
+            item.delete()
         return JsonResponse({
             'status': 'error',
             'error':  f'Generation failed: {error or fallback_err}',
