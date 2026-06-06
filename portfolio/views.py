@@ -251,13 +251,14 @@ def instagram_generate(request):
     request.session.modified = True
 
     # If Placid returned 'finished' immediately, download now
+    # If Placid returned 'finished' immediately, download now
     if result.get('status') == 'finished' and result.get('image_url'):
         _finalize(item, result['image_url'])
         _mark_reservation(reservation_id, request.user)
         return JsonResponse({
             'job_id':    item.id,
             'status':    'finished',
-            'image_url': f'{settings.MEDIA_URL}generated/{item.generated_image}',
+            'image_url': _image_url_for(item.generated_image),
         })
 
     return JsonResponse({
@@ -278,7 +279,7 @@ def instagram_status(request, job_id):
     if item.generated_image:
         return JsonResponse({
             'status':    'finished',
-            'image_url': f'{settings.MEDIA_URL}generated/{item.generated_image}',
+            'image_url': _image_url_for(item.generated_image),
             'caption':   item.caption,
             'hashtags':  item.hashtags,
         })
@@ -307,7 +308,7 @@ def instagram_status(request, job_id):
         request.session.modified = True
         return JsonResponse({
             'status':    'finished',
-            'image_url': f'{settings.MEDIA_URL}generated/{item.generated_image}',
+            'image_url': _image_url_for(item.generated_image),
             'caption':   item.caption,
             'hashtags':  item.hashtags,
         })
@@ -320,6 +321,16 @@ def instagram_status(request, job_id):
                              'error': 'Placid render failed.'}, status=500)
 
     return JsonResponse({'status': status or 'processing'})
+
+
+def _image_url_for(value):
+
+    if not value:
+        return ''
+    if value.startswith('http://') or value.startswith('https://'):
+        return value
+    return f'{settings.MEDIA_URL}generated/{value}'
+
 
 def _finalize(item, placid_image_url):
     """
@@ -404,10 +415,11 @@ def _pillow_fallback(item, photo_path, template_id, service, ig_handle,
         if item:
             _mark_reservation(reservation_id, item.user)
 
+        final_url = cloudinary_url or f'{settings.MEDIA_URL}generated/{generated_name}'
         return JsonResponse({
             'job_id':    item.id if item else 0,
             'status':    'finished',
-            'image_url': cloudinary_url or f'{settings.MEDIA_URL}generated/{generated_name}',
+            'image_url': final_url,
             'fallback':  True,
             'warning':   'Used backup template — premium templates unavailable right now.',
         })
