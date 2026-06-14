@@ -2,8 +2,9 @@ import os
 import json
 from datetime import datetime, date
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.cache import cache_page
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
@@ -146,21 +147,19 @@ def instagram_generate(request):
     client_name    = request.POST.get('client_name', '').strip()
     ig_handle      = request.POST.get('ig_handle', '').strip()
     template_id    = request.POST.get('template', '').strip()
-    fmt            = request.POST.get('fmt', 'story')
     caption        = request.POST.get('caption', '').strip()
     hashtags       = request.POST.get('hashtags', '').strip()
     reservation_id = request.POST.get('reservation_id', None)
     photo          = request.FILES.get('photo')
 
-    # Validation
+    fmt = 'story'
+
     if not photo or photo.name == '':
         return JsonResponse({'error': 'Please upload a photo.'}, status=400)
     if not service:
         return JsonResponse({'error': 'Please enter the service performed.'}, status=400)
     if not template_id:
         return JsonResponse({'error': 'Please choose a template.'}, status=400)
-    if fmt not in ('story', 'post_square', 'post_portrait'):
-        fmt = 'story'
 
     tpl = placid.get_template(template_id)
     if not tpl:
@@ -321,6 +320,25 @@ def instagram_status(request, job_id):
                              'error': 'Placid render failed.'}, status=500)
 
     return JsonResponse({'status': status or 'processing'})
+
+
+@cache_page(60 * 60 * 24)  # cache 24 hours
+def template_thumbnail(request, template_id):
+    """
+    Returns a redirect to the Placid thumbnail URL for the given template.
+    Cached for 24h so we don't hammer Placid's API.
+
+    Public endpoint — anyone hitting the instagram page can load thumbnails.
+    """
+    # Verify it's one of our templates (don't proxy arbitrary IDs)
+    if not placid.get_template(template_id):
+        return JsonResponse({'error': 'Unknown template.'}, status=404)
+
+    thumb_url = placid.fetch_template_thumbnail(template_id)
+    if not thumb_url:
+        return JsonResponse({'error': 'Thumbnail unavailable.'}, status=502)
+
+    return HttpResponseRedirect(thumb_url)
 
 
 def _image_url_for(value):

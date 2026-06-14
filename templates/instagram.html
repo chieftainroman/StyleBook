@@ -81,48 +81,11 @@
         </div>
       </div>
 
-      <!-- ─── Format picker (story / square only) ── -->
-      <p class="section-title">Choose format</p>
-      <div class="card mb-4">
-        <div class="grid grid-cols-2 gap-3">
 
-          <label class="cursor-pointer">
-            <input type="radio" name="fmt" value="story" checked class="hidden peer">
-            <div class="peer-checked:ring-2 peer-checked:ring-ink peer-checked:bg-ink
-                        border border-cream-border rounded-lg p-3
-                        transition-all hover:border-ink text-center
-                        peer-checked:text-white">
-              <div class="mx-auto mb-2 w-6 h-10 bg-cream-border rounded-sm
-                          peer-checked:bg-white"></div>
-              <p class="text-xs font-medium">Story</p>
-              <p class="text-[10px] text-muted mt-0.5 peer-checked:text-cream-border">
-                1080 × 1920
-              </p>
-            </div>
-          </label>
-
-          <label class="cursor-pointer">
-            <input type="radio" name="fmt" value="post_square" class="hidden peer">
-            <div class="peer-checked:ring-2 peer-checked:ring-ink peer-checked:bg-ink
-                        border border-cream-border rounded-lg p-3
-                        transition-all hover:border-ink text-center
-                        peer-checked:text-white">
-              <div class="mx-auto mb-2 w-9 h-9 bg-cream-border rounded-sm
-                          peer-checked:bg-white"></div>
-              <p class="text-xs font-medium">Post — square</p>
-              <p class="text-[10px] text-muted mt-0.5 peer-checked:text-cream-border">
-                1080 × 1080
-              </p>
-            </div>
-          </label>
-
-        </div>
-      </div>
-
-      <!-- ─── Template picker — built by JS ──────── -->
+<!-- ─── Template picker — 2-col grid with thumbnails ── -->
       <p class="section-title">Choose template</p>
       <div class="card mb-4">
-        <div id="templateGrid" class="grid grid-cols-3 gap-2">
+        <div id="templateGrid" class="grid grid-cols-2 gap-3">
           <!-- Populated dynamically from TEMPLATES JSON -->
         </div>
       </div>
@@ -282,6 +245,85 @@
     0%   { background-position: 200% 0; }
     100% { background-position: -200% 0; }
   }
+
+  /* Template thumbnail cards */
+  .tpl-card {
+    position: relative;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.18s ease;
+    cursor: pointer;
+    background: #fff;
+  }
+  .tpl-card:hover {
+    border-color: #1a1a1a;
+    transform: translateY(-2px);
+  }
+  .tpl-card.is-selected {
+    border-color: #C9A96E;
+    box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.18);
+  }
+  .tpl-thumb-wrap {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    background: linear-gradient(135deg, #f3eee8, #e5e3dc);
+    overflow: hidden;
+  }
+  .tpl-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .tpl-thumb.loaded {
+    opacity: 1;
+  }
+  .tpl-thumb-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .tpl-meta {
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .tpl-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+  .tpl-style {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+  .tpl-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #C9A96E;
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 2;
+  }
+  .tpl-card.is-selected .tpl-check {
+    display: flex;
+  }
 </style>
 
 {% endblock %}
@@ -302,64 +344,58 @@
   // ════════════════════════════════════════════════════
   const templateGrid  = document.getElementById('templateGrid');
   const templateInput = document.getElementById('templateInput');
-  const fmtRadios     = document.querySelectorAll('input[name="fmt"]');
 
-  function getSelectedFmt() {
-    return document.querySelector('input[name="fmt"]:checked').value;
-  }
-
-  function buildTemplatePicker() {
-    const fmt = getSelectedFmt();
-    const list = TEMPLATES[fmt] || [];
+function buildTemplatePicker() {
+    const list = TEMPLATES['story'] || [];
     templateGrid.innerHTML = '';
+
     if (list.length === 0) {
-      templateGrid.innerHTML = '<p class="text-sm text-muted col-span-3">No templates for this format yet.</p>';
+      templateGrid.innerHTML = '<p class="text-sm text-muted col-span-2">No templates available.</p>';
       templateInput.value = '';
       return;
     }
+
     list.forEach((tpl, idx) => {
-      const id = tpl.id;
-      const card = document.createElement('label');
-      card.className = 'cursor-pointer';
+      const isFirst = idx === 0;
+      const card = document.createElement('div');
+      card.className = 'tpl-card' + (isFirst ? ' is-selected' : '');
+      card.dataset.tplId = tpl.id;
       card.innerHTML = `
-        <input type="radio" name="tplPick" value="${id}"
-               ${idx === 0 ? 'checked' : ''} class="hidden peer">
-        <div class="peer-checked:ring-2 peer-checked:ring-ink
-                    border border-cream-border rounded-lg overflow-hidden
-                    transition-all hover:border-ink p-2 bg-cream-card text-center">
-          <div class="h-16 bg-ink flex items-center justify-center mb-1.5 rounded-sm">
-            <span class="text-xs font-bold text-white">${tpl.name}</span>
+        <div class="tpl-check">✓</div>
+        <div class="tpl-thumb-wrap">
+          <img class="tpl-thumb"
+               src="/instagram/thumbnail/${tpl.id}/"
+               alt="${tpl.name}"
+               loading="lazy"
+               onload="this.classList.add('loaded'); this.nextElementSibling.style.display='none';"
+               onerror="this.style.display='none';">
+          <div class="tpl-thumb-loader">
+            <div class="w-8 h-8 rounded-full border-2 border-ink/10 border-t-ink/40 animate-spin"></div>
           </div>
-          <p class="text-xs font-medium text-ink leading-tight">${tpl.name}</p>
-          <p class="text-[10px] text-muted leading-tight mt-0.5">${tpl.style}</p>
+        </div>
+        <div class="tpl-meta">
+          <div class="tpl-name">${tpl.name}</div>
+          <div class="tpl-style">${tpl.style}</div>
         </div>
       `;
+      card.addEventListener('click', () => selectTemplate(tpl.id));
       templateGrid.appendChild(card);
     });
-    templateInput.value = list[0].id;
 
-    // Wire up click handlers
-    templateGrid.querySelectorAll('input[name="tplPick"]').forEach(r => {
-      r.addEventListener('change', () => {
-        templateInput.value = r.value;
-      });
+    templateInput.value = list[0].id;
+  }
+
+  function selectTemplate(id) {
+    templateInput.value = id;
+    document.querySelectorAll('.tpl-card').forEach(c => {
+      c.classList.toggle('is-selected', c.dataset.tplId === id);
     });
   }
 
   fmtRadios.forEach(r => r.addEventListener('change', buildTemplatePicker));
   buildTemplatePicker();
 
-  // ════════════════════════════════════════════════════
-  // Skeleton aspect ratio adjusts to chosen format
-  // ════════════════════════════════════════════════════
-  function updateSkeletonRatio() {
-    const fmt = getSelectedFmt();
-    const skel = document.getElementById('skeletonBox');
-    if (!skel) return;
-    skel.style.aspectRatio = fmt === 'story' ? '9 / 16' : '1 / 1';
-  }
-  fmtRadios.forEach(r => r.addEventListener('change', updateSkeletonRatio));
-  updateSkeletonRatio();
+
 
   // ════════════════════════════════════════════════════
   // Photo upload preview
