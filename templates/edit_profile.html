@@ -18,18 +18,19 @@
 
     <div>
       <label class="form-label" for="specialty">Specialty <span class="text-red-500">*</span></label>
-      <select class="form-input" id="specialty" name="specialty" required>
+    <select class="form-input" id="specialty" name="specialty" required>
         <option value="">Select your specialty</option>
-        <option value="Barber"          {% if profile.specialty == 'Barber' %}selected{% endif %}>Barber</option>
-        <option value="Hair Stylist"    {% if profile.specialty == 'Hair Stylist' %}selected{% endif %}>Hair Stylist</option>
-        <option value="Nail Master"     {% if profile.specialty == 'Nail Master' %}selected{% endif %}>Nail Master</option>
-        <option value="Makeup Artist"   {% if profile.specialty == 'Makeup Artist' %}selected{% endif %}>Makeup Artist</option>
-        <option value="Tattoo Artist"   {% if profile.specialty == 'Tattoo Artist' %}selected{% endif %}>Tattoo Artist</option>
-        <option value="Lash Artist"     {% if profile.specialty == 'Lash Artist' %}selected{% endif %}>Lash Artist</option>
-        <option value="Brow Artist"     {% if profile.specialty == 'Brow Artist' %}selected{% endif %}>Brow Artist</option>
-        <option value="Esthetician"     {% if profile.specialty == 'Esthetician' %}selected{% endif %}>Esthetician</option>
-        <option value="Massage Therapist" {% if profile.specialty == 'Massage Therapist' %}selected{% endif %}>Massage Therapist</option>
-      </select>
+        <option value="barber"    {% if profile.specialty == 'barber' %}selected{% endif %}>Barber</option>
+        <option value="stylist"   {% if profile.specialty == 'stylist' %}selected{% endif %}>Hair Stylist</option>
+        <option value="nails"     {% if profile.specialty == 'nails' %}selected{% endif %}>Nail Master</option>
+        <option value="makeup"    {% if profile.specialty == 'makeup' %}selected{% endif %}>Makeup Artist</option>
+        <option value="tattoo"    {% if profile.specialty == 'tattoo' %}selected{% endif %}>Tattoo Artist</option>
+        <option value="lash"      {% if profile.specialty == 'lash' %}selected{% endif %}>Lash Artist</option>
+        <option value="brow"      {% if profile.specialty == 'brow' %}selected{% endif %}>Brow Artist</option>
+        <option value="esthetics" {% if profile.specialty == 'esthetics' %}selected{% endif %}>Esthetician</option>
+        <option value="massage"   {% if profile.specialty == 'massage' %}selected{% endif %}>Massage Therapist</option>
+        <option value="other"     {% if profile.specialty == 'other' %}selected{% endif %}>Other</option>
+    </select>
     </div>
 
     <div class="grid grid-cols-2 gap-3">
