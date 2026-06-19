@@ -9,8 +9,63 @@
 
 {% block content %}
 
-<form method="POST" action="{% url 'profile_edit' %}" class="max-w-3xl">
+{% block content %}
+
+<!-- Cropper.js CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<form method="POST" action="{% url 'profile_edit' %}" class="max-w-3xl" id="editProfileForm">
   {% csrf_token %}
+
+  <!-- ─── Photos (avatar + cover) ─────────────── -->
+  <p class="section-title">Profile photos</p>
+  <div class="card mb-5">
+
+    <!-- Cover banner -->
+    <div class="relative w-full bg-cream-border rounded-xl overflow-hidden mb-4"
+         style="aspect-ratio: 16 / 9;">
+      {% if profile.cover_url %}
+        <img id="coverPreview" src="{{ profile.cover_url }}"
+             class="w-full h-full object-cover" alt="Cover">
+      {% else %}
+        <img id="coverPreview" src=""
+             class="w-full h-full object-cover hidden" alt="Cover">
+        <div id="coverEmpty" class="absolute inset-0 flex items-center justify-center text-muted text-sm">
+          No cover photo yet
+        </div>
+      {% endif %}
+
+      <!-- Avatar (overlapping bottom-left of cover) -->
+      <div class="absolute -bottom-8 left-6">
+        <div class="relative w-24 h-24 rounded-full overflow-hidden bg-gold
+                    border-4 border-white flex items-center justify-center
+                    text-white font-semibold text-2xl">
+          {% if profile.avatar_url %}
+            <img id="avatarPreview" src="{{ profile.avatar_url }}"
+                 class="w-full h-full object-cover" alt="Avatar">
+          {% else %}
+            <span id="avatarInitials">{{ user.username|slice:":2"|upper }}</span>
+            <img id="avatarPreview" src="" class="w-full h-full object-cover hidden" alt="Avatar">
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons (offset to clear the avatar) -->
+    <div class="flex flex-wrap gap-3 mt-10">
+      <label class="btn-ghost cursor-pointer text-sm py-2 px-4">
+        Change avatar
+        <input type="file" id="avatarInput" accept="image/*" class="hidden">
+      </label>
+      <label class="btn-ghost cursor-pointer text-sm py-2 px-4">
+        Change cover
+        <input type="file" id="coverInput" accept="image/*" class="hidden">
+      </label>
+    </div>
+  </div>
+
+  <!-- ─── Basic info ─────────────────────────── -->
 
   <!-- ─── Basic info ─────────────────────────── -->
   <p class="section-title">Basic info</p>
@@ -165,7 +220,7 @@
     </div>
   </div>
 
-  <!-- ─── Submit ──────────────────────────────── -->
+<!-- ─── Submit ──────────────────────────────── -->
   <div class="flex gap-3">
     <button type="submit" class="btn-gold flex-1 justify-center py-3">Save profile</button>
     <a href="{% url 'profile' username=user.username %}"
@@ -173,6 +228,35 @@
   </div>
 
 </form>
+
+<!-- ═════════════════════════════════════════════ -->
+<!-- Cropper Modal                                  -->
+<!-- ═════════════════════════════════════════════ -->
+<div id="cropperModal"
+     class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-2xl w-full p-6">
+    <h3 id="cropperTitle" class="text-lg font-semibold text-ink mb-4">Crop your photo</h3>
+
+    <!-- Cropper container -->
+    <div class="bg-cream rounded-xl overflow-hidden" style="max-height: 60vh;">
+      <img id="cropperImage" alt="" style="max-width: 100%; display: block;">
+    </div>
+
+    <p class="text-xs text-muted mt-3 text-center">
+      Drag to move, scroll or pinch to zoom
+    </p>
+
+    <!-- Buttons -->
+    <div class="flex gap-3 mt-5">
+      <button type="button" id="cropperCancel"
+              class="btn-ghost flex-1 justify-center py-2.5">Cancel</button>
+      <button type="button" id="cropperSave"
+              class="btn-gold flex-1 justify-center py-2.5">
+        <span id="cropperSaveText">Save photo</span>
+      </button>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
 
@@ -238,7 +322,7 @@
     render();
   })();
 
-  // ════════════════════════════════════════════
+// ════════════════════════════════════════════
   // Working hours — "Closed" toggle disables time inputs
   // ════════════════════════════════════════════
   document.querySelectorAll('.closed-toggle').forEach(cb => {
@@ -249,5 +333,152 @@
       });
     });
   });
+
+  // ════════════════════════════════════════════
+  // Cropper UI for avatar + cover
+  // ════════════════════════════════════════════
+  (function() {
+    const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    const modal       = document.getElementById('cropperModal');
+    const imgEl       = document.getElementById('cropperImage');
+    const titleEl     = document.getElementById('cropperTitle');
+    const cancelBtn   = document.getElementById('cropperCancel');
+    const saveBtn     = document.getElementById('cropperSave');
+    const saveText    = document.getElementById('cropperSaveText');
+
+    const avatarInput = document.getElementById('avatarInput');
+    const coverInput  = document.getElementById('coverInput');
+
+    let cropper        = null;
+    let currentKind    = null;  // 'avatar' or 'cover'
+    let currentUrl     = null;  // upload endpoint
+
+    function openCropper(file, kind) {
+      currentKind = kind;
+      currentUrl  = kind === 'avatar'
+        ? '{% url "upload_avatar" %}'
+        : '{% url "upload_cover" %}';
+
+      titleEl.textContent = kind === 'avatar'
+        ? 'Crop your profile picture'
+        : 'Crop your cover photo';
+
+      const reader = new FileReader();
+      reader.onload = ev => {
+        imgEl.src = ev.target.result;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // Destroy any previous cropper instance
+        if (cropper) cropper.destroy();
+
+        cropper = new Cropper(imgEl, {
+          aspectRatio: kind === 'avatar' ? 1 : 16 / 9,
+          viewMode: 1,           // restrict crop box inside the image
+          dragMode: 'move',
+          autoCropArea: 0.9,
+          background: false,
+          movable: true,
+          zoomable: true,
+          rotatable: false,
+          scalable: false,
+          cropBoxResizable: true,
+          cropBoxMovable: true,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function closeCropper() {
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      imgEl.src = '';
+      avatarInput.value = '';
+      coverInput.value  = '';
+    }
+
+    function saveCrop() {
+      if (!cropper) return;
+
+      // Output size — avatars don't need to be huge, covers should be wider
+      const outWidth = currentKind === 'avatar' ? 512 : 1600;
+      const outHeight = currentKind === 'avatar' ? 512 : 900;
+
+      const canvas = cropper.getCroppedCanvas({
+        width:  outWidth,
+        height: outHeight,
+        imageSmoothingQuality: 'high',
+      });
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+      // Disable button + show loading state
+      saveBtn.disabled  = true;
+      saveText.textContent = 'Uploading…';
+
+      const fd = new FormData();
+      fd.append('image_data', dataUrl);
+
+      fetch(currentUrl, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrf },
+        body: fd,
+      })
+      .then(async r => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || 'Upload failed.');
+        return data;
+      })
+      .then(data => {
+        // Update preview in-place
+        if (currentKind === 'avatar') {
+          const preview  = document.getElementById('avatarPreview');
+          const initials = document.getElementById('avatarInitials');
+          preview.src = data.url;
+          preview.classList.remove('hidden');
+          if (initials) initials.classList.add('hidden');
+        } else {
+          const preview = document.getElementById('coverPreview');
+          const empty   = document.getElementById('coverEmpty');
+          preview.src = data.url;
+          preview.classList.remove('hidden');
+          if (empty) empty.classList.add('hidden');
+        }
+        closeCropper();
+      })
+      .catch(err => {
+        alert('Upload failed: ' + err.message);
+      })
+      .finally(() => {
+        saveBtn.disabled  = false;
+        saveText.textContent = 'Save photo';
+      });
+    }
+
+    avatarInput.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (f) openCropper(f, 'avatar');
+    });
+
+    coverInput.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (f) openCropper(f, 'cover');
+    });
+
+    cancelBtn.addEventListener('click', closeCropper);
+
+    // Click outside modal to close
+    modal.addEventListener('click', e => {
+      if (e.target === modal) closeCropper();
+    });
+
+    saveBtn.addEventListener('click', saveCrop);
+  })();
 </script>
 {% endblock %}

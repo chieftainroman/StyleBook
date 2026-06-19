@@ -14,6 +14,8 @@ urlpatterns = [
          name='template_thumbnail'),
 
     path('profile/edit/',               views.edit_profile,        name='profile_edit'),
+    path('profile/upload-avatar/',      views.upload_avatar,       name='upload_avatar'),
+    path('profile/upload-cover/',       views.upload_cover,        name='upload_cover'),
     path('profile/',                    views.my_profile,          name='my_profile'),
     path('profile/<str:username>/',     views.profile_view,        name='profile'),
 ]

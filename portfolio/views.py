@@ -1,4 +1,6 @@
 import os
+import base64
+import io
 import json
 from datetime import datetime, date
 from django.shortcuts import render, redirect, get_object_or_404
@@ -169,7 +171,82 @@ def edit_profile(request):
     })
 
 
-# ── Helpers for safe parsing ────────────────────────────
+import base64
+import io
+
+
+@login_required
+@require_POST
+def upload_avatar(request):
+    """
+    Accept a base64-encoded cropped image from the frontend,
+    upload to Cloudinary, save URL to MasterProfile.avatar_url.
+    """
+    return _upload_profile_photo(
+        request,
+        kind='avatar',
+        folder='stylebook/avatars',
+        field_name='avatar_url',
+    )
+
+
+@login_required
+@require_POST
+def upload_cover(request):
+    """
+    Same flow as upload_avatar but for the cover banner.
+    """
+    return _upload_profile_photo(
+        request,
+        kind='cover',
+        folder='stylebook/covers',
+        field_name='cover_url',
+    )
+
+
+def _upload_profile_photo(request, *, kind, folder, field_name):
+    """
+    Shared logic for avatar + cover uploads.
+
+    Expects POST body: {"image_data": "data:image/png;base64,iVBORw..."}
+    Returns JSON: {"url": "<cloudinary_url>"} on success
+    """
+    image_data = request.POST.get('image_data', '')
+    if not image_data:
+        return JsonResponse({'error': 'No image data provided.'}, status=400)
+
+    # Strip the "data:image/png;base64," prefix if present
+    if ',' in image_data:
+        image_data = image_data.split(',', 1)[1]
+
+    try:
+        binary = base64.b64decode(image_data)
+    except Exception:
+        return JsonResponse({'error': 'Invalid base64 image data.'}, status=400)
+
+    # Upload to Cloudinary
+    try:
+        result = cloudinary.uploader.upload(
+            io.BytesIO(binary),
+            folder=folder,
+            public_id=f'{kind}_{request.user.id}',
+            overwrite=True,
+            resource_type='image',
+        )
+        url = result.get('secure_url')
+    except Exception as e:
+        return JsonResponse({'error': f'Cloudinary upload failed: {e}'}, status=502)
+
+    if not url:
+        return JsonResponse({'error': 'No URL returned from Cloudinary.'}, status=502)
+
+    # Save URL to profile
+    profile, _ = MasterProfile.objects.get_or_create(user=request.user)
+    setattr(profile, field_name, url)
+    profile.save(update_fields=[field_name])
+
+    return JsonResponse({'url': url})
+
 
 def _safe_int(value, allow_none=False):
     """Parse string → int. Returns 0 (or None if allow_none) on failure."""
