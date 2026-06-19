@@ -108,28 +108,108 @@ def profile_view(request, username):
         'experience_items': experience_items,
     })
 
-
 @login_required
 def edit_profile(request):
-    if request.method == 'POST':
-        profile = request.user.profile
+    """
+    GET  — render the edit form
+    POST — save all profile fields, then redirect to the public profile
+    """
+    profile = request.user.profile
 
+    if request.method == 'POST':
+        # ── Existing fields ──
         profile.specialty = request.POST.get('specialty', '').strip()
         profile.bio       = request.POST.get('bio', '').strip()
         profile.skills    = request.POST.get('skills', '').strip()
-        profile.ig_handle = request.POST.get('ig_handle', '').strip()
+        profile.ig_handle = request.POST.get('ig_handle', '').strip().lstrip('@')
         profile.location  = request.POST.get('location', '').strip()
 
-        years = request.POST.get('years_exp', '0')
-        try:
-            profile.years_exp = int(years)
-        except ValueError:
-            profile.years_exp = 0
+        # ── New: contact ──
+        profile.phone     = request.POST.get('phone', '').strip()
+
+        # ── New: studio ──
+        profile.studio_name = request.POST.get('studio_name', '').strip()
+
+        # ── Numeric fields with safe parsing ──
+        profile.years_exp         = _safe_int(request.POST.get('years_exp'))
+        profile.years_at_location = _safe_int(request.POST.get('years_at_location'))
+        profile.travel_radius_km  = _safe_int(request.POST.get('travel_radius_km'), allow_none=True)
+        profile.pricing_from      = _safe_decimal(request.POST.get('pricing_from'))
+
+        # ── Boolean ──
+        profile.home_visits = request.POST.get('home_visits') == 'on'
+
+        # ── Languages — comma-separated from frontend chip input ──
+        raw_langs = request.POST.get('languages', '')
+        profile.languages = [l.strip() for l in raw_langs.split(',') if l.strip()]
+
+        # ── Working hours — JSON from per-day grid ──
+        profile.working_hours = _parse_working_hours(request.POST)
 
         profile.save()
         messages.success(request, 'Profile updated!')
+        return redirect('profile', username=request.user.username)
 
-    return redirect('profile', username=request.user.username)
+# GET — render the edit form
+    days = [
+        ('mon', 'Monday'),
+        ('tue', 'Tuesday'),
+        ('wed', 'Wednesday'),
+        ('thu', 'Thursday'),
+        ('fri', 'Friday'),
+        ('sat', 'Saturday'),
+        ('sun', 'Sunday'),
+    ]
+    return render(request, 'edit_profile.html', {
+        'active':  'profile',
+        'profile': profile,
+        'working_hours': profile.get_working_hours(),
+        'languages_str': ', '.join(profile.languages),
+        'days': days,
+    })
+
+
+# ── Helpers for safe parsing ────────────────────────────
+
+def _safe_int(value, allow_none=False):
+    """Parse string → int. Returns 0 (or None if allow_none) on failure."""
+    if value is None or value == '':
+        return None if allow_none else 0
+    try:
+        return int(value)
+    except (ValueError, TypeError):
+        return None if allow_none else 0
+
+
+def _safe_decimal(value):
+    """Parse string → Decimal. Returns None on failure (for nullable money fields)."""
+    if value is None or value == '':
+        return None
+    try:
+        from decimal import Decimal, InvalidOperation
+        return Decimal(value)
+    except (InvalidOperation, ValueError):
+        return None
+
+
+def _parse_working_hours(post_data):
+    """
+    Read the 7-day grid from POST data and build the JSON structure.
+    Form sends fields like:
+        mon_open, mon_close, mon_closed (checkbox)
+        tue_open, tue_close, tue_closed
+        ...
+    """
+    days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+    hours = {}
+    for d in days:
+        closed = post_data.get(f'{d}_closed') == 'on'
+        hours[d] = {
+            'open':   post_data.get(f'{d}_open', '09:00'),
+            'close':  post_data.get(f'{d}_close', '18:00'),
+            'closed': closed,
+        }
+    return hours
 
 
 @login_required

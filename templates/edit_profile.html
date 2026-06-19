@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load static %}
+{% load dict_filters %}
+
+
+{% block title %}Edit profile — StyleBook{% endblock %}
+{% block page_title %}Edit your profile{% endblock %}
+{% block page_sub %}Tell potential clients about you{% endblock %}
+
+{% block content %}
+
+<form method="POST" action="{% url 'profile_edit' %}" class="max-w-3xl">
+  {% csrf_token %}
+
+  <!-- ─── Basic info ─────────────────────────── -->
+  <p class="section-title">Basic info</p>
+  <div class="card mb-5 space-y-4">
+
+    <div>
+      <label class="form-label" for="specialty">Specialty <span class="text-red-500">*</span></label>
+      <select class="form-input" id="specialty" name="specialty" required>
+        <option value="">Select your specialty</option>
+        <option value="Barber"          {% if profile.specialty == 'Barber' %}selected{% endif %}>Barber</option>
+        <option value="Hair Stylist"    {% if profile.specialty == 'Hair Stylist' %}selected{% endif %}>Hair Stylist</option>
+        <option value="Nail Master"     {% if profile.specialty == 'Nail Master' %}selected{% endif %}>Nail Master</option>
+        <option value="Makeup Artist"   {% if profile.specialty == 'Makeup Artist' %}selected{% endif %}>Makeup Artist</option>
+        <option value="Tattoo Artist"   {% if profile.specialty == 'Tattoo Artist' %}selected{% endif %}>Tattoo Artist</option>
+        <option value="Lash Artist"     {% if profile.specialty == 'Lash Artist' %}selected{% endif %}>Lash Artist</option>
+        <option value="Brow Artist"     {% if profile.specialty == 'Brow Artist' %}selected{% endif %}>Brow Artist</option>
+        <option value="Esthetician"     {% if profile.specialty == 'Esthetician' %}selected{% endif %}>Esthetician</option>
+        <option value="Massage Therapist" {% if profile.specialty == 'Massage Therapist' %}selected{% endif %}>Massage Therapist</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="form-label" for="years_exp">Years of experience <span class="text-red-500">*</span></label>
+        <input class="form-input" type="number" id="years_exp" name="years_exp"
+               min="0" max="60" required value="{{ profile.years_exp }}">
+      </div>
+      <div>
+        <label class="form-label" for="years_at_location">Years at current location</label>
+        <input class="form-input" type="number" id="years_at_location" name="years_at_location"
+               min="0" max="60" value="{{ profile.years_at_location }}">
+      </div>
+    </div>
+
+    <div>
+      <label class="form-label" for="location">Location <span class="text-red-500">*</span></label>
+      <input class="form-input" type="text" id="location" name="location"
+             placeholder="City, State / Country" required value="{{ profile.location }}">
+    </div>
+
+    <div>
+      <label class="form-label" for="studio_name">Studio / shop name (optional)</label>
+      <input class="form-input" type="text" id="studio_name" name="studio_name"
+             placeholder="e.g. Iron & Comb Barbershop" value="{{ profile.studio_name }}">
+    </div>
+
+    <div>
+      <label class="form-label" for="bio">Bio <span class="text-red-500">*</span></label>
+      <textarea class="form-input" id="bio" name="bio" rows="4" required
+                placeholder="Tell clients about your style, training, and what makes your work unique.">{{ profile.bio }}</textarea>
+    </div>
+  </div>
+
+  <!-- ─── Contact ─────────────────────────────── -->
+  <p class="section-title">Contact</p>
+  <div class="card mb-5 space-y-4">
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="form-label" for="phone">Phone <span class="text-red-500">*</span></label>
+        <input class="form-input" type="tel" id="phone" name="phone"
+               placeholder="+1 555 123 4567" required value="{{ profile.phone }}">
+      </div>
+      <div>
+        <label class="form-label" for="ig_handle">Instagram handle</label>
+        <input class="form-input" type="text" id="ig_handle" name="ig_handle"
+               placeholder="yourname (without @)" value="{{ profile.ig_handle }}">
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Services & pricing ──────────────────── -->
+  <p class="section-title">Services & pricing</p>
+  <div class="card mb-5 space-y-4">
+
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="form-label" for="pricing_from">Starting price ($)</label>
+        <input class="form-input" type="number" id="pricing_from" name="pricing_from"
+               step="0.01" min="0" placeholder="50.00"
+               value="{% if profile.pricing_from %}{{ profile.pricing_from }}{% endif %}">
+      </div>
+      <div>
+        <label class="form-label" for="travel_radius_km">Travel radius (km)</label>
+        <input class="form-input" type="number" id="travel_radius_km" name="travel_radius_km"
+               min="0" placeholder="10"
+               value="{% if profile.travel_radius_km %}{{ profile.travel_radius_km }}{% endif %}">
+      </div>
+    </div>
+
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" name="home_visits"
+             class="w-4 h-4 rounded border-cream-border"
+             {% if profile.home_visits %}checked{% endif %}>
+      <span class="text-sm text-ink">I offer home visits / mobile service</span>
+    </label>
+  </div>
+
+  <!-- ─── Languages (chip-tag input) ──────────── -->
+  <p class="section-title">Languages spoken</p>
+  <div class="card mb-5">
+    <label class="form-label" for="langInput">Add languages — press Enter or comma to confirm</label>
+    <div id="langChips" class="flex flex-wrap gap-2 mb-2 min-h-[36px] p-2
+                               border border-cream-border rounded-lg bg-white">
+      <!-- Chips rendered by JS -->
+      <input type="text" id="langInput" placeholder="Start typing..."
+             class="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
+             list="langSuggestions">
+    </div>
+    <datalist id="langSuggestions">
+      <option value="English"><option value="Spanish"><option value="French">
+      <option value="Russian"><option value="Arabic"><option value="Mandarin">
+      <option value="Portuguese"><option value="Italian"><option value="German">
+      <option value="Turkish"><option value="Azerbaijani"><option value="Korean">
+      <option value="Japanese"><option value="Hindi"><option value="Urdu">
+      <option value="Vietnamese"><option value="Polish"><option value="Ukrainian">
+    </datalist>
+    <input type="hidden" name="languages" id="languagesHidden" value="{{ languages_str }}">
+  </div>
+
+  <!-- ─── Working hours ───────────────────────── -->
+  <p class="section-title">Working hours</p>
+  <div class="card mb-5">
+    <div class="space-y-2">
+      {% for day_key, day_label in days %}
+        <div class="hours-row grid grid-cols-12 gap-2 items-center">
+          <div class="col-span-3 text-sm font-medium text-ink">{{ day_label }}</div>
+          <div class="col-span-3">
+            <input type="time" name="{{ day_key }}_open"
+                   class="form-input text-sm"
+                   value="{{ working_hours|get_item:day_key|get_item:'open' }}"
+                   {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
+          </div>
+          <div class="col-span-1 text-center text-xs text-muted">to</div>
+          <div class="col-span-3">
+            <input type="time" name="{{ day_key }}_close"
+                   class="form-input text-sm"
+                   value="{{ working_hours|get_item:day_key|get_item:'close' }}"
+                   {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
+          </div>
+          <div class="col-span-2 text-right">
+            <label class="text-xs text-muted inline-flex items-center gap-1 cursor-pointer">
+              <input type="checkbox" name="{{ day_key }}_closed"
+                     class="closed-toggle w-3.5 h-3.5"
+                     {% if working_hours|get_item:day_key|get_item:'closed' %}checked{% endif %}>
+              Closed
+            </label>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ─── Submit ──────────────────────────────── -->
+  <div class="flex gap-3">
+    <button type="submit" class="btn-gold flex-1 justify-center py-3">Save profile</button>
+    <a href="{% url 'profile' username=user.username %}"
+       class="btn-ghost flex-1 justify-center py-3">Cancel</a>
+  </div>
+
+</form>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ════════════════════════════════════════════
+  // Chip-tag language input
+  // ════════════════════════════════════════════
+  (function() {
+    const wrap    = document.getElementById('langChips');
+    const input   = document.getElementById('langInput');
+    const hidden  = document.getElementById('languagesHidden');
+
+    let langs = hidden.value
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    function render() {
+      // Remove all existing chips (but keep the input)
+      wrap.querySelectorAll('.lang-chip').forEach(c => c.remove());
+      // Add chips in reverse so they appear in order before the input
+      langs.forEach((l, i) => {
+        const chip = document.createElement('span');
+        chip.className = 'lang-chip inline-flex items-center gap-1.5 px-2.5 py-1 bg-ink ' +
+                         'text-white text-xs rounded-full';
+        chip.innerHTML = `
+          ${l}
+          <button type="button" data-i="${i}" class="text-white/70 hover:text-white">&times;</button>
+        `;
+        wrap.insertBefore(chip, input);
+      });
+      hidden.value = langs.join(', ');
+    }
+
+    function addLang(value) {
+      const v = value.trim();
+      if (!v) return;
+      if (langs.includes(v)) return;   // no duplicates
+      langs.push(v);
+      render();
+    }
+
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        addLang(input.value);
+        input.value = '';
+      } else if (e.key === 'Backspace' && !input.value && langs.length) {
+        langs.pop();
+        render();
+      }
+    });
+
+    // Click on chip × removes it
+    wrap.addEventListener('click', e => {
+      if (e.target.tagName === 'BUTTON' && e.target.dataset.i !== undefined) {
+        langs.splice(parseInt(e.target.dataset.i), 1);
+        render();
+      }
+    });
+
+    render();
+  })();
+
+  // ════════════════════════════════════════════
+  // Working hours — "Closed" toggle disables time inputs
+  // ════════════════════════════════════════════
+  document.querySelectorAll('.closed-toggle').forEach(cb => {
+    cb.addEventListener('change', e => {
+      const row = e.target.closest('.hours-row');
+      row.querySelectorAll('input[type="time"]').forEach(t => {
+        t.disabled = e.target.checked;
+      });
+    });
+  });
+</script>
+{% endblock %}
