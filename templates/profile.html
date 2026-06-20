@@ -30,9 +30,9 @@
 <!-- ═════════════════════════════════════════════════ -->
 <div class="card p-0 overflow-hidden mb-6">
 
-  <!-- Cover banner (16:9, inside page padding via parent .card) -->
-  <div class="relative w-full bg-gradient-to-br from-cream to-cream-border"
-       style="aspect-ratio: 16 / 9; max-height: 280px;">
+  <!-- Cover banner — fixed height, NO aspect-ratio (was making it too tall) -->
+  <div class="relative w-full bg-gradient-to-br from-cream to-cream-border
+              h-40 sm:h-48 md:h-56">
     {% if profile_user.profile.cover_url %}
       <img src="{{ profile_user.profile.cover_url }}"
            alt="Cover" class="absolute inset-0 w-full h-full object-cover">
@@ -43,8 +43,9 @@
   <div class="px-6 pb-6">
 
     <!-- Avatar — overlaps the cover by -mt-12 -->
-    <div class="flex items-end justify-between -mt-12 mb-4">
-      <div class="w-24 h-24 rounded-full overflow-hidden bg-gold flex items-center justify-center
+<!-- Avatar — overlaps the cover by -mt-14 -->
+    <div class="flex items-end justify-between -mt-14 mb-4">
+            <div class="w-24 h-24 rounded-full overflow-hidden bg-gold flex items-center justify-center
                   text-white font-semibold text-2xl border-4 border-white shadow-md">
         {% if profile_user.profile.avatar_url %}
           <img src="{{ profile_user.profile.avatar_url }}"
