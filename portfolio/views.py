@@ -174,12 +174,22 @@ def edit_profile(request):
         ('sat', 'Saturday'),
         ('sun', 'Sunday'),
     ]
+
+    # Which tab to show — defaults to 'basic'
+    tab = request.GET.get('tab', 'basic')
+    if tab not in ('basic', 'experience', 'certificates', 'honors'):
+        tab = 'basic'
+
     return render(request, 'edit_profile.html', {
-        'active':  'profile',
-        'profile': profile,
-        'working_hours': profile.get_working_hours(),
-        'languages_str': ', '.join(profile.languages),
-        'days': days,
+        'active':         'profile',
+        'profile':        profile,
+        'working_hours':  profile.get_working_hours(),
+        'languages_str':  ', '.join(profile.languages),
+        'days':           days,
+        'tab':            tab,
+        'experiences':    profile.experiences.all(),
+        'certificates':   profile.certificates.all(),
+        'honors':         profile.honors.all(),
     })
 
 
