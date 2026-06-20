@@ -25,146 +25,201 @@
 
 {% block content %}
 
-<!-- Inline CSS to force the layout — overrides any base.html collisions -->
 <style>
-  .hero-card        { padding: 0 !important; overflow: hidden; }
-  .cover-banner     { position: relative; width: 100%; height: 220px !important;
-                      min-height: 220px !important; max-height: 220px !important;
-                      background: linear-gradient(135deg, #f3eee8, #e5e3dc);
-                      overflow: hidden; }
-  .cover-banner img { position: absolute; inset: 0; width: 100%; height: 100%;
-                      object-fit: cover; display: block; }
-  .hero-body        { padding: 0 24px 24px 24px; }
-  .avatar-row       { display: flex; align-items: flex-end; justify-content: space-between;
-                      margin-top: -56px !important; margin-bottom: 16px; }
-  .avatar-circle    { width: 112px; height: 112px; border-radius: 50%;
-                      overflow: hidden; background: #C9A96E;
-                      display: flex; align-items: center; justify-content: center;
-                      color: white; font-weight: 600; font-size: 30px;
-                      border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                      flex-shrink: 0; }
-  .avatar-circle img{ width: 100%; height: 100%; object-fit: cover; display: block; }
-  .stats-row        { display: flex; gap: 24px; padding-bottom: 8px; }
+  .sb-hero {
+    background: #fff;
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+  .sb-hero-cover {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(135deg, #f3eee8, #e5e3dc);
+    overflow: hidden;
+  }
+  .sb-hero-cover img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .sb-hero-body {
+    padding: 0 24px 24px 24px;
+  }
+  .sb-hero-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: -56px;
+    margin-bottom: 16px;
+  }
+  .sb-hero-avatar {
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #C9A96E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 30px;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+  .sb-hero-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .sb-hero-stats {
+    display: flex;
+    gap: 24px;
+    padding-bottom: 8px;
+  }
+  .sb-hero-stat {
+    text-align: center;
+  }
+  .sb-hero-stat-num {
+    font-size: 20px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+  .sb-hero-stat-label {
+    font-size: 11px;
+    color: rgba(15, 14, 13, 0.45);
+    margin-top: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .sb-hero-name {
+    font-size: 24px;
+    font-weight: 600;
+    color: #0F0E0D;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  .sb-hero-specialty {
+    display: inline-block;
+    padding: 4px 10px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #B45309;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 12px;
+    vertical-align: middle;
+  }
+  .sb-hero-location {
+    font-size: 14px;
+    color: rgba(15, 14, 13, 0.5);
+    margin-top: 4px;
+  }
+  .sb-hero-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .sb-hero-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #F5EFE6;
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    border-radius: 999px;
+    font-size: 12px;
+    color: #0F0E0D;
+    text-decoration: none;
+  }
+  .sb-hero-chip.gold {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: transparent;
+    color: #B45309;
+    font-weight: 500;
+  }
 </style>
 
-<!-- ═════════════════════════════════════════════════ -->
-<!-- HERO CARD                                            -->
-<!-- ═════════════════════════════════════════════════ -->
-<div class="card hero-card mb-6">
-
-  <!-- Cover banner -->
-  <div class="cover-banner">
+<!-- HERO -->
+<div class="sb-hero">
+  <div class="sb-hero-cover">
     {% if profile_user.profile.cover_url %}
       <img src="{{ profile_user.profile.cover_url }}" alt="Cover">
     {% endif %}
   </div>
 
-  <!-- Profile header -->
-  <div class="hero-body">
-
-    <!-- Avatar + stats -->
-    <div class="avatar-row">
-
-      <div class="avatar-circle">
+  <div class="sb-hero-body">
+    <div class="sb-hero-row">
+      <div class="sb-hero-avatar">
         {% if profile_user.profile.avatar_url %}
-          <img src="{{ profile_user.profile.avatar_url }}"
-               alt="{{ profile_user.username }}">
+          <img src="{{ profile_user.profile.avatar_url }}" alt="{{ profile_user.username }}">
         {% else %}
           {{ profile_user.username|slice:":2"|upper }}
         {% endif %}
       </div>
 
-      <div class="stats-row">
-        <div class="text-center">
-          <p class="text-xl font-semibold text-ink">{{ portfolio_count }}</p>
-          <p class="text-[11px] text-muted mt-0.5 uppercase tracking-wide">Works</p>
+      <div class="sb-hero-stats">
+        <div class="sb-hero-stat">
+          <div class="sb-hero-stat-num">{{ portfolio_count }}</div>
+          <div class="sb-hero-stat-label">Works</div>
         </div>
-        <div class="text-center">
-          <p class="text-xl font-semibold text-ink">{{ client_count }}</p>
-          <p class="text-[11px] text-muted mt-0.5 uppercase tracking-wide">Clients</p>
+        <div class="sb-hero-stat">
+          <div class="sb-hero-stat-num">{{ client_count }}</div>
+          <div class="sb-hero-stat-label">Clients</div>
         </div>
-        <div class="text-center">
-          <p class="text-xl font-semibold text-ink">
-            {{ profile_user.profile.years_exp|default:'—' }}
-          </p>
-          <p class="text-[11px] text-muted mt-0.5 uppercase tracking-wide">Years</p>
+        <div class="sb-hero-stat">
+          <div class="sb-hero-stat-num">{{ profile_user.profile.years_exp|default:'—' }}</div>
+          <div class="sb-hero-stat-label">Years</div>
         </div>
       </div>
-
     </div>
 
-    <!-- Name + specialty -->
-    <div class="flex flex-wrap items-center gap-2 mb-1">
-      <h2 class="text-2xl font-semibold text-ink">
-        {{ profile_user.get_full_name|default:profile_user.username }}
-      </h2>
+    <div>
+      <span class="sb-hero-name">{{ profile_user.get_full_name|default:profile_user.username }}</span>
       {% if profile_user.profile.specialty %}
-        <span class="px-2.5 py-0.5 bg-gold-light text-gold-dark text-xs font-medium rounded-full">
-          {{ profile_user.profile.get_specialty_display }}
-        </span>
+        <span class="sb-hero-specialty">{{ profile_user.profile.get_specialty_display }}</span>
       {% endif %}
     </div>
 
-    <!-- Studio · Location -->
     {% if profile_user.profile.studio_name or profile_user.profile.location %}
-      <p class="text-sm text-muted mb-2">
+      <p class="sb-hero-location">
         {% if profile_user.profile.studio_name %}{{ profile_user.profile.studio_name }}{% endif %}
         {% if profile_user.profile.studio_name and profile_user.profile.location %} · {% endif %}
         {% if profile_user.profile.location %}{{ profile_user.profile.location }}{% endif %}
       </p>
     {% endif %}
 
-    <!-- Quick action chips -->
-    <div class="flex flex-wrap items-center gap-2 mt-3">
+    <div class="sb-hero-chips">
       {% if profile_user.profile.phone %}
-        <a href="tel:{{ profile_user.profile.phone }}"
-           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream
-                  border border-cream-border rounded-full text-xs text-ink
-                  hover:border-ink transition-all">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-            <path d="M3 4.5a1.5 1.5 0 011.5-1.5h1.4a1 1 0 011 .8l.5 2.4a1 1 0 01-.3.9l-1 1c.8 1.6 2 2.8 3.6 3.6l1-1a1 1 0 01.9-.3l2.4.5a1 1 0 01.8 1V13a1.5 1.5 0 01-1.5 1.5C7.8 14.5 1.5 8.2 1.5 4.5 1.5 3.7 2.2 3 3 3z"
-                  fill="currentColor"/>
-          </svg>
-          {{ profile_user.profile.phone }}
+        <a href="tel:{{ profile_user.profile.phone }}" class="sb-hero-chip">
+          📞 {{ profile_user.profile.phone }}
         </a>
       {% endif %}
-
       {% if profile_user.profile.ig_handle %}
-        <a href="https://instagram.com/{{ profile_user.profile.ig_handle }}"
-           target="_blank"
-           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream
-                  border border-cream-border rounded-full text-xs text-ink
-                  hover:border-ink transition-all">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/>
-            <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/>
-            <circle cx="11.5" cy="4.5" r="0.7" fill="currentColor"/>
-          </svg>
-          @{{ profile_user.profile.ig_handle }}
+        <a href="https://instagram.com/{{ profile_user.profile.ig_handle }}" target="_blank" class="sb-hero-chip">
+          📷 @{{ profile_user.profile.ig_handle }}
         </a>
       {% endif %}
-
       {% if profile_user.profile.pricing_from %}
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold-light
-                     text-gold-dark rounded-full text-xs font-medium">
-          From ${{ profile_user.profile.pricing_from }}
-        </span>
+        <span class="sb-hero-chip gold">From ${{ profile_user.profile.pricing_from }}</span>
       {% endif %}
-
       {% if profile_user.profile.home_visits %}
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream
-                     border border-cream-border rounded-full text-xs text-ink">
+        <span class="sb-hero-chip">
           🏠 Home visits
-          {% if profile_user.profile.travel_radius_km %}
-            · {{ profile_user.profile.travel_radius_km }} km
-          {% endif %}
+          {% if profile_user.profile.travel_radius_km %} · {{ profile_user.profile.travel_radius_km }} km{% endif %}
         </span>
       {% endif %}
     </div>
-
   </div>
 </div>
-
 
 <!-- ═════════════════════════════════════════════════ -->
 <!-- TWO-COLUMN BODY                                     -->
