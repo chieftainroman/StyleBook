@@ -100,6 +100,16 @@ def profile_view(request, username):
             'period': f'Member since {profile_user.date_joined.strftime("%B %Y")}',
         })
 
+    days = [
+        ('mon', 'Monday'),
+        ('tue', 'Tuesday'),
+        ('wed', 'Wednesday'),
+        ('thu', 'Thursday'),
+        ('fri', 'Friday'),
+        ('sat', 'Saturday'),
+        ('sun', 'Sunday'),
+    ]
+
     return render(request, 'profile.html', {
         'active':           'profile',
         'profile_user':     profile_user,
@@ -108,6 +118,7 @@ def profile_view(request, username):
         'portfolio_count':  portfolio_count,
         'client_count':     client_count,
         'experience_items': experience_items,
+        'days':             days,
     })
 
 @login_required

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load dict_filters %}
 
 {% block title %}{{ profile_user.username }} — StyleBook{% endblock %}
 {% block page_title %}{% if is_own_profile %}My profile{% else %}{{ profile_user.username }}{% endif %}{% endblock %}
@@ -16,296 +17,319 @@
       </svg>
       Share profile
     </button>
-    <button onclick="toggleEditProfile()" class="btn-gold">
+    <a href="{% url 'profile_edit' %}" class="btn-gold">
       Edit profile
-    </button>
+    </a>
   {% endif %}
 {% endblock %}
 
 {% block content %}
 
-<!-- Hero -->
-<div class="card mb-6">
-  <div class="flex flex-col sm:flex-row items-start gap-6">
-    {% if profile_user.profile.cover_url %}
-  <div class="w-full bg-cream-border" style="aspect-ratio: 16 / 9;">
-    <img src="{{ profile_user.profile.cover_url }}"
-         class="w-full h-full object-cover" alt="Cover">
-  </div>
-  {% endif %}
-    <div class="w-20 h-20 rounded-full overflow-hidden bg-gold flex items-center justify-center
-                text-white font-semibold text-2xl">
-      {% if profile_user.profile.avatar_url %}
-        <img src="{{ profile_user.profile.avatar_url }}"
-            alt="{{ profile_user.username }}"
-            class="w-full h-full object-cover">
-      {% else %}
-        {{ profile_user.username|slice:":2"|upper }}
-      {% endif %}
-    </div>
+<!-- ═════════════════════════════════════════════════ -->
+<!-- HERO CARD — cover banner + avatar + name + stats   -->
+<!-- ═════════════════════════════════════════════════ -->
+<div class="card p-0 overflow-hidden mb-6">
 
-    <!-- Info -->
-    <div class="flex-1 min-w-0">
-      <div class="flex flex-wrap items-center gap-2 mb-1">
-        <h2 class="text-xl font-semibold text-ink">{{ profile_user.username }}</h2>
-        {% if profile_user.profile.specialty %}
-          <span class="px-2.5 py-0.5 bg-gold-light text-gold-dark text-xs
-                       font-medium rounded-full">
-            {{ profile_user.profile.get_specialty_display }}
-          </span>
+  <!-- Cover banner (16:9, inside page padding via parent .card) -->
+  <div class="relative w-full bg-gradient-to-br from-cream to-cream-border"
+       style="aspect-ratio: 16 / 9; max-height: 280px;">
+    {% if profile_user.profile.cover_url %}
+      <img src="{{ profile_user.profile.cover_url }}"
+           alt="Cover" class="absolute inset-0 w-full h-full object-cover">
+    {% endif %}
+  </div>
+
+  <!-- Profile header (avatar overlapping cover, info, stats) -->
+  <div class="px-6 pb-6">
+
+    <!-- Avatar — overlaps the cover by -mt-12 -->
+    <div class="flex items-end justify-between -mt-12 mb-4">
+      <div class="w-24 h-24 rounded-full overflow-hidden bg-gold flex items-center justify-center
+                  text-white font-semibold text-2xl border-4 border-white shadow-md">
+        {% if profile_user.profile.avatar_url %}
+          <img src="{{ profile_user.profile.avatar_url }}"
+               alt="{{ profile_user.username }}"
+               class="w-full h-full object-cover">
+        {% else %}
+          {{ profile_user.username|slice:":2"|upper }}
         {% endif %}
       </div>
 
-      {% if profile_user.profile.years_exp %}
-        <p class="text-sm text-muted mb-2">
-          {{ profile_user.profile.years_exp }} years experience
-        </p>
-      {% endif %}
-
-      {% if profile_user.profile.bio %}
-        <p class="text-sm text-ink leading-relaxed mb-3 max-w-xl">
-          {{ profile_user.profile.bio }}
-        </p>
-      {% endif %}
-
-      {% if profile_user.profile.skills %}
-        <div class="flex flex-wrap gap-2">
-          {% for skill in profile_user.profile.skills.split %}
-            <span class="px-2.5 py-1 bg-cream border border-cream-border
-                         text-xs text-muted rounded-full">
-              {{ skill }}
-            </span>
-          {% endfor %}
+      <!-- Stats (right side, aligned to avatar bottom) -->
+      <div class="flex gap-6 pb-2">
+        <div class="text-center">
+          <p class="text-xl font-semibold text-ink">{{ portfolio_count }}</p>
+          <p class="text-[11px] text-muted mt-0.5 uppercase tracking-wide">Works</p>
         </div>
+        <div class="text-center">
+          <p class="text-xl font-semibold text-ink">{{ client_count }}</p>
+          <p class="text-[11px] text-muted mt-0.5 uppercase tracking-wide">Clients</p>
+        </div>
+        <div class="text-center">
+          <p class="text-xl font-semibold text-ink">
+            {{ profile_user.profile.years_exp|default:'—' }}
+          </p>
+          <p class="text-[11px] text-muted mt-0.5 uppercase tracking-wide">Years</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Name + specialty + studio + location -->
+    <div class="flex flex-wrap items-center gap-2 mb-1">
+      <h2 class="text-2xl font-semibold text-ink">
+        {{ profile_user.get_full_name|default:profile_user.username }}
+      </h2>
+      {% if profile_user.profile.specialty %}
+        <span class="px-2.5 py-0.5 bg-gold-light text-gold-dark text-xs font-medium rounded-full">
+          {{ profile_user.profile.get_specialty_display }}
+        </span>
       {% endif %}
     </div>
 
-    <!-- Stats -->
-    <div class="flex gap-6 flex-shrink-0">
-      <div class="text-center">
-        <p class="text-2xl font-semibold text-ink">{{ portfolio_count }}</p>
-        <p class="text-xs text-muted mt-0.5">Works</p>
-      </div>
-      <div class="text-center">
-        <p class="text-2xl font-semibold text-ink">{{ client_count }}</p>
-        <p class="text-xs text-muted mt-0.5">Clients</p>
-      </div>
-      <div class="text-center">
-        <p class="text-2xl font-semibold text-ink">
-          {{ profile_user.profile.years_exp|default:'—' }}
-        </p>
-        <p class="text-xs text-muted mt-0.5">Years</p>
-      </div>
+    {% if profile_user.profile.studio_name or profile_user.profile.location %}
+      <p class="text-sm text-muted mb-2">
+        {% if profile_user.profile.studio_name %}
+          {{ profile_user.profile.studio_name }}
+        {% endif %}
+        {% if profile_user.profile.studio_name and profile_user.profile.location %} · {% endif %}
+        {% if profile_user.profile.location %}
+          {{ profile_user.profile.location }}
+        {% endif %}
+      </p>
+    {% endif %}
+
+    <!-- Quick action row -->
+    <div class="flex flex-wrap items-center gap-2 mt-3">
+      {% if profile_user.profile.phone %}
+        <a href="tel:{{ profile_user.profile.phone }}"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream
+                  border border-cream-border rounded-full text-xs text-ink
+                  hover:border-ink transition-all">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M3 4.5a1.5 1.5 0 011.5-1.5h1.4a1 1 0 011 .8l.5 2.4a1 1 0 01-.3.9l-1 1c.8 1.6 2 2.8 3.6 3.6l1-1a1 1 0 01.9-.3l2.4.5a1 1 0 01.8 1V13a1.5 1.5 0 01-1.5 1.5C7.8 14.5 1.5 8.2 1.5 4.5 1.5 3.7 2.2 3 3 3z"
+                  fill="currentColor"/>
+          </svg>
+          {{ profile_user.profile.phone }}
+        </a>
+      {% endif %}
+
+      {% if profile_user.profile.ig_handle %}
+        <a href="https://instagram.com/{{ profile_user.profile.ig_handle }}"
+           target="_blank"
+           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream
+                  border border-cream-border rounded-full text-xs text-ink
+                  hover:border-ink transition-all">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/>
+            <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+            <circle cx="11.5" cy="4.5" r="0.7" fill="currentColor"/>
+          </svg>
+          @{{ profile_user.profile.ig_handle }}
+        </a>
+      {% endif %}
+
+      {% if profile_user.profile.pricing_from %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold-light
+                     text-gold-dark rounded-full text-xs font-medium">
+          From ${{ profile_user.profile.pricing_from }}
+        </span>
+      {% endif %}
+
+      {% if profile_user.profile.home_visits %}
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-cream
+                     border border-cream-border rounded-full text-xs text-ink">
+          🏠 Home visits
+          {% if profile_user.profile.travel_radius_km %}
+            · {{ profile_user.profile.travel_radius_km }} km
+          {% endif %}
+        </span>
+      {% endif %}
     </div>
 
   </div>
 </div>
 
-<!-- Edit panel -->
-{% if is_own_profile %}
-  <div id="editPanel" class="hidden mb-6">
-    <div class="card">
-      <p class="section-title">Edit your profile</p>
-      <form method="POST" action="{% url 'profile_edit' %}">
-        {% csrf_token %}
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="form-label" for="specialty">Specialty</label>
-            <select class="form-input" id="specialty" name="specialty">
-              <option value="Barber"
-                {% if profile_user.profile.specialty == 'Barber' %}selected{% endif %}>
-                Barber
-              </option>
-              <option value="Hair Stylist"
-                {% if profile_user.profile.specialty == 'Hair Stylist' %}selected{% endif %}>
-                Hair Stylist
-              </option>
-              <option value="Nail Master"
-                {% if profile_user.profile.specialty == 'Nail Master' %}selected{% endif %}>
-                Nail Master
-              </option>
-              <option value="Makeup Artist"
-                {% if profile_user.profile.specialty == 'Makeup Artist' %}selected{% endif %}>
-                Makeup Artist
-              </option>
-              <option value="Other"
-                {% if profile_user.profile.specialty == 'Other' %}selected{% endif %}>
-                Other
-              </option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label" for="years_exp">Years of experience</label>
-            <input class="form-input" type="number" id="years_exp" name="years_exp"
-                   min="0" max="50"
-                   value="{{ profile_user.profile.years_exp|default:'' }}"
-                   placeholder="e.g. 7">
-          </div>
-        </div>
-
-        <div class="mb-4">
-          <label class="form-label" for="bio">Bio</label>
-          <textarea class="form-input" id="bio" name="bio" rows="3"
-                    placeholder="Tell clients about your craft...">{{ profile_user.profile.bio|default:'' }}</textarea>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div>
-            <label class="form-label" for="skills">Skills (comma separated)</label>
-            <input class="form-input" type="text" id="skills" name="skills"
-                   placeholder="Skin fade, Beard design, Balayage"
-                   value="{{ profile_user.profile.skills|default:'' }}">
-          </div>
-          <div>
-            <label class="form-label" for="ig_handle">Instagram handle</label>
-            <input class="form-input" type="text" id="ig_handle" name="ig_handle"
-                   placeholder="@alex.cuts"
-                   value="{{ profile_user.profile.ig_handle|default:'' }}">
-          </div>
-        </div>
-
-        <div class="mb-6">
-          <label class="form-label" for="location">Location</label>
-          <input class="form-input" type="text" id="location" name="location"
-                 placeholder="e.g. Brooklyn, NY"
-                 value="{{ profile_user.profile.location|default:'' }}">
-        </div>
-
-        <div class="flex items-center justify-end gap-3">
-          <button type="button" onclick="toggleEditProfile()"
-                  class="btn-ghost">
-            Cancel
-          </button>
-          <button type="submit" class="btn-gold">
-            Save changes
-          </button>
-        </div>
-
-      </form>
-    </div>
-  </div>
-{% endif %}
-
-<!-- Content grid -->
+<!-- ═════════════════════════════════════════════════ -->
+<!-- TWO-COLUMN BODY                                     -->
+<!-- ═════════════════════════════════════════════════ -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-  <!-- Left col: details + experience -->
-  <div class="space-y-4">
+  <!-- ─── LEFT (main, 2/3) ─────────────────────────── -->
+  <div class="lg:col-span-2 space-y-6">
 
-    <div class="card">
-      <p class="section-title">Details</p>
-      <div class="space-y-3">
-
-        <div class="flex items-center justify-between py-2
-                    border-b border-cream-border">
-          <span class="text-xs text-muted">Specialty</span>
-          <span class="text-sm text-ink font-medium">
-            {{ profile_user.profile.get_specialty_display|default:'—' }}
-          </span>
-        </div>
-
-        {% if profile_user.profile.location %}
-          <div class="flex items-center justify-between py-2
-                      border-b border-cream-border">
-            <span class="text-xs text-muted">Location</span>
-            <span class="text-sm text-ink font-medium">
-              {{ profile_user.profile.location }}
-            </span>
-          </div>
-        {% endif %}
-
-        {% if profile_user.profile.ig_handle %}
-          <div class="flex items-center justify-between py-2
-                      border-b border-cream-border">
-            <span class="text-xs text-muted">Instagram</span>
-            <span class="text-sm text-gold font-medium">
-              {{ profile_user.profile.ig_handle }}
-            </span>
-          </div>
-        {% endif %}
-
-        <div class="flex items-center justify-between py-2">
-          <span class="text-xs text-muted">Member since</span>
-          <span class="text-sm text-ink font-medium">
-            {{ profile_user.date_joined|date:"M Y" }}
-          </span>
-        </div>
-
-      </div>
-    </div>
-
-    {% if is_own_profile and experience_items %}
+    {% if profile_user.profile.bio %}
       <div class="card">
-        <p class="section-title">Experience</p>
-        <div class="space-y-4">
-          {% for exp in experience_items %}
-            <div class="flex gap-3">
-              <div class="flex flex-col items-center">
-                <div class="w-2 h-2 rounded-full mt-1 flex-shrink-0
-                            {% if forloop.first %}bg-gold{% else %}bg-cream-border{% endif %}">
-                </div>
-                {% if not forloop.last %}
-                  <div class="w-px flex-1 bg-cream-border mt-1"></div>
-                {% endif %}
-              </div>
-              <div class="pb-4">
-                <p class="text-sm font-medium text-ink">{{ exp.title }}</p>
-                <p class="text-xs text-muted mt-0.5">{{ exp.period }}</p>
-              </div>
-            </div>
+        <p class="section-title">About</p>
+        <p class="text-sm text-ink leading-relaxed whitespace-pre-line">
+          {{ profile_user.profile.bio }}
+        </p>
+      </div>
+    {% endif %}
+
+    {% if profile_user.profile.skills %}
+      <div class="card">
+        <p class="section-title">Skills</p>
+        <div class="flex flex-wrap gap-2">
+          {% for skill in profile_user.profile.skills|cut:" "|stringformat:"s"|slice:":300" %}{% endfor %}
+          {% for skill in profile_user.profile.skills|stringformat:"s"|slice:":300" %}{% endfor %}
+          {% with skills_list=profile_user.profile.skills %}
+            {% for skill in skills_list|slice:":300" %}{% endfor %}
+            {# Skills are comma-separated. Split client-side via the JS below if needed,
+               or use the simple loop on .split below #}
+          {% endwith %}
+          {% for skill in profile_user.profile.skills.split %}
+            <span class="px-3 py-1.5 bg-cream border border-cream-border
+                         text-xs text-ink rounded-full">
+              {{ skill }}
+            </span>
           {% endfor %}
         </div>
       </div>
     {% endif %}
 
-  </div>
-
-  <!-- Right col: recent work grid -->
-  <div class="lg:col-span-2">
-    <div class="flex items-center justify-between mb-4">
-      <p class="section-title mb-0">Recent work</p>
-      {% if portfolio_count > 6 %}
-        <a href="{% url 'portfolio' %}"
-           class="text-xs text-muted hover:text-ink transition-colors">
-          View all {{ portfolio_count }} →
-        </a>
-      {% endif %}
-    </div>
-
-    {% if portfolio_items %}
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {% for item in portfolio_items %}
-          <div class="group">
-            <div class="card p-0 overflow-hidden">
-              <div class="aspect-square overflow-hidden bg-cream">
-                <img src="/media/uploads/{{ item.image }}"
-                     alt="{{ item.service }}"
-                     class="w-full h-full object-cover
-                            group-hover:scale-105 transition-transform duration-300">
-              </div>
-              <div class="p-3">
-                <p class="text-sm font-medium text-ink truncate">
-                  {{ item.service }}
-                </p>
-                <p class="text-xs text-muted mt-0.5">{{ item.date }}</p>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-
-    {% else %}
-      <div class="card flex flex-col items-center justify-center py-16 text-center">
-        <p class="text-sm font-medium text-ink mb-1">No work uploaded yet</p>
-        <p class="text-sm text-muted">Portfolio items will appear here.</p>
-        {% if is_own_profile %}
-          <a href="{% url 'instagram' %}" class="btn-primary mt-4">
-            Upload first work
+    <!-- Recent work -->
+    <div class="card">
+      <div class="flex items-center justify-between mb-4">
+        <p class="section-title mb-0">Recent work</p>
+        {% if portfolio_count > 6 %}
+          <a href="{% url 'portfolio' %}"
+             class="text-xs text-muted hover:text-ink transition-colors">
+            View all {{ portfolio_count }} →
           </a>
         {% endif %}
       </div>
+
+      {% if portfolio_items %}
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {% for item in portfolio_items %}
+            <div class="group">
+              <div class="card p-0 overflow-hidden">
+                <div class="aspect-square overflow-hidden bg-cream">
+                  {% if item.generated_image %}
+                    {% if 'http' in item.generated_image %}
+                      <img src="{{ item.generated_image }}"
+                           alt="{{ item.service }}"
+                           class="w-full h-full object-cover
+                                  group-hover:scale-105 transition-transform duration-300">
+                    {% else %}
+                      <img src="/media/generated/{{ item.generated_image }}"
+                           alt="{{ item.service }}"
+                           class="w-full h-full object-cover
+                                  group-hover:scale-105 transition-transform duration-300">
+                    {% endif %}
+                  {% else %}
+                    <img src="/media/uploads/{{ item.image }}"
+                         alt="{{ item.service }}"
+                         class="w-full h-full object-cover
+                                group-hover:scale-105 transition-transform duration-300">
+                  {% endif %}
+                </div>
+                <div class="p-3">
+                  <p class="text-sm font-medium text-ink truncate">{{ item.service }}</p>
+                  <p class="text-xs text-muted mt-0.5">{{ item.date }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+      {% else %}
+        <div class="flex flex-col items-center justify-center py-12 text-center">
+          <p class="text-sm font-medium text-ink mb-1">No work uploaded yet</p>
+          <p class="text-sm text-muted">Portfolio items will appear here.</p>
+          {% if is_own_profile %}
+            <a href="{% url 'instagram' %}" class="btn-gold mt-4">
+              Upload first work
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- ─── RIGHT (sidebar, 1/3) ─────────────────────── -->
+  <div class="space-y-6">
+
+    <!-- Quick details -->
+    <div class="card">
+      <p class="section-title">Details</p>
+      <dl class="space-y-3 text-sm">
+        <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
+          <dt class="text-xs text-muted uppercase tracking-wide">Specialty</dt>
+          <dd class="text-ink font-medium">
+            {{ profile_user.profile.get_specialty_display|default:'—' }}
+          </dd>
+        </div>
+
+        {% if profile_user.profile.years_exp %}
+          <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
+            <dt class="text-xs text-muted uppercase tracking-wide">Experience</dt>
+            <dd class="text-ink font-medium">{{ profile_user.profile.years_exp }} years</dd>
+          </div>
+        {% endif %}
+
+        {% if profile_user.profile.years_at_location %}
+          <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
+            <dt class="text-xs text-muted uppercase tracking-wide">At current studio</dt>
+            <dd class="text-ink font-medium">
+              {{ profile_user.profile.years_at_location }} year{{ profile_user.profile.years_at_location|pluralize }}
+            </dd>
+          </div>
+        {% endif %}
+
+        {% if profile_user.profile.location %}
+          <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
+            <dt class="text-xs text-muted uppercase tracking-wide">Location</dt>
+            <dd class="text-ink font-medium">{{ profile_user.profile.location }}</dd>
+          </div>
+        {% endif %}
+
+        <div class="flex items-center justify-between py-1.5">
+          <dt class="text-xs text-muted uppercase tracking-wide">Member since</dt>
+          <dd class="text-ink font-medium">{{ profile_user.date_joined|date:"M Y" }}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- Languages -->
+    {% if profile_user.profile.languages %}
+      <div class="card">
+        <p class="section-title">Languages</p>
+        <div class="flex flex-wrap gap-2">
+          {% for lang in profile_user.profile.languages %}
+            <span class="px-3 py-1.5 bg-cream border border-cream-border
+                         text-xs text-ink rounded-full">
+              {{ lang }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
     {% endif %}
+
+    <!-- Working hours -->
+    {% if profile_user.profile.working_hours %}
+      <div class="card">
+        <p class="section-title">Working hours</p>
+        <dl class="space-y-1.5 text-sm">
+          {% for day_key, day_label in days %}
+            {% with day=profile_user.profile.working_hours|get_day:day_key %}
+              <div class="flex items-center justify-between py-1">
+                <dt class="text-xs text-muted uppercase tracking-wide">{{ day_label }}</dt>
+                <dd class="text-ink">
+                  {% if day.closed %}
+                    <span class="text-muted">Closed</span>
+                  {% else %}
+                    {{ day.open }} – {{ day.close }}
+                  {% endif %}
+                </dd>
+              </div>
+            {% endwith %}
+          {% endfor %}
+        </dl>
+      </div>
+    {% endif %}
+
   </div>
 
 </div>
@@ -322,14 +346,6 @@
 
 {% block extra_scripts %}
 <script>
-function toggleEditProfile() {
-  const panel = document.getElementById('editPanel');
-  panel.classList.toggle('hidden');
-  if (!panel.classList.contains('hidden')) {
-    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
 function copyProfileLink() {
   const url = window.location.origin + '/profile/{{ profile_user.username }}/';
   navigator.clipboard.writeText(url).then(() => {
