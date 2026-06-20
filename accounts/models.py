@@ -84,3 +84,104 @@ class MasterProfile(models.Model):
             self.bio,
             self.phone,
         ])
+        
+        
+        
+# ════════════════════════════════════════════════
+# WorkExperience — timeline of a master's job history
+# ════════════════════════════════════════════════
+
+class WorkExperience(models.Model):
+    profile      = models.ForeignKey(MasterProfile, on_delete=models.CASCADE,
+                                     related_name='experiences')
+    title        = models.CharField(max_length=120,
+                                    help_text='e.g. "Senior Barber"')
+    studio_name  = models.CharField(max_length=150, blank=True, default='',
+                                    help_text='e.g. "Iron & Comb Barbershop"')
+    city         = models.CharField(max_length=100, blank=True, default='')
+
+    # ── Dates: month + year only, no day. Stored as 1st of month for sorting. ──
+    start_month  = models.IntegerField()       # 1-12
+    start_year   = models.IntegerField()       # e.g. 2022
+    end_month    = models.IntegerField(null=True, blank=True)
+    end_year     = models.IntegerField(null=True, blank=True)
+    is_current   = models.BooleanField(default=False,
+                                       help_text='I currently work here')
+
+    description  = models.TextField(blank=True, default='')
+
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-is_current', '-end_year', '-end_month',
+                    '-start_year', '-start_month']
+
+    def __str__(self):
+        return f'{self.title} @ {self.studio_name or "—"}'
+
+    def period_display(self):
+        """Human-readable date range: 'Jan 2022 – Present' or 'Jan 2022 – Mar 2025'."""
+        months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+        start = f'{months[self.start_month]} {self.start_year}'
+        if self.is_current:
+            return f'{start} – Present'
+        if self.end_month and self.end_year:
+            end = f'{months[self.end_month]} {self.end_year}'
+            return f'{start} – {end}'
+        return start
+
+
+# ════════════════════════════════════════════════
+# Certificate — formal training / qualification documents
+# ════════════════════════════════════════════════
+
+class Certificate(models.Model):
+    profile      = models.ForeignKey(MasterProfile, on_delete=models.CASCADE,
+                                     related_name='certificates')
+    name         = models.CharField(max_length=200,
+                                    help_text='e.g. "Master Barber Diploma"')
+    institution  = models.CharField(max_length=200,
+                                    help_text='e.g. "NY Barber Academy"')
+    year         = models.IntegerField()
+
+    # ── File hosted on Cloudinary (PDF or image) ──
+    file_url     = models.URLField(max_length=500, blank=True, default='',
+                                   help_text='Cloudinary URL of the cert scan')
+    file_kind    = models.CharField(max_length=10, blank=True, default='',
+                                    help_text='"image" or "pdf"')
+
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-year', '-created_at']
+
+    def __str__(self):
+        return f'{self.name} ({self.year})'
+
+
+# ════════════════════════════════════════════════
+# Honor — awards, recognition, achievements
+# ════════════════════════════════════════════════
+
+class Honor(models.Model):
+    profile      = models.ForeignKey(MasterProfile, on_delete=models.CASCADE,
+                                     related_name='honors')
+    title        = models.CharField(max_length=200,
+                                    help_text='e.g. "Best Barber NYC 2023"')
+    issuer       = models.CharField(max_length=200, blank=True, default='',
+                                    help_text='e.g. "NYC Style Awards"')
+    year         = models.IntegerField()
+
+    # ── Optional image (trophy photo or certificate) ──
+    image_url    = models.URLField(max_length=500, blank=True, default='')
+
+    description  = models.TextField(blank=True, default='')
+
+    created_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-year', '-created_at']
+
+    def __str__(self):
+        return f'{self.title} ({self.year})'

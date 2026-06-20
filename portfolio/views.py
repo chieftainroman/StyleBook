@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
+from accounts.models import Certificate, Honor, WorkExperience
 
 from .models import PortfolioItem
 from .utils import generate_instagram_image           # Pillow fallback
@@ -213,6 +214,79 @@ def upload_cover(request):
         folder='stylebook/covers',
         field_name='cover_url',
     )
+
+
+
+@login_required
+@require_POST
+def upload_certificate_file(request):
+    """
+    Upload a certificate file (PDF or image) to Cloudinary.
+    Expects multipart form data with key 'file'.
+    Returns JSON: {"url": "...", "kind": "image"|"pdf"}.
+    """
+    f = request.FILES.get('file')
+    if not f:
+        return JsonResponse({'error': 'No file provided.'}, status=400)
+
+    # Size check — 5MB max
+    if f.size > 5 * 1024 * 1024:
+        return JsonResponse({'error': 'File too large. Max 5 MB.'}, status=400)
+
+    # Type detection
+    content_type = (f.content_type or '').lower()
+    if content_type == 'application/pdf':
+        kind = 'pdf'
+        resource_type = 'raw'   # PDFs go to Cloudinary as 'raw' files
+    elif content_type.startswith('image/'):
+        kind = 'image'
+        resource_type = 'image'
+    else:
+        return JsonResponse({'error': 'Only PDF or image files allowed.'}, status=400)
+
+    try:
+        result = cloudinary.uploader.upload(
+            f,
+            folder=f'stylebook/certificates/{request.user.id}',
+            resource_type=resource_type,
+        )
+        url = result.get('secure_url')
+    except Exception as e:
+        return JsonResponse({'error': f'Upload failed: {e}'}, status=502)
+
+    return JsonResponse({'url': url, 'kind': kind})
+
+
+@login_required
+@require_POST
+def upload_honor_image(request):
+    """
+    Upload an honor image to Cloudinary.
+    Expects multipart form data with key 'file'.
+    Returns JSON: {"url": "..."}.
+    """
+    f = request.FILES.get('file')
+    if not f:
+        return JsonResponse({'error': 'No file provided.'}, status=400)
+
+    if f.size > 5 * 1024 * 1024:
+        return JsonResponse({'error': 'File too large. Max 5 MB.'}, status=400)
+
+    content_type = (f.content_type or '').lower()
+    if not content_type.startswith('image/'):
+        return JsonResponse({'error': 'Only image files allowed.'}, status=400)
+
+    try:
+        result = cloudinary.uploader.upload(
+            f,
+            folder=f'stylebook/honors/{request.user.id}',
+            resource_type='image',
+        )
+        url = result.get('secure_url')
+    except Exception as e:
+        return JsonResponse({'error': f'Upload failed: {e}'}, status=502)
+
+    return JsonResponse({'url': url})
 
 
 def _upload_profile_photo(request, *, kind, folder, field_name):
