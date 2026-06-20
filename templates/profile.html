@@ -25,44 +25,56 @@
 
 {% block content %}
 
-<!-- ═════════════════════════════════════════════════ -->
-<!-- HERO CARD — cover banner + avatar + name + stats   -->
-<!-- ═════════════════════════════════════════════════ -->
-<div class="card p-0 overflow-hidden mb-6">
+<!-- Inline CSS to force the layout — overrides any base.html collisions -->
+<style>
+  .hero-card        { padding: 0 !important; overflow: hidden; }
+  .cover-banner     { position: relative; width: 100%; height: 220px !important;
+                      min-height: 220px !important; max-height: 220px !important;
+                      background: linear-gradient(135deg, #f3eee8, #e5e3dc);
+                      overflow: hidden; }
+  .cover-banner img { position: absolute; inset: 0; width: 100%; height: 100%;
+                      object-fit: cover; display: block; }
+  .hero-body        { padding: 0 24px 24px 24px; }
+  .avatar-row       { display: flex; align-items: flex-end; justify-content: space-between;
+                      margin-top: -56px !important; margin-bottom: 16px; }
+  .avatar-circle    { width: 112px; height: 112px; border-radius: 50%;
+                      overflow: hidden; background: #C9A96E;
+                      display: flex; align-items: center; justify-content: center;
+                      color: white; font-weight: 600; font-size: 30px;
+                      border: 4px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                      flex-shrink: 0; }
+  .avatar-circle img{ width: 100%; height: 100%; object-fit: cover; display: block; }
+  .stats-row        { display: flex; gap: 24px; padding-bottom: 8px; }
+</style>
 
-  <!-- Cover banner — fixed pixel height via inline style -->
-  <div class="relative w-full bg-gradient-to-br from-cream to-cream-border"
-       style="height: 220px;">
+<!-- ═════════════════════════════════════════════════ -->
+<!-- HERO CARD                                            -->
+<!-- ═════════════════════════════════════════════════ -->
+<div class="card hero-card mb-6">
+
+  <!-- Cover banner -->
+  <div class="cover-banner">
     {% if profile_user.profile.cover_url %}
-      <img src="{{ profile_user.profile.cover_url }}"
-           alt="Cover"
-           class="absolute inset-0 w-full h-full object-cover">
+      <img src="{{ profile_user.profile.cover_url }}" alt="Cover">
     {% endif %}
   </div>
 
-  <!-- Profile header — avatar overlaps cover, name + stats below -->
-  <div class="px-6 pb-6">
+  <!-- Profile header -->
+  <div class="hero-body">
 
-    <!-- Avatar row (avatar left, stats right) -->
-    <div class="flex items-end justify-between mb-4"
-         style="margin-top: -56px;">
+    <!-- Avatar + stats -->
+    <div class="avatar-row">
 
-      <!-- Avatar -->
-      <div class="w-28 h-28 rounded-full overflow-hidden bg-gold
-                  flex items-center justify-center
-                  text-white font-semibold text-3xl
-                  border-4 border-white shadow-md flex-shrink-0">
+      <div class="avatar-circle">
         {% if profile_user.profile.avatar_url %}
           <img src="{{ profile_user.profile.avatar_url }}"
-               alt="{{ profile_user.username }}"
-               class="w-full h-full object-cover">
+               alt="{{ profile_user.username }}">
         {% else %}
           {{ profile_user.username|slice:":2"|upper }}
         {% endif %}
       </div>
 
-      <!-- Stats (aligned to bottom of avatar) -->
-      <div class="flex gap-6 pb-2">
+      <div class="stats-row">
         <div class="text-center">
           <p class="text-xl font-semibold text-ink">{{ portfolio_count }}</p>
           <p class="text-[11px] text-muted mt-0.5 uppercase tracking-wide">Works</p>
@@ -162,7 +174,6 @@
   <!-- ─── LEFT (main, 2/3) ─────────────────────────── -->
   <div class="lg:col-span-2 space-y-6">
 
-    <!-- About -->
     {% if profile_user.profile.bio %}
       <div class="card">
         <p class="section-title">About</p>
@@ -172,7 +183,6 @@
       </div>
     {% endif %}
 
-    <!-- Skills -->
     {% if profile_user.profile.skills %}
       <div class="card">
         <p class="section-title">Skills</p>
@@ -247,7 +257,6 @@
   <!-- ─── RIGHT (sidebar, 1/3) ─────────────────────── -->
   <div class="space-y-6">
 
-    <!-- Details -->
     <div class="card">
       <p class="section-title">Details</p>
       <dl class="space-y-3 text-sm">
@@ -288,7 +297,6 @@
       </dl>
     </div>
 
-    <!-- Languages -->
     {% if profile_user.profile.languages %}
       <div class="card">
         <p class="section-title">Languages</p>
@@ -303,7 +311,6 @@
       </div>
     {% endif %}
 
-    <!-- Working hours -->
     {% if profile_user.profile.working_hours %}
       <div class="card">
         <p class="section-title">Working hours</p>
