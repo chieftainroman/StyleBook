@@ -14,10 +14,14 @@ urlpatterns = [
          name='template_thumbnail'),
 
     path('profile/edit/',               views.edit_profile,        name='profile_edit'),
-path('profile/upload-avatar/',      views.upload_avatar,         name='upload_avatar'),
-    path('profile/upload-cover/',       views.upload_cover,          name='upload_cover'),
-    path('profile/upload-cert-file/',   views.upload_certificate_file, name='upload_cert_file'),
-    path('profile/upload-honor-image/', views.upload_honor_image,    name='upload_honor_image'),
+path('profile/upload-avatar/',          views.upload_avatar,           name='upload_avatar'),
+    path('profile/upload-cover/',           views.upload_cover,            name='upload_cover'),
+    path('profile/upload-cert-file/',       views.upload_certificate_file, name='upload_cert_file'),
+    path('profile/upload-honor-image/',     views.upload_honor_image,      name='upload_honor_image'),
+
+    path('profile/experience/add/',         views.experience_add,          name='experience_add'),
+    path('profile/experience/<int:pk>/edit/',   views.experience_edit,     name='experience_edit'),
+    path('profile/experience/<int:pk>/delete/', views.experience_delete,   name='experience_delete'),
     path('profile/',                    views.my_profile,          name='my_profile'),
     path('profile/<str:username>/',     views.profile_view,        name='profile'),
 ]

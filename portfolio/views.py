@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.conf import settings
 from accounts.models import Certificate, Honor, WorkExperience
+from accounts.models import WorkExperience
 
 from .models import PortfolioItem
 from .utils import generate_instagram_image           # Pillow fallback
@@ -19,7 +20,8 @@ from . import placid
 import cloudinary.uploader
 from bookings.models import Reservation
 from accounts.models import MasterProfile
-
+from django.shortcuts import get_object_or_404
+from django.urls import reverse
 
 @login_required
 def portfolio_view(request):
@@ -700,3 +702,96 @@ def _pillow_fallback(item, photo_path, template_id, service, ig_handle,
             'status': 'error',
             'error':  f'Generation failed: {error or fallback_err}',
         }, status=500)
+        
+        
+        
+from accounts.models import WorkExperience
+
+
+# ════════════════════════════════════════════════
+# WorkExperience — Create / Update / Delete
+# ════════════════════════════════════════════════
+
+def _parse_work_experience(post_data):
+    """Extract WorkExperience fields from POST data with validation."""
+    title       = post_data.get('title', '').strip()
+    studio_name = post_data.get('studio_name', '').strip()
+    city        = post_data.get('city', '').strip()
+    description = post_data.get('description', '').strip()
+    is_current  = post_data.get('is_current') == 'on'
+
+    try:
+        start_month = int(post_data.get('start_month', 0))
+        start_year  = int(post_data.get('start_year', 0))
+    except (ValueError, TypeError):
+        return None, 'Invalid start date.'
+
+    if not (1 <= start_month <= 12) or start_year < 1950 or start_year > 2100:
+        return None, 'Invalid start month or year.'
+
+    end_month = None
+    end_year  = None
+    if not is_current:
+        try:
+            end_month = int(post_data.get('end_month', 0))
+            end_year  = int(post_data.get('end_year', 0))
+        except (ValueError, TypeError):
+            return None, 'Invalid end date.'
+        if not (1 <= end_month <= 12) or end_year < 1950 or end_year > 2100:
+            return None, 'Invalid end month or year.'
+
+    if not title:
+        return None, 'Title is required.'
+
+    return {
+        'title':       title,
+        'studio_name': studio_name,
+        'city':        city,
+        'start_month': start_month,
+        'start_year':  start_year,
+        'end_month':   end_month,
+        'end_year':    end_year,
+        'is_current':  is_current,
+        'description': description,
+    }, None
+
+
+@login_required
+@require_POST
+def experience_add(request):
+    """Create a new WorkExperience for the current user."""
+    fields, err = _parse_work_experience(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=experience")
+
+    WorkExperience.objects.create(profile=request.user.profile, **fields)
+    messages.success(request, 'Experience added.')
+    return redirect(f"{reverse('profile_edit')}?tab=experience")
+
+
+@login_required
+@require_POST
+def experience_edit(request, pk):
+    """Update an existing WorkExperience."""
+    exp = get_object_or_404(WorkExperience, pk=pk, profile=request.user.profile)
+    fields, err = _parse_work_experience(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=experience")
+
+    for key, value in fields.items():
+        setattr(exp, key, value)
+    exp.save()
+    messages.success(request, 'Experience updated.')
+    return redirect(f"{reverse('profile_edit')}?tab=experience")
+
+
+@login_required
+@require_POST
+def experience_delete(request, pk):
+    """Delete a WorkExperience."""
+    exp = get_object_or_404(WorkExperience, pk=pk, profile=request.user.profile)
+    exp.delete()
+    messages.success(request, 'Experience removed.')
+    return redirect(f"{reverse('profile_edit')}?tab=experience")
