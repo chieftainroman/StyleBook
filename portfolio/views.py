@@ -114,15 +114,17 @@ def profile_view(request, username):
     ]
 
     return render(request, 'profile.html', {
-        'active':           'profile',
-        'profile_user':     profile_user,
-        'is_own_profile':   is_own_profile,
-        'portfolio_items':  portfolio_items[:6],
-        'portfolio_count':  portfolio_count,
-        'client_count':     client_count,
-        'experience_items': experience_items,
-        'days':             days,
-    })
+            'active':           'profile',
+            'profile_user':     profile_user,
+            'is_own_profile':   is_own_profile,
+            'portfolio_items':  portfolio_items[:6],
+            'portfolio_count':  portfolio_count,
+            'client_count':     client_count,
+            'days':             days,
+            'experiences':      profile_user.profile.experiences.all(),
+            'certificates':     profile_user.profile.certificates.all(),
+            'honors':           profile_user.profile.honors.all(),
+        })
 
 @login_required
 def edit_profile(request):

@@ -229,32 +229,10 @@
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
   <!-- ─── LEFT (main, 2/3) ─────────────────────────── -->
+<!-- ─── LEFT (main, 2/3) — WORK-FIRST ORDER ──────── -->
   <div class="lg:col-span-2 space-y-6">
 
-    {% if profile_user.profile.bio %}
-      <div class="card">
-        <p class="section-title">About</p>
-        <p class="text-sm text-ink leading-relaxed whitespace-pre-line">
-          {{ profile_user.profile.bio }}
-        </p>
-      </div>
-    {% endif %}
-
-    {% if profile_user.profile.skills %}
-      <div class="card">
-        <p class="section-title">Skills</p>
-        <div class="flex flex-wrap gap-2">
-          {% for skill in profile_user.profile.skills.split %}
-            <span class="px-3 py-1.5 bg-cream border border-cream-border
-                         text-xs text-ink rounded-full">
-              {{ skill }}
-            </span>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- Recent work -->
+    <!-- 1. Recent work — TOP of profile -->
     <div class="card">
       <div class="flex items-center justify-between mb-4">
         <p class="section-title mb-0">Recent work</p>
@@ -308,6 +286,148 @@
         </div>
       {% endif %}
     </div>
+
+    <!-- 2. About -->
+    {% if profile_user.profile.bio %}
+      <div class="card">
+        <p class="section-title">About</p>
+        <p class="text-sm text-ink leading-relaxed whitespace-pre-line">
+          {{ profile_user.profile.bio }}
+        </p>
+      </div>
+    {% endif %}
+
+    <!-- 3. Experience timeline -->
+    {% if experiences %}
+      <div class="card">
+        <p class="section-title">Experience</p>
+        <div class="space-y-5">
+          {% for exp in experiences %}
+            <div class="flex gap-4">
+              <!-- Timeline dot + line -->
+              <div class="flex flex-col items-center pt-1">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0
+                            {% if exp.is_current %}bg-gold{% else %}bg-cream-border{% endif %}"></div>
+                {% if not forloop.last %}
+                  <div class="w-px flex-1 bg-cream-border mt-1" style="min-height: 30px;"></div>
+                {% endif %}
+              </div>
+
+              <!-- Content -->
+              <div class="flex-1 pb-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <p class="text-sm font-semibold text-ink">{{ exp.title }}</p>
+                  {% if exp.is_current %}
+                    <span class="px-2 py-0.5 bg-gold-light text-gold-dark text-[10px]
+                                 font-semibold rounded-full uppercase tracking-wide">Current</span>
+                  {% endif %}
+                </div>
+                {% if exp.studio_name or exp.city %}
+                  <p class="text-sm text-muted mt-0.5">
+                    {% if exp.studio_name %}{{ exp.studio_name }}{% endif %}
+                    {% if exp.studio_name and exp.city %} · {% endif %}
+                    {% if exp.city %}{{ exp.city }}{% endif %}
+                  </p>
+                {% endif %}
+                <p class="text-xs text-muted mt-1">{{ exp.period_display }}</p>
+                {% if exp.description %}
+                  <p class="text-sm text-ink mt-2 leading-relaxed whitespace-pre-line">
+                    {{ exp.description }}
+                  </p>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- 4. Honors + Certificates (side-by-side on desktop) -->
+    {% if honors or certificates %}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+        {% if honors %}
+          <div class="card">
+            <p class="section-title">Honors</p>
+            <div class="space-y-4">
+              {% for honor in honors %}
+                <div class="flex gap-3">
+                  <div class="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden
+                              flex items-center justify-center text-xl"
+                       style="background: linear-gradient(135deg, #F5EDD8, #C9A96E); color: #fff;">
+                    {% if honor.image_url %}
+                      <img src="{{ honor.image_url }}" alt="{{ honor.title }}"
+                           class="w-full h-full object-cover">
+                    {% else %}
+                      🏆
+                    {% endif %}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-ink">{{ honor.title }}</p>
+                    <p class="text-xs text-muted mt-0.5">
+                      {% if honor.issuer %}{{ honor.issuer }} · {% endif %}{{ honor.year }}
+                    </p>
+                    {% if honor.description %}
+                      <p class="text-xs text-ink mt-1.5 leading-relaxed">{{ honor.description }}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% if certificates %}
+          <div class="card">
+            <p class="section-title">Certificates</p>
+            <div class="space-y-4">
+              {% for cert in certificates %}
+                <div class="flex gap-3">
+                  <div class="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden
+                              flex items-center justify-center text-[10px] font-bold
+                              {% if cert.file_kind == 'pdf' %}bg-cream{% else %}bg-cream-border{% endif %}">
+                    {% if cert.file_url and cert.file_kind == 'image' %}
+                      <img src="{{ cert.file_url }}" alt="{{ cert.name }}"
+                           class="w-full h-full object-cover">
+                    {% elif cert.file_url and cert.file_kind == 'pdf' %}
+                      <span class="text-gold-dark">PDF</span>
+                    {% else %}
+                      <span class="text-muted">—</span>
+                    {% endif %}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-ink">{{ cert.name }}</p>
+                    <p class="text-xs text-muted mt-0.5">{{ cert.institution }} · {{ cert.year }}</p>
+                    {% if cert.file_url %}
+                      <a href="{{ cert.file_url }}" target="_blank"
+                         class="text-xs text-gold-dark hover:underline mt-1 inline-block">
+                        View →
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+      </div>
+    {% endif %}
+
+    <!-- 5. Skills -->
+    {% if profile_user.profile.skills %}
+      <div class="card">
+        <p class="section-title">Skills</p>
+        <div class="flex flex-wrap gap-2">
+          {% for skill in profile_user.profile.skills.split %}
+            <span class="px-3 py-1.5 bg-cream border border-cream-border
+                         text-xs text-ink rounded-full">
+              {{ skill }}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
 
   </div>
 
