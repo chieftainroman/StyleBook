@@ -22,13 +22,15 @@
     </div>
   </div>
 
-  <!-- File upload zone -->
+<!-- File upload zone -->
   <div>
     <label class="form-label">Certificate file (PDF or image)</label>
     <label class="cert-file-zone {% if cert.file_url %}has-file{% endif %}"
-           id="certFileZone-{{ form_id }}">
+           id="certFileZone-{{ form_id }}"
+           style="display: block;">
       <input type="file" id="certFile-{{ form_id }}"
-             accept="application/pdf,image/*" class="hidden">
+             accept="application/pdf,image/*"
+             style="display: none;">
       <div class="cert-file-status" id="certFileStatus-{{ form_id }}">
         {% if cert.file_url %}
           ✓ File attached ({{ cert.file_kind|upper }})
