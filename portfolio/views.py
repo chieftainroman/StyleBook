@@ -795,3 +795,76 @@ def experience_delete(request, pk):
     exp.delete()
     messages.success(request, 'Experience removed.')
     return redirect(f"{reverse('profile_edit')}?tab=experience")
+
+
+# ════════════════════════════════════════════════
+# Certificate — Create / Update / Delete
+# ════════════════════════════════════════════════
+
+def _parse_certificate(post_data):
+    """Extract Certificate fields from POST data."""
+    name        = post_data.get('name', '').strip()
+    institution = post_data.get('institution', '').strip()
+    file_url    = post_data.get('file_url', '').strip()
+    file_kind   = post_data.get('file_kind', '').strip()
+
+    try:
+        year = int(post_data.get('year', 0))
+    except (ValueError, TypeError):
+        return None, 'Invalid year.'
+
+    if year < 1950 or year > 2100:
+        return None, 'Invalid year.'
+    if not name:
+        return None, 'Certificate name is required.'
+    if not institution:
+        return None, 'Institution is required.'
+
+    return {
+        'name':        name,
+        'institution': institution,
+        'year':        year,
+        'file_url':    file_url,
+        'file_kind':   file_kind,
+    }, None
+
+
+@login_required
+@require_POST
+def certificate_add(request):
+    """Create a new Certificate."""
+    fields, err = _parse_certificate(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=certificates")
+
+    Certificate.objects.create(profile=request.user.profile, **fields)
+    messages.success(request, 'Certificate added.')
+    return redirect(f"{reverse('profile_edit')}?tab=certificates")
+
+
+@login_required
+@require_POST
+def certificate_edit(request, pk):
+    """Update an existing Certificate."""
+    cert = get_object_or_404(Certificate, pk=pk, profile=request.user.profile)
+    fields, err = _parse_certificate(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=certificates")
+
+    for key, value in fields.items():
+        setattr(cert, key, value)
+    cert.save()
+    messages.success(request, 'Certificate updated.')
+    return redirect(f"{reverse('profile_edit')}?tab=certificates")
+
+
+@login_required
+@require_POST
+def certificate_delete(request, pk):
+    """Delete a Certificate."""
+    cert = get_object_or_404(Certificate, pk=pk, profile=request.user.profile)
+    cert.delete()
+    messages.success(request, 'Certificate removed.')
+    return redirect(f"{reverse('profile_edit')}?tab=certificates")
