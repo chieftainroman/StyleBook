@@ -19,13 +19,17 @@ urlpatterns = [
     path('profile/upload-cert-file/',       views.upload_certificate_file, name='upload_cert_file'),
     path('profile/upload-honor-image/',     views.upload_honor_image,      name='upload_honor_image'),
 
-path('profile/experience/add/',             views.experience_add,     name='experience_add'),
+    path('profile/experience/add/',             views.experience_add,     name='experience_add'),
     path('profile/experience/<int:pk>/edit/',   views.experience_edit,    name='experience_edit'),
     path('profile/experience/<int:pk>/delete/', views.experience_delete,  name='experience_delete'),
 
     path('profile/certificate/add/',             views.certificate_add,    name='certificate_add'),
     path('profile/certificate/<int:pk>/edit/',   views.certificate_edit,   name='certificate_edit'),
     path('profile/certificate/<int:pk>/delete/', views.certificate_delete, name='certificate_delete'),
+
+    path('profile/honor/add/',             views.honor_add,    name='honor_add'),
+    path('profile/honor/<int:pk>/edit/',   views.honor_edit,   name='honor_edit'),
+    path('profile/honor/<int:pk>/delete/', views.honor_delete, name='honor_delete'),
     path('profile/',                    views.my_profile,          name='my_profile'),
     path('profile/<str:username>/',     views.profile_view,        name='profile'),
 ]

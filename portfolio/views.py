@@ -868,3 +868,74 @@ def certificate_delete(request, pk):
     cert.delete()
     messages.success(request, 'Certificate removed.')
     return redirect(f"{reverse('profile_edit')}?tab=certificates")
+
+
+# ════════════════════════════════════════════════
+# Honor — Create / Update / Delete
+# ════════════════════════════════════════════════
+
+def _parse_honor(post_data):
+    """Extract Honor fields from POST data."""
+    title       = post_data.get('title', '').strip()
+    issuer      = post_data.get('issuer', '').strip()
+    description = post_data.get('description', '').strip()
+    image_url   = post_data.get('image_url', '').strip()
+
+    try:
+        year = int(post_data.get('year', 0))
+    except (ValueError, TypeError):
+        return None, 'Invalid year.'
+
+    if year < 1950 or year > 2100:
+        return None, 'Invalid year.'
+    if not title:
+        return None, 'Honor title is required.'
+
+    return {
+        'title':       title,
+        'issuer':      issuer,
+        'year':        year,
+        'description': description,
+        'image_url':   image_url,
+    }, None
+
+
+@login_required
+@require_POST
+def honor_add(request):
+    """Create a new Honor."""
+    fields, err = _parse_honor(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=honors")
+
+    Honor.objects.create(profile=request.user.profile, **fields)
+    messages.success(request, 'Honor added.')
+    return redirect(f"{reverse('profile_edit')}?tab=honors")
+
+
+@login_required
+@require_POST
+def honor_edit(request, pk):
+    """Update an existing Honor."""
+    honor = get_object_or_404(Honor, pk=pk, profile=request.user.profile)
+    fields, err = _parse_honor(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=honors")
+
+    for key, value in fields.items():
+        setattr(honor, key, value)
+    honor.save()
+    messages.success(request, 'Honor updated.')
+    return redirect(f"{reverse('profile_edit')}?tab=honors")
+
+
+@login_required
+@require_POST
+def honor_delete(request, pk):
+    """Delete an Honor."""
+    honor = get_object_or_404(Honor, pk=pk, profile=request.user.profile)
+    honor.delete()
+    messages.success(request, 'Honor removed.')
+    return redirect(f"{reverse('profile_edit')}?tab=honors")
