@@ -1,6 +1,10 @@
 import os
 from datetime import date
 
+
+from django.shortcuts import redirect
+from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
@@ -188,3 +192,25 @@ def onboarding_view(request):
         return redirect('dashboard')
 
     return render(request, 'onboarding.html')
+
+
+@login_required
+def onboarding_start(request):
+    """
+    Placeholder for Phase 4 Step 2. For now, marks the user as completed
+    so they can use the app while we build the real wizard.
+    """
+    return HttpResponse(
+        '<h1>Onboarding wizard coming soon</h1>'
+        '<p>This is a placeholder. In Step 2 we build the actual 5-step wizard.</p>'
+        '<p><a href="/onboarding/skip/">Click here to mark as complete and use the app</a></p>'
+    )
+
+
+@login_required
+def onboarding_skip(request):
+    """Temporary helper — marks user as onboarded so they can bypass the middleware."""
+    profile = request.user.profile
+    profile.onboarding_completed = True
+    profile.save(update_fields=['onboarding_completed'])
+    return redirect('dashboard')

@@ -67,7 +67,9 @@ class MasterProfile(models.Model):
     # ── New: photos (Cloudinary URLs) ──
     avatar_url         = models.URLField(max_length=500, default='', blank=True)
     cover_url          = models.URLField(max_length=500, default='', blank=True)
-
+    # ── Onboarding state ──
+    onboarding_completed = models.BooleanField(default=False,
+                                               help_text='True once the user has finished or explicitly skipped the wizard')
     def __str__(self):
         return f'{self.user.username} — {self.specialty}'
 
