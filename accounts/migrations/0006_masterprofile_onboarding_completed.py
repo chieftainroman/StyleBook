@@ -21,7 +21,7 @@ def reverse_noop(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('accounts', '0003_certificate_honor_workexperience'),
+        ('accounts', '0005_workexperience_honor_certificate'),
     ]
 
     operations = [
