@@ -1,7 +1,58 @@
 <p class="ob-step-sub">Tell us what you do and where you're based.</p>
 
-<div class="bg-cream rounded-lg p-6 text-center text-sm text-muted">
-  Step 1 form coming in Step 2B.
-</div>
+<form method="POST" action="{% url 'onboarding_step_save' step=1 %}" class="space-y-4">
+  {% csrf_token %}
 
-{% include 'onboarding/_nav.html' %}
+  <!-- Specialty -->
+  <div>
+    <label class="block text-xs font-medium text-muted uppercase tracking-wider mb-1.5"
+           for="specialty">Specialty <span class="text-red-500">*</span></label>
+    <select id="specialty" name="specialty" required
+            class="w-full px-3 py-2.5 border border-cream-border rounded-lg text-sm
+                   focus:outline-none focus:border-ink bg-white">
+      <option value="">Select your specialty</option>
+      <option value="barber"    {% if profile.specialty == 'barber' %}selected{% endif %}>Barber</option>
+      <option value="stylist"   {% if profile.specialty == 'stylist' %}selected{% endif %}>Hair Stylist</option>
+      <option value="nails"     {% if profile.specialty == 'nails' %}selected{% endif %}>Nail Master</option>
+      <option value="makeup"    {% if profile.specialty == 'makeup' %}selected{% endif %}>Makeup Artist</option>
+      <option value="tattoo"    {% if profile.specialty == 'tattoo' %}selected{% endif %}>Tattoo Artist</option>
+      <option value="lash"      {% if profile.specialty == 'lash' %}selected{% endif %}>Lash Artist</option>
+      <option value="brow"      {% if profile.specialty == 'brow' %}selected{% endif %}>Brow Artist</option>
+      <option value="esthetics" {% if profile.specialty == 'esthetics' %}selected{% endif %}>Esthetician</option>
+      <option value="massage"   {% if profile.specialty == 'massage' %}selected{% endif %}>Massage Therapist</option>
+      <option value="other"     {% if profile.specialty == 'other' %}selected{% endif %}>Other</option>
+    </select>
+  </div>
+
+  <!-- Location -->
+  <div>
+    <label class="block text-xs font-medium text-muted uppercase tracking-wider mb-1.5"
+           for="location">Location <span class="text-red-500">*</span></label>
+    <input id="location" name="location" type="text" required
+           placeholder="e.g. Brooklyn, NY"
+           value="{{ profile.location }}"
+           class="w-full px-3 py-2.5 border border-cream-border rounded-lg text-sm
+                  focus:outline-none focus:border-ink bg-white">
+  </div>
+
+  <!-- Years of experience -->
+  <div>
+    <label class="block text-xs font-medium text-muted uppercase tracking-wider mb-1.5"
+           for="years_exp">Years of experience <span class="text-red-500">*</span></label>
+    <input id="years_exp" name="years_exp" type="number" required
+           min="1" max="60" placeholder="e.g. 5"
+           value="{% if profile.years_exp %}{{ profile.years_exp }}{% endif %}"
+           class="w-full px-3 py-2.5 border border-cream-border rounded-lg text-sm
+                  focus:outline-none focus:border-ink bg-white">
+  </div>
+
+  <!-- Navigation buttons -->
+  <div class="ob-actions">
+    <span></span> {# No back button on step 1 #}
+
+    <button type="submit" class="ob-btn ob-btn-primary">
+      Continue →
+    </button>
+  </div>
+
+</form>

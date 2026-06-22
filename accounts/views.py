@@ -1,6 +1,9 @@
 import os
 from datetime import date
 
+
+from django.urls import reverse
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import HttpResponse
@@ -246,6 +249,89 @@ def onboarding_start(request):
         'is_last':        step == len(ONBOARDING_STEPS),
     }
     return render(request, 'onboarding/wizard.html', context)
+
+
+@login_required
+@require_POST
+def onboarding_step_save(request, step):
+    """
+    Handle form POST from a wizard step. Save the data, then advance to next step
+    (or finish if last step).
+    """
+    profile = request.user.profile
+
+    # If already onboarded, abandon
+    if profile.onboarding_completed:
+        return redirect('dashboard')
+
+    # Dispatch based on step number
+    if step == 1:
+        err = _save_step_basic(profile, request.POST)
+    elif step == 3:
+        err = _save_step_bio(profile, request.POST)
+    elif step == 5:
+        err = _save_step_contact(profile, request.POST)
+    else:
+        # Optional steps (2, 4) don't have a "save" — they're skip/next only
+        err = None
+
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('onboarding_start')}?step={step}")
+
+    # Advance: if last step, mark as finished; otherwise go to next step
+    if step >= 5:
+        return redirect('onboarding_finish')
+    return redirect(f"{reverse('onboarding_start')}?step={step + 1}")
+
+
+# ── Per-step save helpers ───────────────────────────
+
+def _save_step_basic(profile, post_data):
+    """Step 1: specialty, location, years_exp. All required."""
+    specialty = post_data.get('specialty', '').strip()
+    location  = post_data.get('location', '').strip()
+    try:
+        years_exp = int(post_data.get('years_exp', 0))
+    except (ValueError, TypeError):
+        years_exp = 0
+
+    if not specialty:
+        return 'Please select your specialty.'
+    if not location:
+        return 'Please enter your location.'
+    if years_exp <= 0:
+        return 'Years of experience must be at least 1.'
+
+    profile.specialty = specialty
+    profile.location  = location
+    profile.years_exp = years_exp
+    profile.save(update_fields=['specialty', 'location', 'years_exp'])
+    return None
+
+
+def _save_step_bio(profile, post_data):
+    """Step 3: bio. Required."""
+    bio = post_data.get('bio', '').strip()
+    if len(bio) < 20:
+        return 'Please write a bio of at least 20 characters.'
+    profile.bio = bio
+    profile.save(update_fields=['bio'])
+    return None
+
+
+def _save_step_contact(profile, post_data):
+    """Step 5: phone (required), ig_handle (optional), working hours (optional)."""
+    phone     = post_data.get('phone', '').strip()
+    ig_handle = post_data.get('ig_handle', '').strip().lstrip('@')
+
+    if not phone:
+        return 'Phone number is required.'
+
+    profile.phone     = phone
+    profile.ig_handle = ig_handle
+    profile.save(update_fields=['phone', 'ig_handle'])
+    return None
 
 
 @login_required
