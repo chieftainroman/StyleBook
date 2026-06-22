@@ -235,6 +235,16 @@ def onboarding_start(request):
 
     meta = _step_meta(step)
 
+    days = [
+            ('mon', 'Monday'),
+            ('tue', 'Tuesday'),
+            ('wed', 'Wednesday'),
+            ('thu', 'Thursday'),
+            ('fri', 'Friday'),
+            ('sat', 'Saturday'),
+            ('sun', 'Sunday'),
+        ]
+
     context = {
         'profile':        request.user.profile,
         'step':           step,
@@ -247,6 +257,8 @@ def onboarding_start(request):
         'has_prev':       step > 1,
         'has_next':       step < len(ONBOARDING_STEPS),
         'is_last':        step == len(ONBOARDING_STEPS),
+        'days':           days,
+        'working_hours':  request.user.profile.get_working_hours(),
     }
     return render(request, 'onboarding/wizard.html', context)
 
@@ -328,9 +340,21 @@ def _save_step_contact(profile, post_data):
     if not phone:
         return 'Phone number is required.'
 
-    profile.phone     = phone
-    profile.ig_handle = ig_handle
-    profile.save(update_fields=['phone', 'ig_handle'])
+    # Parse working hours from per-day grid
+    days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+    hours = {}
+    for d in days:
+        closed = post_data.get(f'{d}_closed') == 'on'
+        hours[d] = {
+            'open':   post_data.get(f'{d}_open', '09:00'),
+            'close':  post_data.get(f'{d}_close', '18:00'),
+            'closed': closed,
+        }
+
+    profile.phone         = phone
+    profile.ig_handle     = ig_handle
+    profile.working_hours = hours
+    profile.save(update_fields=['phone', 'ig_handle', 'working_hours'])
     return None
 
 

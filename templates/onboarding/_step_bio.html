@@ -1,7 +1,20 @@
 <p class="ob-step-sub">Write a short bio that clients will see on your profile.</p>
 
-<div class="bg-cream rounded-lg p-6 text-center text-sm text-muted">
-  Step 3 form coming in Step 2C.
-</div>
+<form method="POST" action="{% url 'onboarding_step_save' step=3 %}" class="space-y-4">
+  {% csrf_token %}
 
-{% include 'onboarding/_nav.html' %}
+  <div>
+    <label class="block text-xs font-medium text-muted uppercase tracking-wider mb-1.5"
+           for="bio">Bio <span class="text-red-500">*</span></label>
+    <textarea id="bio" name="bio" rows="6" required minlength="20"
+              placeholder="Tell clients about your style, training, what makes your work unique. At least 20 characters."
+              class="w-full px-3 py-2.5 border border-cream-border rounded-lg text-sm
+                     focus:outline-none focus:border-ink bg-white resize-none">{{ profile.bio }}</textarea>
+    <p class="text-xs text-muted mt-1.5">Minimum 20 characters. Aim for 2-3 sentences.</p>
+  </div>
+
+  <div class="ob-actions">
+    <a href="?step=2" class="ob-btn ob-btn-ghost">← Back</a>
+    <button type="submit" class="ob-btn ob-btn-primary">Continue →</button>
+  </div>
+</form>

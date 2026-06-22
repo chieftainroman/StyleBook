@@ -1,7 +1,185 @@
 <p class="ob-step-sub">Add a profile picture and cover photo. You can skip this and add them later.</p>
 
-<div class="bg-cream rounded-lg p-6 text-center text-sm text-muted">
-  Step 2 form coming in Step 2C.
+<!-- Cropper.js CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
+<style>
+  .ob-photos {
+    position: relative;
+    background: linear-gradient(135deg, #f3eee8, #e5e3dc);
+    border-radius: 12px;
+    height: 160px;
+    overflow: hidden;
+    margin-bottom: 60px;
+  }
+  .ob-photos img.cover { width: 100%; height: 100%; object-fit: cover; }
+  .ob-photos-avatar {
+    position: absolute;
+    bottom: -40px;
+    left: 20px;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    background: #C9A96E;
+    border: 4px solid #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 600;
+    font-size: 24px;
+  }
+  .ob-photos-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .ob-upload-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ob-upload-btn {
+    padding: 8px 14px;
+    border: 1px solid #E5E3DC;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    color: #1C1917;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ob-upload-btn:hover { background: #FAFAF7; }
+  .cropper-modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; padding: 16px;
+  }
+  .cropper-modal-bg.hidden { display: none; }
+</style>
+
+<div class="ob-photos">
+  {% if profile.cover_url %}
+    <img class="cover" id="obCoverPreview" src="{{ profile.cover_url }}" alt="Cover">
+  {% else %}
+    <img class="cover hidden" id="obCoverPreview" src="" alt="">
+  {% endif %}
+
+  <div class="ob-photos-avatar">
+    {% if profile.avatar_url %}
+      <img id="obAvatarPreview" src="{{ profile.avatar_url }}" alt="Avatar">
+    {% else %}
+      <span id="obAvatarInitials">{{ user.username|slice:":2"|upper }}</span>
+      <img id="obAvatarPreview" src="" class="hidden" alt="">
+    {% endif %}
+  </div>
+</div>
+
+<div class="ob-upload-row">
+  <label class="ob-upload-btn">
+    Upload avatar
+    <input type="file" id="obAvatarInput" accept="image/*" style="display:none;">
+  </label>
+  <label class="ob-upload-btn">
+    Upload cover
+    <input type="file" id="obCoverInput" accept="image/*" style="display:none;">
+  </label>
+</div>
+
+<!-- Cropper modal -->
+<div id="cropperModal" class="cropper-modal-bg hidden">
+  <div class="bg-white rounded-2xl max-w-2xl w-full p-6">
+    <h3 id="cropperTitle" class="text-lg font-semibold text-ink mb-4">Crop your photo</h3>
+    <div class="bg-cream rounded-xl overflow-hidden" style="max-height: 60vh;">
+      <img id="cropperImage" alt="" style="max-width: 100%; display: block;">
+    </div>
+    <p class="text-xs text-muted mt-3 text-center">Drag to move, scroll to zoom</p>
+    <div class="flex gap-3 mt-5">
+      <button type="button" id="cropperCancel" class="ob-btn ob-btn-ghost flex-1 justify-center py-2.5">Cancel</button>
+      <button type="button" id="cropperSave" class="ob-btn ob-btn-primary flex-1 justify-center py-2.5">
+        <span id="cropperSaveText">Save photo</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 {% include 'onboarding/_nav.html' %}
+
+<form id="csrfForm" style="display:none;">{% csrf_token %}</form>
+
+<script>
+(function() {
+  const csrf = document.querySelector('#csrfForm [name=csrfmiddlewaretoken]').value;
+  const modal       = document.getElementById('cropperModal');
+  const imgEl       = document.getElementById('cropperImage');
+  const titleEl     = document.getElementById('cropperTitle');
+  const cancelBtn   = document.getElementById('cropperCancel');
+  const saveBtn     = document.getElementById('cropperSave');
+  const saveText    = document.getElementById('cropperSaveText');
+  const avatarInput = document.getElementById('obAvatarInput');
+  const coverInput  = document.getElementById('obCoverInput');
+  let cropper = null, currentKind = null, currentUrl = null;
+
+  function openCropper(file, kind) {
+    currentKind = kind;
+    currentUrl = kind === 'avatar' ? '{% url "upload_avatar" %}' : '{% url "upload_cover" %}';
+    titleEl.textContent = kind === 'avatar' ? 'Crop your profile picture' : 'Crop your cover photo';
+    const reader = new FileReader();
+    reader.onload = ev => {
+      imgEl.src = ev.target.result;
+      modal.classList.remove('hidden');
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(imgEl, {
+        aspectRatio: kind === 'avatar' ? 1 : 16 / 9,
+        viewMode: 1, dragMode: 'move', autoCropArea: 0.9,
+        background: false, rotatable: false, scalable: false,
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+  function closeCropper() {
+    if (cropper) { cropper.destroy(); cropper = null; }
+    modal.classList.add('hidden');
+    imgEl.src = '';
+    avatarInput.value = '';
+    coverInput.value = '';
+  }
+  function saveCrop() {
+    if (!cropper) return;
+    const w = currentKind === 'avatar' ? 512 : 1600;
+    const h = currentKind === 'avatar' ? 512 : 900;
+    const canvas = cropper.getCroppedCanvas({ width: w, height: h, imageSmoothingQuality: 'high' });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    saveBtn.disabled = true;
+    saveText.textContent = 'Uploading…';
+    const fd = new FormData();
+    fd.append('image_data', dataUrl);
+    fetch(currentUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf }, body: fd })
+      .then(async r => {
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(data.error || 'Upload failed');
+        return data;
+      })
+      .then(data => {
+        if (currentKind === 'avatar') {
+          const p = document.getElementById('obAvatarPreview');
+          const i = document.getElementById('obAvatarInitials');
+          p.src = data.url; p.classList.remove('hidden');
+          if (i) i.classList.add('hidden');
+        } else {
+          const p = document.getElementById('obCoverPreview');
+          p.src = data.url; p.classList.remove('hidden');
+        }
+        closeCropper();
+      })
+      .catch(err => alert('Upload failed: ' + err.message))
+      .finally(() => {
+        saveBtn.disabled = false;
+        saveText.textContent = 'Save photo';
+      });
+  }
+
+  avatarInput.addEventListener('change', e => { if (e.target.files[0]) openCropper(e.target.files[0], 'avatar'); });
+  coverInput.addEventListener('change', e => { if (e.target.files[0]) openCropper(e.target.files[0], 'cover'); });
+  cancelBtn.addEventListener('click', closeCropper);
+  modal.addEventListener('click', e => { if (e.target === modal) closeCropper(); });
+  saveBtn.addEventListener('click', saveCrop);
+})();
+</script>
