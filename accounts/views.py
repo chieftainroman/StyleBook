@@ -1,7 +1,7 @@
 import os
 from datetime import date
 
-
+from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -193,24 +193,70 @@ def onboarding_view(request):
 
     return render(request, 'onboarding.html')
 
+# ═════════════════════════════════════════════════════
+# Onboarding wizard
+# ═════════════════════════════════════════════════════
+
+# Step config: (step_number, name, mandatory, partial_template)
+ONBOARDING_STEPS = [
+    (1, 'Basic info',  True,  'onboarding/_step_basic.html'),
+    (2, 'Photos',      False, 'onboarding/_step_photos.html'),
+    (3, 'Bio',         True,  'onboarding/_step_bio.html'),
+    (4, 'Achievements',False, 'onboarding/_step_achievements.html'),
+    (5, 'Contact',     True,  'onboarding/_step_contact.html'),
+]
+
+
+def _step_meta(step_number):
+    """Return the tuple for a given step number, or None."""
+    for s in ONBOARDING_STEPS:
+        if s[0] == step_number:
+            return s
+    return None
+
 
 @login_required
 def onboarding_start(request):
-    """
-    Placeholder for Phase 4 Step 2. For now, marks the user as completed
-    so they can use the app while we build the real wizard.
-    """
-    return HttpResponse(
-        '<h1>Onboarding wizard coming soon</h1>'
-        '<p>This is a placeholder. In Step 2 we build the actual 5-step wizard.</p>'
-        '<p><a href="/onboarding/skip/">Click here to mark as complete and use the app</a></p>'
-    )
+    """Render a wizard step. Step number comes from ?step=N (defaults to 1)."""
+    # If already onboarded, kick them to dashboard
+    if request.user.profile.onboarding_completed:
+        return redirect('dashboard')
+
+    # Parse and validate step
+    try:
+        step = int(request.GET.get('step', 1))
+    except (ValueError, TypeError):
+        step = 1
+    if step < 1 or step > len(ONBOARDING_STEPS):
+        step = 1
+
+    meta = _step_meta(step)
+
+    context = {
+        'profile':        request.user.profile,
+        'step':           step,
+        'step_name':      meta[1],
+        'step_mandatory': meta[2],
+        'partial':        meta[3],
+        'steps':          ONBOARDING_STEPS,
+        'total_steps':    len(ONBOARDING_STEPS),
+        'progress_pct':   int((step / len(ONBOARDING_STEPS)) * 100),
+        'has_prev':       step > 1,
+        'has_next':       step < len(ONBOARDING_STEPS),
+        'is_last':        step == len(ONBOARDING_STEPS),
+    }
+    return render(request, 'onboarding/wizard.html', context)
 
 
 @login_required
-def onboarding_skip(request):
-    """Temporary helper — marks user as onboarded so they can bypass the middleware."""
+def onboarding_finish(request):
+    """Mark the user as onboarded and send them to the dashboard."""
     profile = request.user.profile
     profile.onboarding_completed = True
     profile.save(update_fields=['onboarding_completed'])
+    messages.success(request, 'Welcome to StyleBook! You can edit your profile anytime.')
     return redirect('dashboard')
+
+
+# Keep onboarding_skip as an alias for backward compatibility with the URL we wired earlier.
+onboarding_skip = onboarding_finish

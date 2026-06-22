@@ -12,7 +12,8 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('',          include('bookings.urls')),
     path('',          include('portfolio.urls')),
-    path('onboarding/',      accounts_views.onboarding_start,  name='onboarding_start'),
-    path('onboarding/skip/', accounts_views.onboarding_skip,   name='onboarding_skip'),
+    path('onboarding/',        accounts_views.onboarding_start,  name='onboarding_start'),
+    path('onboarding/finish/', accounts_views.onboarding_finish, name='onboarding_finish'),
+    path('onboarding/skip/',   accounts_views.onboarding_skip,   name='onboarding_skip'),  
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
   + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

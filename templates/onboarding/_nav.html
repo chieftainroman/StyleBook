@@ -1,0 +1,28 @@
+<div class="ob-actions">
+
+  <!-- Back -->
+  {% if has_prev %}
+    <a href="?step={{ step|add:'-1' }}" class="ob-btn ob-btn-ghost">← Back</a>
+  {% else %}
+    <span></span> {# empty spacer to keep flex alignment #}
+  {% endif %}
+
+  <div class="flex items-center gap-2">
+    {# Skip link only on optional steps (and not on the last step) #}
+    {% if not step_mandatory and not is_last %}
+      <a href="?step={{ step|add:'1' }}" class="ob-btn ob-btn-link">Skip for now</a>
+    {% endif %}
+
+    {# Next or Finish #}
+    {% if is_last %}
+      <a href="{% url 'onboarding_finish' %}" class="ob-btn ob-btn-primary">
+        Finish setup →
+      </a>
+    {% else %}
+      <a href="?step={{ step|add:'1' }}" class="ob-btn ob-btn-primary">
+        Next →
+      </a>
+    {% endif %}
+  </div>
+
+</div>
