@@ -56,20 +56,17 @@
 </style>
 
 <div class="ob-photos">
-  <img class="cover" id="obCoverPreview"
-       src="{% if profile.cover_url %}{{ profile.cover_url }}{% endif %}"
-       alt="Cover"
-       style="{% if not profile.cover_url %}display: none;{% endif %}">
+  <img class="cover" id="obCoverPreview" alt=""
+       src="{% if profile.cover_url %}{{ profile.cover_url }}{% else %}data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=={% endif %}">
 
-<div class="ob-photos-avatar">
-    <span id="obAvatarInitials"
-          style="{% if profile.avatar_url %}display: none;{% endif %}">
-      {{ user.username|slice:":2"|upper }}
-    </span>
-    <img id="obAvatarPreview"
-         src="{% if profile.avatar_url %}{{ profile.avatar_url }}{% endif %}"
-         alt="Avatar"
-         style="{% if not profile.avatar_url %}display: none;{% endif %}">
+  <div class="ob-photos-avatar">
+    {% if profile.avatar_url %}
+      <img id="obAvatarPreview" src="{{ profile.avatar_url }}" alt="">
+    {% else %}
+      <span id="obAvatarInitials">{{ user.username|slice:":2"|upper }}</span>
+      <img id="obAvatarPreview" alt=""
+           src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==">
+    {% endif %}
   </div>
 </div>
 
@@ -163,12 +160,10 @@
           const p = document.getElementById('obAvatarPreview');
           const i = document.getElementById('obAvatarInitials');
           p.src = data.url;
-          p.style.display = 'block';
           if (i) i.style.display = 'none';
         } else {
           const p = document.getElementById('obCoverPreview');
           p.src = data.url;
-          p.style.display = 'block';
         }
         closeCropper();
       })
