@@ -152,6 +152,7 @@
     fetch(currentUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf }, body: fd })
       .then(async r => {
         const data = await r.json().catch(() => ({}));
+        console.log('Upload response:', r.status, data);
         if (!r.ok) throw new Error(data.error || 'Upload failed');
         return data;
       })
