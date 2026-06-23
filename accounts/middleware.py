@@ -6,12 +6,14 @@ from django.urls import reverse, NoReverseMatch
 # Everything else redirects to /onboarding/.
 ALLOWED_PATH_PREFIXES = (
     '/onboarding/',
-    '/accounts/',       # django-allauth (Google login callback, logout)
-    '/auth/',           # your custom auth routes
-    '/admin/',          # superuser access
+    '/accounts/',
+    '/auth/',
+    '/admin/',
     '/static/',
     '/media/',
     '/favicon',
+    '/profile/upload-avatar/',
+    '/profile/upload-cover/',
 )
 
 
