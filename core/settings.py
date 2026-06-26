@@ -102,6 +102,21 @@ LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/auth/onboarding/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
 
+# ════════════════════════════════════════════
+# Email (Resend SMTP)
+# ════════════════════════════════════════════
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
+
+if RESEND_API_KEY:
+    EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST          = 'smtp.resend.com'
+    EMAIL_PORT          = 587
+    EMAIL_USE_TLS       = True
+    EMAIL_HOST_USER     = 'resend'
+    EMAIL_HOST_PASSWORD = RESEND_API_KEY
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 DEFAULT_FROM_EMAIL = 'StyleBook <noreply@showpiecehub.com>'
 SERVER_EMAIL       = DEFAULT_FROM_EMAIL
 
