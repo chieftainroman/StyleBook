@@ -34,7 +34,7 @@ def login_view(request):
         # Check if profile is complete
         profile, _ = MasterProfile.objects.get_or_create(user=user)
         if not profile.specialty:
-            return redirect('onboarding')
+            return redirect('onboarding_start')
 
         next_page = request.GET.get('next')
         return redirect(next_page or 'dashboard')
@@ -96,7 +96,7 @@ def register_view(request):
 
         # If they skipped specialty in step 2 send to onboarding
         if not specialty:
-            return redirect('onboarding')
+            return redirect('onboarding_start')
 
         messages.success(request, 'Welcome to StyleBook!')
         return redirect('dashboard')
@@ -153,7 +153,7 @@ def register_view(request):
 
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         if not specialty:
-            return redirect('onboarding')
+            return redirect('onboarding_start')
 
         messages.success(request, 'Welcome to StyleBook!')
         return redirect('dashboard')
