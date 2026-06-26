@@ -1,7 +1,7 @@
 import os
 from datetime import date
 
-
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -343,3 +343,102 @@ def onboarding_finish(request):
 
 # Keep onboarding_skip as an alias for backward compatibility with the URL we wired earlier.
 onboarding_skip = onboarding_finish
+
+
+from .tokens import email_verification_token, decode_uid
+
+
+def verify_email(request, uidb64, token):
+    """Land here when user clicks the verification link in their email."""
+    User = get_user_model()
+    uid = decode_uid(uidb64)
+    if uid is None:
+        return render(request, 'accounts/verify_result.html', {'success': False})
+
+    try:
+        user = User.objects.get(pk=uid)
+    except User.DoesNotExist:
+        return render(request, 'accounts/verify_result.html', {'success': False})
+
+    if not email_verification_token.check_token(user, token):
+        return render(request, 'accounts/verify_result.html', {'success': False})
+
+    # Valid — mark verified
+    if hasattr(user, 'profile'):
+        user.profile.email_verified = True
+        user.profile.save(update_fields=['email_verified'])
+
+    return render(request, 'accounts/verify_result.html', {'success': True})
+
+
+@login_required
+def resend_verification(request):
+    """Resend verification email to the logged-in user."""
+    from .emails import send_verification_email
+
+    if request.user.profile.email_verified:
+        messages.info(request, 'Your email is already verified.')
+        return redirect('dashboard')
+
+    send_verification_email(request, request.user)
+    messages.success(request, f'Verification email sent to {request.user.email}. Check your inbox.')
+    return redirect('dashboard')
+
+
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.hashers import make_password
+
+
+def forgot_password(request):
+    """User enters their email to receive a reset link."""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip()
+        if not email:
+            messages.error(request, 'Please enter your email.')
+            return redirect('forgot_password')
+
+        User = get_user_model()
+        users = User.objects.filter(email__iexact=email)
+        # Always show the same success message regardless of whether the email exists
+        # — prevents attackers from probing which emails are registered.
+        if users.exists():
+            from .emails import send_password_reset_email
+            for user in users:
+                send_password_reset_email(request, user)
+
+        messages.success(request, f'If an account exists for {email}, a reset link has been sent.')
+        return redirect('login')
+
+    return render(request, 'accounts/forgot_password.html')
+
+
+def reset_password(request, uidb64, token):
+    """User clicks the link in the reset email, lands here to set a new password."""
+    User = get_user_model()
+    uid = decode_uid(uidb64)
+    if uid is None:
+        return render(request, 'accounts/reset_invalid.html')
+
+    try:
+        user = User.objects.get(pk=uid)
+    except User.DoesNotExist:
+        return render(request, 'accounts/reset_invalid.html')
+
+    if not default_token_generator.check_token(user, token):
+        return render(request, 'accounts/reset_invalid.html')
+
+    if request.method == 'POST':
+        new_password  = request.POST.get('new_password', '')
+        new_password2 = request.POST.get('new_password2', '')
+
+        if len(new_password) < 8:
+            messages.error(request, 'Password must be at least 8 characters.')
+        elif new_password != new_password2:
+            messages.error(request, 'Passwords do not match.')
+        else:
+            user.password = make_password(new_password)
+            user.save(update_fields=['password'])
+            messages.success(request, 'Password updated. You can now log in.')
+            return redirect('login')
+
+    return render(request, 'accounts/reset_password.html', {'uidb64': uidb64, 'token': token})

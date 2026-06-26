@@ -70,6 +70,8 @@ class MasterProfile(models.Model):
     # ── Onboarding state ──
     onboarding_completed = models.BooleanField(default=False,
                                                help_text='True once the user has finished or explicitly skipped the wizard')
+    # ── Email verification ──
+    email_verified = models.BooleanField(default=False)
     def __str__(self):
         return f'{self.user.username} — {self.specialty}'
 
