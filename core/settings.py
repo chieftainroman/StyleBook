@@ -102,6 +102,9 @@ LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/auth/onboarding/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
 
+DEFAULT_FROM_EMAIL = 'StyleBook <noreply@showpiecehub.com>'
+SERVER_EMAIL       = DEFAULT_FROM_EMAIL
+
 SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'

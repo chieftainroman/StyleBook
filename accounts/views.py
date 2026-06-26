@@ -167,34 +167,7 @@ def logout_view(request):
     return redirect('login')
 
 
-@login_required
-def onboarding_view(request):
-    profile, _ = MasterProfile.objects.get_or_create(user=request.user)
-
-    if profile.specialty:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        # If skipped just go to dashboard
-        if request.POST.get('skip'):
-            return redirect('dashboard')
-
-        profile.specialty = request.POST.get('specialty', '').strip()
-        profile.location  = request.POST.get('location', '').strip()
-        profile.ig_handle = request.POST.get('ig_handle', '').strip()
-        profile.bio       = request.POST.get('bio', '').strip()
-
-        years = request.POST.get('years_exp', '0')
-        try:
-            profile.years_exp = int(years)
-        except ValueError:
-            profile.years_exp = 0
-
-        profile.save()
-        messages.success(request, 'Welcome to StyleBook!')
-        return redirect('dashboard')
-
-    return render(request, 'onboarding.html')
+#re_46RiEDbW_LrVQTC8cPCVJhzLeMbEZNg8W
 
 # ═════════════════════════════════════════════════════
 # Onboarding wizard
