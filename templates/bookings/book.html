@@ -1,0 +1,270 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book with {{ profile.user.username }} — StyleBook</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream:          '#FAFAF7',
+            'cream-border': '#E5E3DC',
+            gold:           '#C9A96E',
+            'gold-light':   '#F5EDD8',
+            'gold-dark':    '#8B6914',
+            ink:            '#1C1917',
+            muted:          '#888780',
+          },
+          fontFamily: {
+            sans:  ['Inter', 'sans-serif'],
+            serif: ['Instrument Serif', 'serif'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #FAFAF7; color: #1C1917; }
+    .b-shell { max-width: 640px; margin: 0 auto; padding: 24px 16px 80px; }
+    .b-logo  { font-size: 18px; font-weight: 600; }
+    .b-logo span { color: #C9A96E; }
+
+    /* Master card */
+    .b-master {
+      background: #fff;
+      border: 1px solid #E5E3DC;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .b-master-avatar {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #C9A96E, #8B6914);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 600; font-size: 18px;
+    }
+    .b-master-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .b-master-name { font-size: 17px; font-weight: 600; }
+    .b-master-meta { font-size: 13px; color: #888780; margin-top: 1px; }
+
+    /* Stepper */
+    .b-step-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .b-step-num {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #1C1917; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .b-step-title { font-size: 17px; font-weight: 600; }
+    .b-step { margin-bottom: 28px; }
+
+    /* Service cards */
+    .b-svc {
+      background: #fff;
+      border: 1px solid #E5E3DC;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, transform 0.1s;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+    .b-svc:hover { border-color: #C9A96E; }
+    .b-svc.selected {
+      border-color: #1C1917;
+      background: #FAFAF7;
+    }
+    .b-svc-photo {
+      width: 60px; height: 60px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #F5EDD8, #C9A96E);
+      flex-shrink: 0;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 22px;
+    }
+    .b-svc-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .b-svc-body { flex: 1; min-width: 0; }
+    .b-svc-name { font-size: 15px; font-weight: 600; }
+    .b-svc-desc {
+      font-size: 13px; color: #555;
+      margin-top: 2px; line-height: 1.4;
+    }
+    .b-svc-meta {
+      display: flex; gap: 10px; font-size: 13px;
+      color: #888780; margin-top: 5px;
+    }
+    .b-svc-meta strong { color: #1C1917; font-weight: 600; }
+    .b-svc-radio {
+      width: 20px; height: 20px;
+      border-radius: 50%; border: 2px solid #E5E3DC;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .b-svc.selected .b-svc-radio {
+      border-color: #1C1917;
+      background: #1C1917;
+    }
+    .b-svc.selected .b-svc-radio::after {
+      content: ''; width: 8px; height: 8px;
+      background: #fff; border-radius: 50%;
+    }
+
+    /* Empty state */
+    .b-empty {
+      background: #fff; border: 1px solid #E5E3DC;
+      border-radius: 12px; padding: 32px; text-align: center;
+      color: #888780; font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="b-shell">
+
+  <!-- Logo -->
+  <div class="text-center mb-6">
+    <a href="/" class="b-logo">Style<span>Book</span></a>
+  </div>
+
+  <!-- Master card -->
+  <div class="b-master">
+    <div class="b-master-avatar">
+      {% if profile.avatar_url %}
+        <img src="{{ profile.avatar_url }}" alt="">
+      {% else %}
+        {{ master.username|slice:":2"|upper }}
+      {% endif %}
+    </div>
+    <div>
+      <div class="b-master-name">{{ master.username }}</div>
+      <div class="b-master-meta">
+        {{ profile.get_specialty_display|default:profile.specialty }}
+        {% if profile.location %} · {{ profile.location }}{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 1: Pick a service -->
+  <div class="b-step">
+    <div class="b-step-header">
+      <div class="b-step-num">1</div>
+      <div class="b-step-title">Choose a service</div>
+    </div>
+
+    {% if services %}
+      <div id="bServiceList">
+        {% for svc in services %}
+          <div class="b-svc" data-service-id="{{ svc.id }}"
+               data-duration="{{ svc.duration_minutes }}"
+               data-price="{{ svc.price }}"
+               data-name="{{ svc.name }}">
+            <div class="b-svc-photo">
+              {% if svc.photo_url %}
+                <img src="{{ svc.photo_url }}" alt="">
+              {% else %}
+                ✂️
+              {% endif %}
+            </div>
+            <div class="b-svc-body">
+              <div class="b-svc-name">{{ svc.name }}</div>
+              {% if svc.description %}
+                <div class="b-svc-desc">{{ svc.description }}</div>
+              {% endif %}
+              <div class="b-svc-meta">
+                <span><strong>{{ svc.duration_display }}</strong></span>
+                <span>·</span>
+                <span><strong>${{ svc.price }}</strong></span>
+              </div>
+            </div>
+            <div class="b-svc-radio"></div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="b-empty">
+        This master hasn't added any services yet.
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Step 2: Pick date+time — built in Step 4B -->
+  <div class="b-step" id="bStepDate" style="display: none;">
+    <div class="b-step-header">
+      <div class="b-step-num">2</div>
+      <div class="b-step-title">Choose date &amp; time</div>
+    </div>
+    <div class="b-empty" id="bDatePicker">
+      Date and time picker coming in Step 4B.
+    </div>
+  </div>
+
+  <!-- Step 3: Client info — built in Step 4C -->
+  <div class="b-step" id="bStepInfo" style="display: none;">
+    <div class="b-step-header">
+      <div class="b-step-num">3</div>
+      <div class="b-step-title">Your details</div>
+    </div>
+    <div class="b-empty">Client info form coming in Step 4C.</div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // ── Step 1: Service selection ──
+  const list = document.getElementById('bServiceList');
+  const stepDate = document.getElementById('bStepDate');
+  if (!list) return;
+
+  let selectedService = null;
+
+  list.addEventListener('click', e => {
+    const card = e.target.closest('.b-svc');
+    if (!card) return;
+    list.querySelectorAll('.b-svc.selected').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+
+    selectedService = {
+      id:       parseInt(card.dataset.serviceId),
+      name:     card.dataset.name,
+      duration: parseInt(card.dataset.duration),
+      price:    card.dataset.price,
+    };
+
+    // Reveal step 2
+    stepDate.style.display = '';
+    stepDate.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    // Tell window so step 4B can pick it up
+    window.bSelectedService = selectedService;
+    window.dispatchEvent(new CustomEvent('b-service-selected', { detail: selectedService }));
+  });
+})();
+</script>
+
+</body>
+</html>

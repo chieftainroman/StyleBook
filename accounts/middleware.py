@@ -14,8 +14,8 @@ ALLOWED_PATH_PREFIXES = (
     '/favicon',
     '/profile/upload-avatar/',
     '/profile/upload-cover/',
+    '/book/',
 )
-
 
 class OnboardingRequiredMiddleware:
     """

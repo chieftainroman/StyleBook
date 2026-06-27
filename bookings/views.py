@@ -1,138 +1,119 @@
-from datetime import date
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
+from django.urls import reverse
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+from django.contrib.auth import get_user_model
+from datetime import datetime, timedelta, date as date_cls
 
-from .models import Reservation
-from portfolio.models import PortfolioItem
+from accounts.models import MasterProfile, Service
+from .models import Booking
+from .slots import get_available_slots, get_availability_summary
 
 
-@login_required
-def dashboard(request):
-    today_str       = date.today().strftime('%Y-%m-%d')
-    first_of_month  = date.today().replace(day=1).strftime('%Y-%m-%d')
+def book_master(request, username):
+    """Public booking page for a master. Shows services + slot picker."""
+    User = get_user_model()
+    user = get_object_or_404(User, username=username)
 
-    today_reservations = Reservation.objects.filter(
-        user=request.user,
-        date=today_str
-    ).order_by('time')
+    if not hasattr(user, 'profile'):
+        raise Http404('Master not found')
 
-    month_count = Reservation.objects.filter(
-        user=request.user,
-        date__gte=first_of_month
-    ).count()
+    profile = user.profile
 
-    completed_count = Reservation.objects.filter(
-        user=request.user,
-        status='completed'
-    ).count()
+    if not profile.is_open_for_bookings():
+        return render(request, 'bookings/not_available.html', {'master': user})
 
-    portfolio_count = PortfolioItem.objects.filter(
-        user=request.user
-    ).count()
+    services = profile.services.filter(is_active=True).order_by('sort_order', 'created_at')
 
-    all_clients  = Reservation.objects.filter(user=request.user).values_list('client_name', flat=True)
-    client_names = [c.lower().strip() for c in all_clients]
-    unique_clients = set(client_names)
+    # Source tracking from URL param: /book/<username>/?src=qr
+    source_param = request.GET.get('src', 'direct_link')
+    if source_param not in [c[0] for c in Booking.SOURCE_CHOICES]:
+        source_param = 'direct_link'
 
-    if unique_clients:
-        repeat_clients = sum(1 for c in unique_clients if client_names.count(c) > 1)
-        return_rate    = int((repeat_clients / len(unique_clients)) * 100)
-    else:
-        return_rate = 0
+    context = {
+        'master':   user,
+        'profile':  profile,
+        'services': services,
+        'source':   source_param,
+    }
+    return render(request, 'bookings/book.html', context)
 
-    recent_portfolio = PortfolioItem.objects.filter(
-        user=request.user
-    ).order_by('-id')[:4]
 
-    return render(request, 'dashboard.html', {
-        'active':             'dashboard',
-        'today_reservations': today_reservations,
-        'month_count':        month_count,
-        'completed_count':    completed_count,
-        'portfolio_count':    portfolio_count,
-        'return_rate':        return_rate,
-        'recent_portfolio':   recent_portfolio,
+def availability_api(request, username):
+    """
+    JSON API: given ?service_id=X&date=YYYY-MM-DD return available slots.
+    Used by the booking page's date/time picker.
+    """
+    User = get_user_model()
+    user = get_object_or_404(User, username=username)
+    profile = user.profile
+
+    try:
+        service_id = int(request.GET.get('service_id', 0))
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'Invalid service_id'}, status=400)
+
+    try:
+        service = profile.services.get(pk=service_id, is_active=True)
+    except Service.DoesNotExist:
+        return JsonResponse({'error': 'Service not found'}, status=404)
+
+    date_str = request.GET.get('date', '')
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+
+    # Don't allow booking past dates
+    if target_date < timezone.now().date():
+        return JsonResponse({'slots': []})
+
+    # Don't allow more than 90 days out
+    if (target_date - timezone.now().date()).days > 90:
+        return JsonResponse({'slots': []})
+
+    slots = get_available_slots(profile, service, target_date)
+
+    return JsonResponse({
+        'date':         target_date.isoformat(),
+        'service_id':   service.id,
+        'service_name': service.name,
+        'duration':     service.duration_minutes,
+        'slots':        [
+            {
+                'time':    s.strftime('%H:%M'),
+                'display': s.strftime('%-I:%M %p'),  # Linux strftime
+                'iso':     s.isoformat(),
+            }
+            for s in slots
+        ],
     })
 
 
-@login_required
-def reservations_view(request):
-    if request.method == 'POST':
-        client_name = request.POST.get('client_name', '').strip()
-        res_date    = request.POST.get('date', '')
-        res_time    = request.POST.get('time', '')
-        service     = request.POST.get('service', '').strip()
-        notes       = request.POST.get('notes', '').strip()
+def availability_summary_api(request, username):
+    """
+    JSON API: given ?service_id=X return which dates in next 30 days have slots.
+    Used by the date picker to highlight available dates.
+    """
+    User = get_user_model()
+    user = get_object_or_404(User, username=username)
+    profile = user.profile
 
-        if not client_name or not res_date or not res_time or not service:
-            messages.error(request, 'Please fill in all required fields.')
-            return redirect('reservations')
+    try:
+        service_id = int(request.GET.get('service_id', 0))
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'Invalid service_id'}, status=400)
 
-        Reservation.objects.create(
-            user=request.user,
-            client_name=client_name,
-            date=res_date,
-            time=res_time,
-            service=service,
-            notes=notes,
-            status='upcoming',
-        )
+    try:
+        service = profile.services.get(pk=service_id, is_active=True)
+    except Service.DoesNotExist:
+        return JsonResponse({'error': 'Service not found'}, status=404)
 
-        messages.success(request, 'Booking saved!')
-        return redirect('reservations')
+    summary = get_availability_summary(profile, service, num_days=30)
 
-    today_str = date.today().strftime('%Y-%m-%d')
-
-    upcoming = Reservation.objects.filter(
-        user=request.user,
-        status='upcoming',
-        date__gte=today_str
-    ).order_by('date', 'time')
-
-    completed = Reservation.objects.filter(
-        user=request.user,
-        status='completed'
-    ).order_by('-date', '-time')
-
-    all_reservations = Reservation.objects.filter(
-        user=request.user
-    ).order_by('-date', '-time')
-
-    return render(request, 'reservations.html', {
-        'active':           'reservations',
-        'upcoming':         upcoming,
-        'completed':        completed,
-        'all_reservations': all_reservations,
+    return JsonResponse({
+        'service_id': service.id,
+        'availability': {d.isoformat(): bool(has) for d, has in summary.items()},
     })
-
-
-@login_required
-def complete_reservation(request, res_id):
-    reservation = get_object_or_404(Reservation, id=res_id)
-
-    if reservation.user != request.user:
-        messages.error(request, 'Not authorized.')
-        return redirect('reservations')
-
-    reservation.status = 'completed'
-    reservation.save()
-
-    messages.success(request, f'{reservation.client_name} marked as done!')
-    return redirect('reservations')
-
-
-@login_required
-def delete_reservation(request, res_id):
-    reservation = get_object_or_404(Reservation, id=res_id)
-
-    if reservation.user != request.user:
-        messages.error(request, 'Not authorized.')
-        return redirect('reservations')
-
-    reservation.delete()
-    messages.success(request, 'Booking deleted.')
-    return redirect('reservations')
