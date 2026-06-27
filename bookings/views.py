@@ -6,11 +6,19 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta, date as date_cls
+from django.contrib.auth.decorators import login_required
 
 from accounts.models import MasterProfile, Service
 from .models import Booking
 from .slots import get_available_slots, get_availability_summary
 
+
+@login_required
+def dashboard_view(request):
+    """Master's dashboard."""
+    return render(request, 'dashboard.html', {
+        'active': 'dashboard',
+    })
 
 def book_master(request, username):
     """Public booking page for a master. Shows services + slot picker."""
