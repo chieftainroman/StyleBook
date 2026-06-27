@@ -97,7 +97,12 @@ class MasterProfile(models.Model):
             self.phone,
         ])
         
-        
+    def is_open_for_bookings(self):
+        """True if profile is set up enough to receive bookings."""
+        return (
+            self.onboarding_completed
+            and self.services.filter(is_active=True).exists()
+        )    
         
 # ════════════════════════════════════════════════
 # WorkExperience — timeline of a master's job history
