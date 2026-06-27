@@ -29,52 +29,40 @@ WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 def get_available_slots(master, service, target_date, now=None):
     """
-    Return a list of datetime objects representing available start times
-    for `service` with `master` on `target_date`.
-
-    `target_date` is a date object (no time).
-    `now` is optional — defaults to current time, used for lead-time filtering.
+    Return available slot start times for `service` with `master` on `target_date`.
+    Works with USE_TZ=True or False.
     """
     if now is None:
         now = timezone.now()
 
-    # ── 1. Get working hours for this weekday ──
-    weekday_idx = target_date.weekday()  # 0=Mon..6=Sun
-    weekday_key = WEEKDAY_KEYS[weekday_idx]
+    use_tz = timezone.is_aware(now)
+    now_naive = timezone.make_naive(now) if use_tz else now
 
-    working_hours = master.get_working_hours()
-    day_hours = working_hours.get(weekday_key, {})
+    # ── 1. Working hours for this weekday ──
+    weekday_idx = target_date.weekday()
+    weekday_key = WEEKDAY_KEYS[weekday_idx]
+    day_hours = master.get_working_hours().get(weekday_key, {})
 
     if day_hours.get('closed', True):
         return []
 
-    open_str  = day_hours.get('open',  '09:00')
-    close_str = day_hours.get('close', '18:00')
-
     try:
-        open_t  = _parse_time(open_str)
-        close_t = _parse_time(close_str)
-    except ValueError:
+        open_t  = _parse_time(day_hours.get('open', '09:00'))
+        close_t = _parse_time(day_hours.get('close', '18:00'))
+    except (ValueError, AttributeError):
         return []
 
-    # Combine target_date with open/close times to get full datetimes (naive)
-    naive_open  = datetime.combine(target_date, open_t)
-    naive_close = datetime.combine(target_date, close_t)
+    day_open  = datetime.combine(target_date, open_t)
+    day_close = datetime.combine(target_date, close_t)
 
-    # Make them timezone-aware
-    tz = timezone.get_current_timezone()
-    day_open  = timezone.make_aware(naive_open, tz)
-    day_close = timezone.make_aware(naive_close, tz)
-
-    # ── 2. Build candidate slot start times ──
+    # ── 2. Candidate slots (all naive) ──
     service_duration = timedelta(minutes=service.duration_minutes)
     slot_step        = timedelta(minutes=SLOT_STEP_MINUTES)
-    earliest_allowed = now + timedelta(hours=master.min_lead_time_hours)
+    earliest_allowed = now_naive + timedelta(hours=master.min_lead_time_hours)
 
     candidates = []
     current = day_open
     while current + service_duration <= day_close:
-        # Must respect lead time
         if current >= earliest_allowed:
             candidates.append(current)
         current += slot_step
@@ -82,40 +70,52 @@ def get_available_slots(master, service, target_date, now=None):
     if not candidates:
         return []
 
-    # ── 3. Subtract single-occurrence unavailable slots ──
-    day_start_utc = timezone.make_aware(
-        datetime.combine(target_date, datetime.min.time()), tz
-    )
-    day_end_utc   = day_start_utc + timedelta(days=1)
+    # ── 3. Single-occurrence unavailable slots ──
+    day_start = datetime.combine(target_date, datetime.min.time())
+    day_end   = day_start + timedelta(days=1)
 
     single_unavailable = master.unavailable_slots.filter(
         is_recurring=False,
-        start_datetime__lt=day_end_utc,
-        end_datetime__gt=day_start_utc,
+        start_datetime__lt=day_end,
+        end_datetime__gt=day_start,
     )
 
-    blocked_ranges = [(u.start_datetime, u.end_datetime) for u in single_unavailable]
+    blocked_ranges = []
+    for u in single_unavailable:
+        s = u.start_datetime
+        e = u.end_datetime
+        if timezone.is_aware(s):
+            s = timezone.make_naive(s)
+        if timezone.is_aware(e):
+            e = timezone.make_naive(e)
+        blocked_ranges.append((s, e))
 
-    # ── 4. Subtract recurring unavailable slots matching this weekday ──
+    # ── 4. Recurring weekly blocks ──
     recurring_unavailable = master.unavailable_slots.filter(
         is_recurring=True,
         weekday=weekday_idx,
     )
-
     for u in recurring_unavailable:
-        block_start_naive = datetime.combine(target_date, u.start_time)
-        block_end_naive   = datetime.combine(target_date, u.end_time)
-        block_start = timezone.make_aware(block_start_naive, tz)
-        block_end   = timezone.make_aware(block_end_naive, tz)
-        blocked_ranges.append((block_start, block_end))
+        bs = datetime.combine(target_date, u.start_time)
+        be = datetime.combine(target_date, u.end_time)
+        blocked_ranges.append((bs, be))
 
-    # ── 5. Subtract existing confirmed bookings (with concurrent_clients capacity) ──
-    existing_bookings = Booking.objects.filter(
+    # ── 5. Existing bookings ──
+    existing_bookings_raw = Booking.objects.filter(
         master=master,
         status__in=[Booking.STATUS_PENDING_OTP, Booking.STATUS_CONFIRMED],
-        start_time__lt=day_end_utc,
-        end_time__gt=day_start_utc,
+        start_time__lt=day_end,
+        end_time__gt=day_start,
     )
+    existing_bookings = []
+    for b in existing_bookings_raw:
+        bs = b.start_time
+        be = b.end_time
+        if timezone.is_aware(bs):
+            bs = timezone.make_naive(bs)
+        if timezone.is_aware(be):
+            be = timezone.make_naive(be)
+        existing_bookings.append((bs, be))
 
     # ── 6. Filter candidates ──
     available = []
@@ -124,19 +124,20 @@ def get_available_slots(master, service, target_date, now=None):
     for slot_start in candidates:
         slot_end = slot_start + service_duration
 
-        # Skip if overlaps any blocked range
         if _overlaps_any(slot_start, slot_end, blocked_ranges):
             continue
 
-        # Count overlapping bookings — must respect capacity
-        overlapping_count = sum(
-            1 for b in existing_bookings
-            if _intervals_overlap(slot_start, slot_end, b.start_time, b.end_time)
+        overlapping = sum(
+            1 for bs, be in existing_bookings
+            if _intervals_overlap(slot_start, slot_end, bs, be)
         )
-        if overlapping_count >= capacity:
+        if overlapping >= capacity:
             continue
 
-        available.append(slot_start)
+        if use_tz:
+            available.append(timezone.make_aware(slot_start, timezone.get_current_timezone()))
+        else:
+            available.append(slot_start)
 
     return available
 
