@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import MasterProfile, WorkExperience, Certificate, Honor
+from .models import MasterProfile, WorkExperience, Certificate, Honor, Service, UnavailableSlot
 
 
 # Inlines — show experiences/certs/honors inside MasterProfile admin page
@@ -51,3 +51,18 @@ class HonorAdmin(admin.ModelAdmin):
     list_display    = ('title', 'profile', 'issuer', 'year')
     list_filter     = ('year',)
     search_fields   = ('title', 'issuer', 'profile__user__username')
+    
+    
+@admin.register(UnavailableSlot)
+class UnavailableSlotAdmin(admin.ModelAdmin):
+    list_display = ['profile', 'is_recurring', 'weekday', 'start_time',
+                    'end_time', 'start_datetime', 'end_datetime', 'reason']
+    list_filter  = ['is_recurring', 'weekday']
+    search_fields = ['profile__user__username', 'reason']
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ['name', 'profile', 'duration_minutes', 'price', 'is_active', 'sort_order']
+    list_filter  = ['is_active']
+    search_fields = ['name', 'profile__user__username']

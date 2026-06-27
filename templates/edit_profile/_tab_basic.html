@@ -203,6 +203,42 @@
     </div>
   </div>
 
+  <!-- ─── Booking settings ─── -->
+<div class="mt-8 pt-6 border-t border-cream-border">
+  <p class="text-xs font-medium text-muted uppercase tracking-wider mb-4">
+    Booking settings
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+    <div>
+      <label class="form-label" for="min_lead_time_hours">
+        Minimum lead time (hours)
+      </label>
+      <input class="form-input" type="number" id="min_lead_time_hours"
+             name="min_lead_time_hours" min="0" max="168" step="1"
+             value="{{ profile.min_lead_time_hours }}">
+      <p class="text-xs text-muted mt-1.5">
+        Clients can't book closer than this many hours from now.
+        Default 2h. Set to 24 if you need a day's notice.
+      </p>
+    </div>
+
+    <div>
+      <label class="form-label" for="concurrent_clients">
+        Concurrent clients
+      </label>
+      <input class="form-input" type="number" id="concurrent_clients"
+             name="concurrent_clients" min="1" max="20" step="1"
+             value="{{ profile.concurrent_clients }}">
+      <p class="text-xs text-muted mt-1.5">
+        How many clients you can handle simultaneously.
+        Most solo masters keep this at 1.
+      </p>
+    </div>
+
+  </div>
+</div>
   <!-- ─── Submit ──────────────────────────────── -->
   <div class="flex gap-3">
     <button type="submit" class="btn-gold flex-1 justify-center py-3">Save basic info</button>

@@ -52,7 +52,15 @@ class MasterProfile(models.Model):
     travel_radius_km   = models.IntegerField(null=True, blank=True,
                                              help_text='Max km the master will travel for home visits')
     home_visits        = models.BooleanField(default=False)
-
+    # ── Booking configuration ──
+    min_lead_time_hours = models.PositiveSmallIntegerField(
+        default=2,
+        help_text='Minimum hours between booking time and appointment',
+    )
+    concurrent_clients = models.PositiveSmallIntegerField(
+        default=1,
+        help_text='Number of clients you can handle simultaneously',
+    )
     # ── New: languages — Postgres array ──
     languages          = ArrayField(
         models.CharField(max_length=40),
@@ -232,3 +240,66 @@ class Service(models.Model):
         if h:
             return f'{h}h'
         return f'{m}min'
+    
+    
+class UnavailableSlot(models.Model):
+    """
+    Master-marked times when they are NOT available for bookings,
+    even within their normal working hours.
+    Single occurrence OR recurring weekly.
+    """
+
+    profile = models.ForeignKey(
+        MasterProfile,
+        on_delete=models.CASCADE,
+        related_name='unavailable_slots',
+    )
+
+    # ── For single occurrences ──
+    start_datetime = models.DateTimeField(null=True, blank=True)
+    end_datetime   = models.DateTimeField(null=True, blank=True)
+
+    # ── For recurring weekly blocks ──
+    is_recurring   = models.BooleanField(default=False)
+    weekday        = models.PositiveSmallIntegerField(
+        null=True, blank=True,
+        help_text='0=Monday, 6=Sunday — only for recurring blocks',
+    )
+    start_time     = models.TimeField(null=True, blank=True,
+                                      help_text='Only for recurring blocks')
+    end_time       = models.TimeField(null=True, blank=True,
+                                      help_text='Only for recurring blocks')
+
+    # ── Metadata ──
+    reason         = models.CharField(max_length=200, blank=True,
+                                      help_text='Optional internal note: "Personal", "Vacation", etc.')
+    created_at     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['start_datetime', 'weekday', 'start_time']
+
+    def __str__(self):
+        if self.is_recurring:
+            days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+            day = days[self.weekday] if self.weekday is not None else '?'
+            return f'Every {day} {self.start_time}-{self.end_time}'
+        return f'{self.start_datetime} → {self.end_datetime}'
+
+    def clean(self):
+        """Validate that the right fields are set for the slot type."""
+        from django.core.exceptions import ValidationError
+
+        if self.is_recurring:
+            if self.weekday is None or not self.start_time or not self.end_time:
+                raise ValidationError(
+                    'Recurring slots require weekday, start_time, and end_time.'
+                )
+            if self.start_time >= self.end_time:
+                raise ValidationError('End time must be after start time.')
+        else:
+            if not self.start_datetime or not self.end_datetime:
+                raise ValidationError(
+                    'Single-occurrence slots require start_datetime and end_datetime.'
+                )
+            if self.start_datetime >= self.end_datetime:
+                raise ValidationError('End must be after start.')

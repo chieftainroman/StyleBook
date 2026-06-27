@@ -165,6 +165,21 @@ def edit_profile(request):
         # ── Working hours — JSON from per-day grid ──
         profile.working_hours = _parse_working_hours(request.POST)
 
+        # ── Booking config ──
+        try:
+            lead_time = int(request.POST.get('min_lead_time_hours', 2))
+        except (ValueError, TypeError):
+            lead_time = 2
+        profile.min_lead_time_hours = max(0, min(168, lead_time))
+
+        try:
+            capacity = int(request.POST.get('concurrent_clients', 1))
+        except (ValueError, TypeError):
+            capacity = 1
+        profile.concurrent_clients = max(1, min(20, capacity))
+
+        profile.save()
+
         profile.save()
         messages.success(request, 'Profile updated!')
         return redirect('profile', username=request.user.username)
@@ -182,7 +197,7 @@ def edit_profile(request):
 
     # Which tab to show — defaults to 'basic'
     tab = request.GET.get('tab', 'basic')
-    if tab not in ('basic', 'experience', 'certificates', 'honors'):
+    if tab not in ('basic', 'services', 'experience', 'certificates', 'honors'):
         tab = 'basic'
 
     return render(request, 'edit_profile.html', {
