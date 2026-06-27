@@ -138,6 +138,159 @@
       border-radius: 12px; padding: 32px; text-align: center;
       color: #888780; font-size: 14px;
     }
+
+    /* Date strip */
+    .b-date-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .b-date-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding: 4px 36px;
+      scrollbar-width: none;
+    }
+    .b-date-strip::-webkit-scrollbar { display: none; }
+    .b-date-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid #E5E3DC;
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      color: #1C1917;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .b-date-nav-prev { left: 0; }
+    .b-date-nav-next { right: 0; }
+    .b-date-nav:hover { background: #FAFAF7; }
+    .b-date-nav:disabled { opacity: 0.3; cursor: not-allowed; }
+
+    .b-date-card {
+      flex-shrink: 0;
+      width: 64px;
+      height: 78px;
+      background: #fff;
+      border: 1px solid #E5E3DC;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+      padding: 6px 0;
+    }
+    .b-date-card:hover:not(.disabled) { border-color: #C9A96E; }
+    .b-date-card.selected {
+      background: #1C1917;
+      border-color: #1C1917;
+      color: #fff;
+    }
+    .b-date-card.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .b-date-day {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #888780;
+      font-weight: 500;
+    }
+    .b-date-card.selected .b-date-day { color: #C9A96E; }
+    .b-date-num {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.1;
+      margin: 2px 0;
+    }
+    .b-date-month {
+      font-size: 10px;
+      color: #888780;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .b-date-card.selected .b-date-month { color: #C9A96E; }
+    .b-date-dot {
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: #C9A96E;
+      margin-top: 3px;
+    }
+    .b-date-card.disabled .b-date-dot { display: none; }
+
+    .b-date-loading {
+      color: #888780;
+      font-size: 13px;
+      padding: 24px;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* Slot grid */
+    .b-slot-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .b-slot-date {
+      font-size: 15px;
+      font-weight: 600;
+      color: #1C1917;
+    }
+    .b-slot-tz {
+      font-size: 11px;
+      color: #888780;
+    }
+    .b-slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+      gap: 8px;
+    }
+    .b-slot {
+      background: #fff;
+      border: 1px solid #E5E3DC;
+      border-radius: 8px;
+      padding: 10px 6px;
+      text-align: center;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1C1917;
+      transition: all 0.12s;
+    }
+    .b-slot:hover { border-color: #C9A96E; }
+    .b-slot.selected {
+      background: #1C1917;
+      border-color: #1C1917;
+      color: #fff;
+    }
+    .b-slot-loading,
+    .b-slot-empty {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 32px 16px;
+      color: #888780;
+      font-size: 13px;
+    }
+    .b-slot-empty strong {
+      display: block;
+      color: #1C1917;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 
@@ -211,14 +364,31 @@
     {% endif %}
   </div>
 
-  <!-- Step 2: Pick date+time — built in Step 4B -->
+  <!-- Step 2: Pick date+time -->
   <div class="b-step" id="bStepDate" style="display: none;">
     <div class="b-step-header">
       <div class="b-step-num">2</div>
       <div class="b-step-title">Choose date &amp; time</div>
     </div>
-    <div class="b-empty" id="bDatePicker">
-      Date and time picker coming in Step 4B.
+
+    <!-- Horizontal scrolling date strip -->
+    <div class="b-date-wrap">
+      <button type="button" class="b-date-nav b-date-nav-prev" id="bDatePrev" aria-label="Previous">‹</button>
+      <div class="b-date-strip" id="bDateStrip">
+        <div class="b-date-loading">Loading dates…</div>
+      </div>
+      <button type="button" class="b-date-nav b-date-nav-next" id="bDateNext" aria-label="Next">›</button>
+    </div>
+
+    <!-- Selected date label + time slot grid -->
+    <div id="bSlotPanel" style="display: none;">
+      <div class="b-slot-header">
+        <span class="b-slot-date" id="bSlotDateLabel">—</span>
+        <span class="b-slot-tz" id="bSlotTzLabel"></span>
+      </div>
+      <div id="bSlotGrid" class="b-slot-grid">
+        <div class="b-slot-loading">Loading time slots…</div>
+      </div>
     </div>
   </div>
 
@@ -235,7 +405,9 @@
 
 <script>
 (function() {
-  // ── Step 1: Service selection ──
+  // ════════════════════════════════════════════════
+  // Step 1: Service selection
+  // ════════════════════════════════════════════════
   const list = document.getElementById('bServiceList');
   const stepDate = document.getElementById('bStepDate');
   if (!list) return;
@@ -255,14 +427,184 @@
       price:    card.dataset.price,
     };
 
-    // Reveal step 2
     stepDate.style.display = '';
     stepDate.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // Tell window so step 4B can pick it up
     window.bSelectedService = selectedService;
     window.dispatchEvent(new CustomEvent('b-service-selected', { detail: selectedService }));
   });
+})();
+
+
+(function() {
+  // ════════════════════════════════════════════════
+  // Step 2: Date strip + time slot picker
+  // ════════════════════════════════════════════════
+  const username = '{{ master.username }}';
+
+  const strip       = document.getElementById('bDateStrip');
+  const prevBtn     = document.getElementById('bDatePrev');
+  const nextBtn     = document.getElementById('bDateNext');
+  const slotPanel   = document.getElementById('bSlotPanel');
+  const slotGrid    = document.getElementById('bSlotGrid');
+  const slotDateLbl = document.getElementById('bSlotDateLabel');
+  const slotTzLbl   = document.getElementById('bSlotTzLabel');
+
+  let availability = {};
+  let selectedDate = null;
+  let selectedSlot = null;
+  let currentService = null;
+
+  window.addEventListener('b-service-selected', e => {
+    currentService = e.detail;
+    selectedDate = null;
+    selectedSlot = null;
+    slotPanel.style.display = 'none';
+    loadAvailability();
+  });
+
+  function buildDateStrip(numDays = 14) {
+    strip.innerHTML = '';
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+    for (let i = 0; i < numDays; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const iso = isoDate(d);
+      const hasSlots = availability[iso];
+
+      const card = document.createElement('div');
+      card.className = 'b-date-card' + (hasSlots ? '' : ' disabled');
+      card.dataset.date = iso;
+      card.innerHTML = `
+        <div class="b-date-day">${i === 0 ? 'Today' : dayNames[d.getDay()]}</div>
+        <div class="b-date-num">${d.getDate()}</div>
+        <div class="b-date-month">${monthNames[d.getMonth()]}</div>
+        <div class="b-date-dot"></div>
+      `;
+
+      if (hasSlots) {
+        card.addEventListener('click', () => selectDate(iso, card));
+      }
+      strip.appendChild(card);
+    }
+  }
+
+  function loadAvailability() {
+    strip.innerHTML = '<div class="b-date-loading">Loading dates…</div>';
+    slotPanel.style.display = 'none';
+
+    fetch(`/book/${username}/api/summary/?service_id=${currentService.id}`)
+      .then(r => r.json())
+      .then(data => {
+        availability = data.availability || {};
+        buildDateStrip(14);
+        const firstAvail = Object.entries(availability).find(([d, has]) => has);
+        if (firstAvail) {
+          const card = strip.querySelector(`[data-date="${firstAvail[0]}"]`);
+          if (card) selectDate(firstAvail[0], card);
+        }
+      })
+      .catch(() => {
+        strip.innerHTML = '<div class="b-date-loading">Could not load dates. Try again later.</div>';
+      });
+  }
+
+  function selectDate(iso, card) {
+    strip.querySelectorAll('.b-date-card.selected').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedDate = iso;
+    selectedSlot = null;
+    window.bSelectedSlot = null;
+
+    slotPanel.style.display = '';
+    slotDateLbl.textContent = formatDateLong(iso);
+
+    try {
+      slotTzLbl.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) { slotTzLbl.textContent = ''; }
+
+    loadSlots(iso);
+  }
+
+  function loadSlots(iso) {
+    slotGrid.innerHTML = '<div class="b-slot-loading">Loading time slots…</div>';
+
+    fetch(`/book/${username}/api/availability/?service_id=${currentService.id}&date=${iso}`)
+      .then(r => r.json())
+      .then(data => {
+        const slots = data.slots || [];
+        if (slots.length === 0) {
+          slotGrid.innerHTML = `
+            <div class="b-slot-empty">
+              <strong>No times available</strong>
+              Try a different day.
+            </div>
+          `;
+          return;
+        }
+        renderSlots(slots);
+      })
+      .catch(() => {
+        slotGrid.innerHTML = '<div class="b-slot-empty"><strong>Could not load times</strong>Try again in a moment.</div>';
+      });
+  }
+
+  function renderSlots(slots) {
+    slotGrid.innerHTML = '';
+    slots.forEach(s => {
+      const btn = document.createElement('div');
+      btn.className = 'b-slot';
+      btn.textContent = s.display;
+      btn.dataset.iso = s.iso;
+      btn.dataset.time = s.time;
+      btn.addEventListener('click', () => selectSlot(s, btn));
+      slotGrid.appendChild(btn);
+    });
+  }
+
+  function selectSlot(slot, btn) {
+    slotGrid.querySelectorAll('.b-slot.selected').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedSlot = slot;
+    window.bSelectedSlot = slot;
+
+    const stepInfo = document.getElementById('bStepInfo');
+    if (stepInfo) {
+      stepInfo.style.display = '';
+      stepInfo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    window.dispatchEvent(new CustomEvent('b-slot-selected', {
+      detail: { date: selectedDate, slot: slot, service: currentService }
+    }));
+  }
+
+  prevBtn.addEventListener('click', () => {
+    strip.scrollBy({ left: -250, behavior: 'smooth' });
+  });
+  nextBtn.addEventListener('click', () => {
+    strip.scrollBy({ left: 250, behavior: 'smooth' });
+  });
+
+  function isoDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function formatDateLong(iso) {
+    const [y, m, d] = iso.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    return `${dayNames[date.getDay()]}, ${monthNames[date.getMonth()]} ${date.getDate()}`;
+  }
 })();
 </script>
 
