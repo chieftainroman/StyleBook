@@ -87,21 +87,16 @@
 <!-- TAB CONTENT                                          -->
 <!-- ═════════════════════════════════════════════════ -->
 
-{% if tab == 'basic' %}
+{% if active_tab == 'basic' %}
   {% include 'edit_profile/_tab_basic.html' %}
-
-{% elif tab == 'experience' %}
-  {% include 'edit_profile/_tab_experience.html' %}
-
-{% elif tab == 'certificates' %}
-  {% include 'edit_profile/_tab_certificates.html' %}
-
-{% elif tab == 'honors' %}
-  {% include 'edit_profile/_tab_honors.html' %}
-
-{% elif tab == 'services' %}
+{% elif active_tab == 'services' %}
   {% include 'edit_profile/_tab_services.html' %}
-
+{% elif active_tab == 'experience' %}
+  {% include 'edit_profile/_tab_experience.html' %}
+{% elif active_tab == 'certificates' %}
+  {% include 'edit_profile/_tab_certificates.html' %}
+{% elif active_tab == 'honors' %}
+  {% include 'edit_profile/_tab_honors.html' %}
 {% endif %}
 
 {% endblock %}

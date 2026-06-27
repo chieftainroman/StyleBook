@@ -187,6 +187,7 @@ def edit_profile(request):
 
     return render(request, 'edit_profile.html', {
         'active':         'profile',
+        'active_tab':   request.GET.get('tab', 'basic'), 
         'profile':        profile,
         'working_hours':  profile.get_working_hours(),
         'languages_str':  ', '.join(profile.languages),
