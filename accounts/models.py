@@ -189,3 +189,46 @@ class Honor(models.Model):
 
     def __str__(self):
         return f'{self.title} ({self.year})'
+    
+    
+class Service(models.Model):
+    """A service a master offers to clients."""
+
+    profile = models.ForeignKey(
+        MasterProfile,
+        on_delete=models.CASCADE,
+        related_name='services',
+    )
+
+    name             = models.CharField(max_length=100)
+    duration_minutes = models.PositiveSmallIntegerField(
+        help_text='How long this service takes (minutes)',
+    )
+    price            = models.DecimalField(
+        max_digits=8, decimal_places=2,
+        help_text='Price in your local currency',
+    )
+    description      = models.TextField(blank=True)
+    photo_url        = models.URLField(blank=True, help_text='Optional photo of this service')
+
+    sort_order       = models.PositiveSmallIntegerField(default=0)
+    is_active        = models.BooleanField(default=True,
+                                           help_text='Inactive services are hidden from clients')
+
+    created_at       = models.DateTimeField(auto_now_add=True)
+    updated_at       = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['sort_order', 'created_at']
+
+    def __str__(self):
+        return f'{self.name} ({self.duration_minutes}min · ${self.price})'
+
+    def duration_display(self):
+        """Human-readable duration: '45 min' or '1h 30min'."""
+        h, m = divmod(self.duration_minutes, 60)
+        if h and m:
+            return f'{h}h {m}min'
+        if h:
+            return f'{h}h'
+        return f'{m}min'

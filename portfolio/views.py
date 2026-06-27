@@ -22,6 +22,7 @@ from bookings.models import Reservation
 from accounts.models import MasterProfile
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.db import models
 
 @login_required
 def portfolio_view(request):
@@ -193,6 +194,7 @@ def edit_profile(request):
         'tab':            tab,
         'experiences':    profile.experiences.all(),
         'certificates':   profile.certificates.all(),
+        'services':     request.user.profile.services.all(),
         'honors':         profile.honors.all(),
     })
 
@@ -941,3 +943,201 @@ def honor_delete(request, pk):
     honor.delete()
     messages.success(request, 'Honor removed.')
     return redirect(f"{reverse('profile_edit')}?tab=honors")
+
+
+
+# ════════════════════════════════════════════════
+# Service — Create / Update / Delete / Reorder
+# ════════════════════════════════════════════════
+
+from accounts.models import Service
+from accounts.service_presets import get_presets_for_specialty
+from decimal import Decimal, InvalidOperation
+
+
+def _parse_service(post_data):
+    """Extract and validate service fields from POST."""
+    name = post_data.get('name', '').strip()
+    if not name:
+        return None, 'Service name is required.'
+    if len(name) > 100:
+        return None, 'Service name too long (max 100 characters).'
+
+    try:
+        duration = int(post_data.get('duration_minutes', 0))
+    except (ValueError, TypeError):
+        return None, 'Duration must be a number.'
+    if duration < 5 or duration > 480:
+        return None, 'Duration must be between 5 minutes and 8 hours.'
+
+    try:
+        price = Decimal(post_data.get('price', '0'))
+    except (InvalidOperation, ValueError):
+        return None, 'Price must be a number.'
+    if price < 0 or price > 100000:
+        return None, 'Invalid price.'
+
+    return {
+        'name':             name,
+        'duration_minutes': duration,
+        'price':            price,
+        'description':      post_data.get('description', '').strip()[:500],
+        'photo_url':        post_data.get('photo_url', '').strip(),
+    }, None
+
+
+@login_required
+@require_POST
+def service_add(request):
+    """Create one or many services. Supports JSON payload for bulk preset import."""
+    profile = request.user.profile
+
+    # Bulk import from presets (JSON payload)
+    if request.content_type == 'application/json':
+        import json
+        try:
+            payload = json.loads(request.body)
+            services_data = payload.get('services', [])
+        except (ValueError, KeyError):
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+        created = []
+        # Find current max sort_order to append new services at the end
+        max_order = profile.services.aggregate(
+            mx=models.Max('sort_order')
+        )['mx'] or 0
+
+        for i, item in enumerate(services_data):
+            fields, err = _parse_service(item)
+            if err:
+                continue  # skip invalid, don't fail the whole batch
+            s = Service.objects.create(
+                profile=profile,
+                sort_order=max_order + i + 1,
+                **fields,
+            )
+            created.append({'id': s.id, 'name': s.name})
+
+        return JsonResponse({'created': created, 'count': len(created)})
+
+    # Single service form submission
+    fields, err = _parse_service(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=services")
+
+    max_order = profile.services.aggregate(
+        mx=models.Max('sort_order')
+    )['mx'] or 0
+
+    Service.objects.create(
+        profile=profile,
+        sort_order=max_order + 1,
+        **fields,
+    )
+    messages.success(request, f'Added "{fields["name"]}"')
+    return redirect(f"{reverse('profile_edit')}?tab=services")
+
+
+@login_required
+@require_POST
+def service_edit(request, pk):
+    """Update an existing service."""
+    service = get_object_or_404(Service, pk=pk, profile=request.user.profile)
+    fields, err = _parse_service(request.POST)
+    if err:
+        messages.error(request, err)
+        return redirect(f"{reverse('profile_edit')}?tab=services")
+
+    for key, value in fields.items():
+        setattr(service, key, value)
+    service.save()
+    messages.success(request, f'Updated "{service.name}"')
+    return redirect(f"{reverse('profile_edit')}?tab=services")
+
+
+@login_required
+@require_POST
+def service_delete(request, pk):
+    """Soft-delete: deactivate. Hard-delete only if no bookings reference it."""
+    service = get_object_or_404(Service, pk=pk, profile=request.user.profile)
+    # In step 3 we'll add the Booking model; for now hard delete is fine.
+    name = service.name
+    service.delete()
+    messages.success(request, f'Removed "{name}"')
+    return redirect(f"{reverse('profile_edit')}?tab=services")
+
+
+@login_required
+@require_POST
+def service_toggle_active(request, pk):
+    """Toggle is_active. Used for the show/hide button on the service card."""
+    service = get_object_or_404(Service, pk=pk, profile=request.user.profile)
+    service.is_active = not service.is_active
+    service.save(update_fields=['is_active'])
+    return JsonResponse({'is_active': service.is_active})
+
+
+@login_required
+@require_POST
+def service_reorder(request):
+    """Reorder services via drag and drop. Expects JSON {ids: [3, 1, 2, ...]}."""
+    import json
+    try:
+        data = json.loads(request.body)
+        ids = data.get('ids', [])
+    except (ValueError, KeyError):
+        return JsonResponse({'error': 'Invalid payload'}, status=400)
+
+    # Update sort_order for each service belonging to this user
+    for new_order, sid in enumerate(ids):
+        Service.objects.filter(
+            pk=sid,
+            profile=request.user.profile,
+        ).update(sort_order=new_order)
+
+    return JsonResponse({'ok': True})
+
+
+@login_required
+@require_POST
+def upload_service_photo(request):
+    """Upload an optional photo for a service. Returns Cloudinary URL."""
+    f = request.FILES.get('file')
+    if not f:
+        return JsonResponse({'error': 'No file provided'}, status=400)
+    if f.size > 5 * 1024 * 1024:
+        return JsonResponse({'error': 'File too large (max 5 MB)'}, status=400)
+    if not f.content_type.startswith('image/'):
+        return JsonResponse({'error': 'Only images allowed'}, status=400)
+
+    import cloudinary.uploader
+    result = cloudinary.uploader.upload(
+        f,
+        folder=f'stylebook/services/{request.user.id}/',
+        resource_type='image',
+        transformation=[
+            {'width': 800, 'height': 800, 'crop': 'fill', 'quality': 'auto'},
+        ],
+    )
+    return JsonResponse({'url': result['secure_url']})
+
+
+@login_required
+def service_presets_api(request):
+    """Return preset suggestions for the current master's specialty as JSON."""
+    profile = request.user.profile
+    presets = get_presets_for_specialty(profile.specialty)
+    return JsonResponse({
+        'specialty': profile.specialty,
+        'presets': [
+            {
+                'name':              name,
+                'duration_minutes':  duration,
+                'price_low':         low,
+                'price_high':        high,
+                'price_suggested':   round((low + high) / 2, 2),
+            }
+            for name, duration, low, high in presets
+        ],
+    })

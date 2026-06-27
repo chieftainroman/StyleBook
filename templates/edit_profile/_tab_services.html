@@ -1,0 +1,525 @@
+{% load static %}
+
+<style>
+  /* Services tab specific styles */
+  .svc-presets-panel {
+    background: linear-gradient(135deg, #F5EDD8, #fff);
+    border: 1px solid #C9A96E;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .svc-presets-panel.hidden { display: none; }
+  .svc-presets-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1C1917;
+    margin-bottom: 4px;
+  }
+  .svc-presets-sub {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 14px;
+  }
+  .svc-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .svc-preset-chip {
+    background: #fff;
+    border: 1px solid #E5E3DC;
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .svc-preset-chip:hover {
+    border-color: #C9A96E;
+  }
+  .svc-preset-chip.selected {
+    background: #1C1917;
+    color: #fff;
+    border-color: #1C1917;
+  }
+  .svc-preset-chip.selected .svc-preset-meta { color: #C9A96E; }
+  .svc-preset-name {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .svc-preset-meta {
+    font-size: 11px;
+    color: #888780;
+  }
+  .svc-import-btn {
+    background: #1C1917;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .svc-import-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+
+  .svc-card {
+    background: #fff;
+    border: 1px solid #E5E3DC;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    align-items: center;
+    cursor: grab;
+    transition: border-color 0.15s, opacity 0.2s;
+  }
+  .svc-card.inactive { opacity: 0.55; }
+  .svc-card.dragging { opacity: 0.4; }
+  .svc-handle {
+    color: #C9A96E;
+    cursor: grab;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .svc-photo {
+    width: 56px; height: 56px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #F5EDD8, #C9A96E);
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 20px;
+  }
+  .svc-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .svc-body { flex: 1; min-width: 0; }
+  .svc-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1C1917;
+  }
+  .svc-meta {
+    font-size: 12px;
+    color: #888780;
+    margin-top: 2px;
+  }
+  .svc-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .svc-action-btn {
+    padding: 5px 10px;
+    border: 1px solid #E5E3DC;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #1C1917;
+    cursor: pointer;
+  }
+  .svc-action-btn:hover { background: #FAFAF7; }
+  .svc-action-btn.danger {
+    color: #B91C1C;
+    border-color: rgba(185, 28, 28, 0.2);
+  }
+
+  .svc-form-card {
+    background: #FAFAF7;
+    border: 1px dashed #C9A96E;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 12px;
+  }
+  .svc-form-card.hidden { display: none; }
+
+  .svc-add-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: #1C1917;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    margin-right: 8px;
+  }
+
+  .svc-photo-zone {
+    border: 1px dashed #C9A96E;
+    border-radius: 8px;
+    padding: 14px;
+    text-align: center;
+    cursor: pointer;
+    background: #fff;
+    display: block;
+  }
+  .svc-photo-zone:hover { background: #FAFAF7; }
+  .svc-photo-preview {
+    max-width: 100%;
+    max-height: 100px;
+    border-radius: 6px;
+    margin: 0 auto 6px;
+    display: block;
+  }
+  .svc-photo-preview.hidden { display: none; }
+  .svc-photo-status {
+    font-size: 13px;
+    color: #1C1917;
+  }
+  .svc-photo-hint {
+    font-size: 11px;
+    color: #888780;
+    margin-top: 3px;
+  }
+</style>
+
+
+<!-- ─── Preset import panel (only shows if there are presets for this specialty) ─── -->
+{% if profile.specialty %}
+  <div class="svc-presets-panel" id="svcPresetsPanel" data-specialty="{{ profile.specialty }}">
+    <div class="svc-presets-title">✨ Quick-add common services</div>
+    <p class="svc-presets-sub">
+      Tap the services you offer. We'll fill in suggested durations and prices —
+      you can adjust them later.
+    </p>
+    <div class="svc-preset-grid" id="svcPresetGrid">
+      <!-- Filled by JS -->
+      <div class="text-sm text-muted">Loading suggestions…</div>
+    </div>
+    <div class="flex items-center gap-3 mt-2">
+      <button type="button" class="svc-import-btn" id="svcImportBtn" disabled>
+        Add <span id="svcImportCount">0</span> services
+      </button>
+      <button type="button" class="text-sm text-muted hover:text-ink"
+              id="svcHidePresets">Hide suggestions</button>
+    </div>
+  </div>
+{% endif %}
+
+
+<!-- ─── Add custom service button ─── -->
+<div class="flex items-center gap-2 mb-3">
+  <button type="button" class="svc-add-toggle" id="svcAddToggle">
+    + Add custom service
+  </button>
+  {% if profile.specialty and not services %}
+    <span class="text-sm text-muted">or pick from suggestions above</span>
+  {% endif %}
+</div>
+
+
+<!-- ─── Add form (hidden until "Add custom" clicked) ─── -->
+<form method="POST" action="{% url 'service_add' %}"
+      id="svcAddForm" class="svc-form-card hidden">
+  {% csrf_token %}
+  {% include 'edit_profile/_form_service.html' with service=None form_id="add" %}
+  <div class="flex gap-3 mt-4">
+    <button type="submit" class="btn-gold flex-1 justify-center py-2.5">Add service</button>
+    <button type="button" class="btn-ghost flex-1 justify-center py-2.5" id="svcAddCancel">Cancel</button>
+  </div>
+</form>
+
+
+<!-- ─── List of existing services ─── -->
+<div id="svcList" class="mt-4">
+  {% if services %}
+    {% for service in services %}
+
+      <div class="svc-card {% if not service.is_active %}inactive{% endif %}"
+           data-service-id="{{ service.id }}"
+           id="svcCard-{{ service.id }}"
+           draggable="true">
+        <div class="svc-handle">⋮⋮</div>
+        <div class="svc-photo">
+          {% if service.photo_url %}
+            <img src="{{ service.photo_url }}" alt="{{ service.name }}">
+          {% else %}
+            ✂️
+          {% endif %}
+        </div>
+        <div class="svc-body">
+          <div class="svc-name">{{ service.name }}</div>
+          <div class="svc-meta">
+            {{ service.duration_display }} · ${{ service.price }}
+            {% if not service.is_active %}<span class="text-red-500 font-medium">· Hidden</span>{% endif %}
+          </div>
+        </div>
+        <div class="svc-actions">
+          <button type="button" class="svc-action-btn"
+                  onclick="toggleSvcEdit({{ service.id }})">Edit</button>
+          <button type="button" class="svc-action-btn"
+                  onclick="toggleSvcActive({{ service.id }}, this)">
+            {% if service.is_active %}Hide{% else %}Show{% endif %}
+          </button>
+          <form method="POST" action="{% url 'service_delete' pk=service.id %}"
+                style="display:inline;"
+                onsubmit="return confirm('Delete this service?');">
+            {% csrf_token %}
+            <button type="submit" class="svc-action-btn danger">Delete</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Edit form -->
+      <form method="POST" action="{% url 'service_edit' pk=service.id %}"
+            class="svc-form-card hidden" id="svcEdit-{{ service.id }}">
+        {% csrf_token %}
+        {% include 'edit_profile/_form_service.html' with service=service form_id=service.id %}
+        <div class="flex gap-3 mt-4">
+          <button type="submit" class="btn-gold flex-1 justify-center py-2.5">Save changes</button>
+          <button type="button" class="btn-ghost flex-1 justify-center py-2.5"
+                  onclick="toggleSvcEdit({{ service.id }})">Cancel</button>
+        </div>
+      </form>
+
+    {% endfor %}
+  {% else %}
+    <div class="card text-center py-12">
+      <p class="text-sm font-medium text-ink mb-1">No services yet</p>
+      <p class="text-sm text-muted">Add the services you offer so clients can book them.</p>
+    </div>
+  {% endif %}
+</div>
+
+
+<script>
+(function() {
+  const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // ════════════════════════════════════
+  // Preset suggestions
+  // ════════════════════════════════════
+  const presetsPanel = document.getElementById('svcPresetsPanel');
+  if (presetsPanel) {
+    const grid       = document.getElementById('svcPresetGrid');
+    const importBtn  = document.getElementById('svcImportBtn');
+    const importCnt  = document.getElementById('svcImportCount');
+    const hideBtn    = document.getElementById('svcHidePresets');
+    const selected   = new Set();
+    let presets = [];
+
+    // Fetch suggestions for this specialty
+    fetch('{% url "service_presets_api" %}')
+      .then(r => r.json())
+      .then(data => {
+        presets = data.presets || [];
+        if (presets.length === 0) {
+          presetsPanel.style.display = 'none';
+          return;
+        }
+        renderPresets();
+      })
+      .catch(() => { presetsPanel.style.display = 'none'; });
+
+    function renderPresets() {
+      grid.innerHTML = '';
+      presets.forEach((p, i) => {
+        const chip = document.createElement('div');
+        chip.className = 'svc-preset-chip';
+        chip.dataset.idx = i;
+        chip.innerHTML = `
+          <div class="svc-preset-name">${escapeHtml(p.name)}</div>
+          <div class="svc-preset-meta">${p.duration_minutes} min · $${p.price_low}–$${p.price_high}</div>
+        `;
+        chip.addEventListener('click', () => togglePreset(i, chip));
+        grid.appendChild(chip);
+      });
+    }
+
+    function togglePreset(idx, chip) {
+      if (selected.has(idx)) {
+        selected.delete(idx);
+        chip.classList.remove('selected');
+      } else {
+        selected.add(idx);
+        chip.classList.add('selected');
+      }
+      importCnt.textContent = selected.size;
+      importBtn.disabled = selected.size === 0;
+    }
+
+    importBtn.addEventListener('click', () => {
+      const services = [...selected].map(i => ({
+        name:             presets[i].name,
+        duration_minutes: presets[i].duration_minutes,
+        price:            presets[i].price_suggested,
+        description:      '',
+        photo_url:        '',
+      }));
+
+      importBtn.disabled = true;
+      importBtn.textContent = 'Adding…';
+
+      fetch('{% url "service_add" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrf,
+        },
+        body: JSON.stringify({ services }),
+      })
+      .then(r => r.json())
+      .then(data => {
+        // Reload to show new services
+        window.location.href = '?tab=services';
+      })
+      .catch(err => {
+        alert('Failed to add services: ' + err.message);
+        importBtn.disabled = false;
+        importBtn.innerHTML = `Add <span id="svcImportCount">${selected.size}</span> services`;
+      });
+    });
+
+    hideBtn.addEventListener('click', () => {
+      presetsPanel.classList.add('hidden');
+    });
+  }
+
+  // ════════════════════════════════════
+  // Add custom service toggle
+  // ════════════════════════════════════
+  const addToggle = document.getElementById('svcAddToggle');
+  const addForm   = document.getElementById('svcAddForm');
+  const addCancel = document.getElementById('svcAddCancel');
+  addToggle.addEventListener('click', () => {
+    addForm.classList.remove('hidden');
+    addToggle.style.display = 'none';
+  });
+  addCancel.addEventListener('click', () => {
+    addForm.classList.add('hidden');
+    addToggle.style.display = '';
+  });
+
+  // ════════════════════════════════════
+  // Drag and drop reorder
+  // ════════════════════════════════════
+  const list = document.getElementById('svcList');
+  let dragging = null;
+
+  list.addEventListener('dragstart', e => {
+    if (!e.target.classList.contains('svc-card')) return;
+    dragging = e.target;
+    e.target.classList.add('dragging');
+  });
+  list.addEventListener('dragend', e => {
+    if (dragging) dragging.classList.remove('dragging');
+    dragging = null;
+    // Save new order
+    const ids = [...list.querySelectorAll('.svc-card')].map(c => parseInt(c.dataset.serviceId));
+    fetch('{% url "service_reorder" %}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+      body: JSON.stringify({ ids }),
+    });
+  });
+  list.addEventListener('dragover', e => {
+    e.preventDefault();
+    if (!dragging) return;
+    const target = e.target.closest('.svc-card');
+    if (!target || target === dragging) return;
+    const rect = target.getBoundingClientRect();
+    const after = (e.clientY - rect.top) > rect.height / 2;
+    if (after) target.parentNode.insertBefore(dragging, target.nextSibling);
+    else       target.parentNode.insertBefore(dragging, target);
+  });
+
+  // ════════════════════════════════════
+  // Photo upload per-form
+  // ════════════════════════════════════
+  function setupPhotoUpload(formId) {
+    const fileInput  = document.getElementById(`svcPhoto-${formId}`);
+    const statusEl   = document.getElementById(`svcPhotoStatus-${formId}`);
+    const preview    = document.getElementById(`svcPhotoPreview-${formId}`);
+    const hiddenUrl  = document.getElementById(`svcPhotoUrl-${formId}`);
+    if (!fileInput) return;
+
+    fileInput.addEventListener('change', e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      if (f.size > 5 * 1024 * 1024) { alert('Max 5 MB'); return; }
+
+      statusEl.textContent = 'Uploading…';
+      const fd = new FormData();
+      fd.append('file', f);
+      fetch('{% url "upload_service_photo" %}', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrf },
+        body: fd,
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.url) throw new Error(data.error || 'upload failed');
+        hiddenUrl.value = data.url;
+        preview.src = data.url;
+        preview.classList.remove('hidden');
+        statusEl.textContent = '✓ Photo uploaded';
+      })
+      .catch(err => {
+        alert('Upload failed: ' + err.message);
+        statusEl.textContent = 'Click to upload photo';
+      });
+    });
+  }
+
+  setupPhotoUpload('add');
+  {% for service in services %}
+    setupPhotoUpload('{{ service.id }}');
+  {% endfor %}
+
+  // ════════════════════════════════════
+  // Edit / toggle handlers
+  // ════════════════════════════════════
+  window.toggleSvcEdit = function(id) {
+    const card = document.getElementById('svcCard-' + id);
+    const form = document.getElementById('svcEdit-' + id);
+    if (form.classList.contains('hidden')) {
+      form.classList.remove('hidden');
+      card.style.display = 'none';
+    } else {
+      form.classList.add('hidden');
+      card.style.display = '';
+    }
+  };
+
+  window.toggleSvcActive = function(id, btn) {
+    fetch(`/profile/service/${id}/toggle/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrf },
+    })
+    .then(r => r.json())
+    .then(data => {
+      const card = document.getElementById('svcCard-' + id);
+      if (data.is_active) {
+        card.classList.remove('inactive');
+        btn.textContent = 'Hide';
+      } else {
+        card.classList.add('inactive');
+        btn.textContent = 'Show';
+      }
+    });
+  };
+
+  // ════════════════════════════════════
+  // Utility
+  // ════════════════════════════════════
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+})();
+</script>

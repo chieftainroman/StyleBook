@@ -32,4 +32,12 @@ urlpatterns = [
     path('profile/honor/<int:pk>/delete/', views.honor_delete, name='honor_delete'),
     path('profile/',                    views.my_profile,          name='my_profile'),
     path('profile/<str:username>/',     views.profile_view,        name='profile'),
+    # ── Services CRUD ──────────────────────────────
+    path('profile/service/add/',               views.service_add,           name='service_add'),
+    path('profile/service/<int:pk>/edit/',     views.service_edit,          name='service_edit'),
+    path('profile/service/<int:pk>/delete/',   views.service_delete,        name='service_delete'),
+    path('profile/service/<int:pk>/toggle/',   views.service_toggle_active, name='service_toggle_active'),
+    path('profile/service/reorder/',           views.service_reorder,       name='service_reorder'),
+    path('profile/service/upload-photo/',      views.upload_service_photo,  name='upload_service_photo'),
+    path('profile/service/presets/',           views.service_presets_api,   name='service_presets_api'),
 ]
