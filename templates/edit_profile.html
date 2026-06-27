@@ -60,21 +60,30 @@
 <!-- ═════════════════════════════════════════════════ -->
 <!-- TAB NAVIGATION                                       -->
 <!-- ═════════════════════════════════════════════════ -->
-<div class="tab-nav">
-  <a href="?tab=basic" class="tab-link {% if active_tab == 'basic' %}active{% endif %}">Basic info</a>
-
-  <a href="?tab=services" class="tab-link {% if active_tab == 'services' %}active{% endif %}">
-    Services {% if services %}<span class="count">{{ services|length }}</span>{% endif %}
+<div class="ep-tabs">
+  <a href="?tab=basic"
+     class="ep-tab {% if tab == 'basic' %}active{% endif %}">
+    Basic info
   </a>
 
-  <a href="?tab=experience" class="tab-link {% if active_tab == 'experience' %}active{% endif %}">
-    Experience {% if experiences %}<span class="count">{{ experiences|length }}</span>{% endif %}
+  <a href="?tab=services"
+     class="ep-tab {% if tab == 'services' %}active{% endif %}">
+    Services
+    {% if services %}<span class="ep-tab-count">{{ services|length }}</span>{% endif %}
   </a>
+
+  <a href="?tab=experience"
+     class="ep-tab {% if tab == 'experience' %}active{% endif %}">
+    Experience
+    {% if experiences %}<span class="ep-tab-count">{{ experiences|length }}</span>{% endif %}
+  </a>
+
   <a href="?tab=certificates"
      class="ep-tab {% if tab == 'certificates' %}active{% endif %}">
     Certificates
     {% if certificates %}<span class="ep-tab-count">{{ certificates|length }}</span>{% endif %}
   </a>
+
   <a href="?tab=honors"
      class="ep-tab {% if tab == 'honors' %}active{% endif %}">
     Honors

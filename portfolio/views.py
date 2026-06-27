@@ -192,7 +192,7 @@ def edit_profile(request):
         'working_hours':  profile.get_working_hours(),
         'languages_str':  ', '.join(profile.languages),
         'days':           days,
-        'tab':            tab,
+        'tab':            request.GET.get('tab', 'basic'),
         'experiences':    profile.experiences.all(),
         'certificates':   profile.certificates.all(),
         'services':     request.user.profile.services.all(),
