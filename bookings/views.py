@@ -479,3 +479,71 @@ def resend_otp(request, username):
 
     return JsonResponse({'ok': True})
     
+    
+    
+@login_required
+def reservations_view(request):
+    """Master's reservations page — list of all bookings."""
+    profile = request.user.profile
+
+    # Tab filter from ?tab=upcoming|past|cancelled|all (default upcoming)
+    tab = request.GET.get('tab', 'upcoming')
+    if tab not in ('upcoming', 'past', 'cancelled', 'all'):
+        tab = 'upcoming'
+
+    now = timezone.now()
+    bookings_qs = Booking.objects.filter(master=profile).select_related('service')
+
+    if tab == 'upcoming':
+        bookings = bookings_qs.filter(
+            start_time__gte=now,
+            status__in=[Booking.STATUS_PENDING_OTP, Booking.STATUS_CONFIRMED],
+        ).order_by('start_time')
+    elif tab == 'past':
+        bookings = bookings_qs.filter(
+            start_time__lt=now,
+            status__in=[Booking.STATUS_CONFIRMED, Booking.STATUS_COMPLETED, Booking.STATUS_NO_SHOW],
+        ).order_by('-start_time')
+    elif tab == 'cancelled':
+        bookings = bookings_qs.filter(
+            status__in=[Booking.STATUS_CANCELLED, Booking.STATUS_REFUSED],
+        ).order_by('-start_time')
+    else:  # all
+        bookings = bookings_qs.order_by('-start_time')
+
+    # Counts for tab badges
+    counts = {
+        'upcoming': bookings_qs.filter(
+            start_time__gte=now,
+            status__in=[Booking.STATUS_PENDING_OTP, Booking.STATUS_CONFIRMED],
+        ).count(),
+        'past': bookings_qs.filter(
+            start_time__lt=now,
+            status__in=[Booking.STATUS_CONFIRMED, Booking.STATUS_COMPLETED, Booking.STATUS_NO_SHOW],
+        ).count(),
+        'cancelled': bookings_qs.filter(
+            status__in=[Booking.STATUS_CANCELLED, Booking.STATUS_REFUSED],
+        ).count(),
+        'all': bookings_qs.count(),
+    }
+
+    context = {
+        'active':   'reservations',
+        'tab':      tab,
+        'bookings': bookings,
+        'counts':   counts,
+    }
+    return render(request, 'bookings/reservations.html', context)
+
+@login_required
+def booking_detail(request, ref):
+    """Detail page for a single booking. Built fully in Step 5C."""
+    booking = get_object_or_404(
+        Booking,
+        reference_code=ref,
+        master=request.user.profile,
+    )
+    return render(request, 'bookings/booking_detail.html', {
+        'booking': booking,
+        'active': 'reservations',
+    })

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="px-8 py-6">
+  <a href="{% url 'reservations' %}" class="text-sm text-muted hover:text-ink">← Back to reservations</a>
+
+  <h1 class="text-2xl font-serif italic text-ink mt-4 mb-2">
+    {{ booking.client_name }}
+  </h1>
+  <p class="text-sm text-muted mb-6">Reference: <span class="font-mono font-semibold">{{ booking.reference_code }}</span></p>
+
+  <div class="bg-white border border-cream-border rounded-xl p-6 max-w-2xl">
+    <p class="text-sm text-muted">
+      Detail page (with status controls, notes, cancellation) — coming in Step 5C.
+    </p>
+    <dl class="mt-4 space-y-2 text-sm">
+      <div class="flex"><dt class="w-32 text-muted">Service:</dt><dd>{{ booking.service.name }}</dd></div>
+      <div class="flex"><dt class="w-32 text-muted">When:</dt><dd>{{ booking.start_time|date:"l, F j" }} at {{ booking.start_time|time:"g:i A" }}</dd></div>
+      <div class="flex"><dt class="w-32 text-muted">Duration:</dt><dd>{{ booking.service.duration_minutes }} min</dd></div>
+      <div class="flex"><dt class="w-32 text-muted">Price:</dt><dd>${{ booking.service.price }}</dd></div>
+      <div class="flex"><dt class="w-32 text-muted">Status:</dt><dd>{{ booking.get_status_display }}</dd></div>
+      <div class="flex"><dt class="w-32 text-muted">Email:</dt><dd>{{ booking.client_email }}</dd></div>
+      {% if booking.client_phone %}<div class="flex"><dt class="w-32 text-muted">Phone:</dt><dd>{{ booking.client_phone }}</dd></div>{% endif %}
+      {% if booking.client_notes %}<div class="flex"><dt class="w-32 text-muted">Notes:</dt><dd>{{ booking.client_notes }}</dd></div>{% endif %}
+    </dl>
+  </div>
+</div>
+{% endblock %}
