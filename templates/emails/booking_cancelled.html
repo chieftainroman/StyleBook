@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+           background: #FAFAF7; margin: 0; padding: 40px 20px; color: #1C1917; }
+    .container { max-width: 520px; margin: 0 auto; background: #fff;
+                 border: 1px solid #E5E3DC; border-radius: 14px; padding: 36px; }
+    .logo { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
+    .logo span { color: #C9A96E; }
+    h1 { font-size: 22px; margin: 0 0 8px; }
+    .sub { color: #888780; font-size: 14px; margin-bottom: 20px; }
+    .summary { background: #FAFAF7; border-radius: 10px; padding: 18px;
+               margin-bottom: 16px; }
+    .row { display: flex; justify-content: space-between; padding: 5px 0;
+           font-size: 14px; }
+    .row .label { color: #888780; }
+    .row .value { color: #1C1917; font-weight: 500; }
+    .reason {
+      padding: 14px;
+      background: #FEF3F2; border-radius: 8px;
+      font-size: 13px; color: #555;
+      margin: 16px 0;
+      border-left: 3px solid #FCA5A5;
+    }
+    .footer { font-size: 12px; color: #888780; margin-top: 22px;
+              padding-top: 16px; border-top: 1px solid #E5E3DC; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Style<span>Book</span></div>
+    <h1>Booking cancelled</h1>
+    <p class="sub">Your booking with {{ master_name }} has been cancelled.</p>
+
+    <div class="summary">
+      <div class="row"><span class="label">Reference</span><span class="value">{{ booking.reference_code }}</span></div>
+      <div class="row"><span class="label">Service</span><span class="value">{{ booking.service.name }}</span></div>
+      <div class="row"><span class="label">Was scheduled for</span><span class="value">{{ booking.start_time|date:"M j" }} at {{ booking.start_time|time:"g:i A" }}</span></div>
+    </div>
+
+    {% if reason %}
+      <p style="margin: 0 0 6px; font-size: 13px; font-weight: 500;">Note from {{ master_name }}:</p>
+      <div class="reason">{{ reason }}</div>
+    {% endif %}
+
+    <div class="footer">
+      If you'd like to book again, you can find {{ master_name }}'s booking page online.
+    </div>
+  </div>
+</body>
+</html>

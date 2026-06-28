@@ -1,0 +1,13 @@
+Hi {{ booking.client_name }},
+
+Your booking with {{ master_name }} has been cancelled.
+
+Reference: {{ booking.reference_code }}
+Service: {{ booking.service.name }}
+When: {{ booking.start_time|date:"l, F j, Y" }} at {{ booking.start_time|time:"g:i A" }}
+
+{% if reason %}Note from {{ master_name }}: {{ reason }}{% endif %}
+
+If you'd like to book again, you can find {{ master_name }}'s booking page online.
+
+— {{ site_name }}

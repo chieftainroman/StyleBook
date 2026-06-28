@@ -595,13 +595,120 @@ def reservations_view(request):
 
 @login_required
 def booking_detail(request, ref):
-    """Detail page for a single booking. Built fully in Step 5C."""
+    """Detail page for a single booking. Status changes + notes + cancel."""
     booking = get_object_or_404(
         Booking,
         reference_code=ref,
         master=request.user.profile,
     )
-    return render(request, 'bookings/booking_detail.html', {
-        'booking': booking,
-        'active': 'reservations',
-    })
+
+    # Find previous bookings by same client_email with this master (for context)
+    client_history = Booking.objects.filter(
+        master=request.user.profile,
+        client_email__iexact=booking.client_email,
+        status__in=[Booking.STATUS_CONFIRMED, Booking.STATUS_COMPLETED, Booking.STATUS_NO_SHOW],
+    ).exclude(pk=booking.pk).order_by('-start_time')[:5]
+
+    context = {
+        'booking':         booking,
+        'client_history':  client_history,
+        'active':          'reservations',
+    }
+    return render(request, 'bookings/booking_detail.html', context)
+
+
+@login_required
+@require_POST
+def booking_change_status(request, ref):
+    """Change a booking's status (complete / no_show / refused)."""
+    booking = get_object_or_404(
+        Booking,
+        reference_code=ref,
+        master=request.user.profile,
+    )
+
+    new_status = request.POST.get('status', '').strip()
+    allowed = {
+        Booking.STATUS_COMPLETED,
+        Booking.STATUS_NO_SHOW,
+        Booking.STATUS_CONFIRMED,  # allow un-completing in case of mistake
+    }
+    if new_status not in allowed:
+        messages.error(request, 'Invalid status.')
+        return redirect('booking_detail', ref=ref)
+
+    booking.status = new_status
+    booking.save(update_fields=['status'])
+    messages.success(request, f'Booking marked as {booking.get_status_display()}.')
+    return redirect('booking_detail', ref=ref)
+
+
+@login_required
+@require_POST
+def booking_cancel(request, ref):
+    """Master cancels a booking. Send notification to client."""
+    booking = get_object_or_404(
+        Booking,
+        reference_code=ref,
+        master=request.user.profile,
+    )
+
+    if booking.status in [Booking.STATUS_CANCELLED, Booking.STATUS_COMPLETED, Booking.STATUS_NO_SHOW]:
+        messages.error(request, 'This booking cannot be cancelled.')
+        return redirect('booking_detail', ref=ref)
+
+    booking.status = Booking.STATUS_CANCELLED
+    booking.cancelled_at = timezone.now()
+    booking.save(update_fields=['status', 'cancelled_at'])
+
+    # Notify client
+    try:
+        _send_booking_cancelled_email(booking, cancelled_by='master',
+                                      reason=request.POST.get('reason', '').strip())
+    except Exception:
+        pass
+
+    messages.success(request, f'Booking {booking.reference_code} cancelled. Client notified.')
+    return redirect('booking_detail', ref=ref)
+
+
+@login_required
+@require_POST
+def booking_save_notes(request, ref):
+    """Save master's private notes on a booking."""
+    booking = get_object_or_404(
+        Booking,
+        reference_code=ref,
+        master=request.user.profile,
+    )
+    notes = request.POST.get('master_notes', '').strip()[:2000]
+    booking.master_notes = notes
+    booking.save(update_fields=['master_notes'])
+    messages.success(request, 'Notes saved.')
+    return redirect('booking_detail', ref=ref)
+
+
+def _send_booking_cancelled_email(booking, cancelled_by='master', reason=''):
+    """Notify client that their booking was cancelled."""
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    from django.conf import settings
+
+    ctx = {
+        'booking':      booking,
+        'master_name':  booking.master.user.username,
+        'cancelled_by': cancelled_by,
+        'reason':       reason,
+        'site_name':    'StyleBook',
+    }
+    subject = f'Booking cancelled — {booking.reference_code}'
+    text_body = render_to_string('emails/booking_cancelled.txt', ctx)
+    html_body = render_to_string('emails/booking_cancelled.html', ctx)
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[booking.client_email],
+    )
+    msg.attach_alternative(html_body, 'text/html')
+    msg.send(fail_silently=True)
