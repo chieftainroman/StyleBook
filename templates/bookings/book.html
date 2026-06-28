@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Book with {{ profile.user.username }} — StyleBook</title>
-
+  <meta name="csrf-token" content="{{ csrf_token }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -291,6 +291,210 @@
       font-size: 14px;
       margin-bottom: 4px;
     }
+    /* Booking summary card */
+    .b-summary {
+      background: #FAFAF7;
+      border: 1px solid #E5E3DC;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .b-summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 6px 0;
+      font-size: 13px;
+    }
+    .b-summary-label { color: #888780; }
+    .b-summary-value { color: #1C1917; font-weight: 500; }
+    .b-summary-total {
+      border-top: 1px solid #E5E3DC;
+      margin-top: 6px;
+      padding-top: 12px;
+    }
+    .b-summary-total .b-summary-label { color: #1C1917; font-weight: 600; }
+    .b-summary-total .b-summary-value { font-size: 16px; font-weight: 600; }
+
+    /* Form */
+    .b-flabel {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: #888780;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .b-fhint-inline {
+      font-size: 11px;
+      color: #aaa;
+      text-transform: none;
+      font-weight: 400;
+      letter-spacing: 0;
+    }
+    .b-fhint {
+      font-size: 11px;
+      color: #888780;
+      margin-top: 4px;
+    }
+    .b-finput {
+      width: 100%;
+      padding: 10px 13px;
+      border: 1px solid #E5E3DC;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      color: #1C1917;
+      outline: none;
+      background: #fff;
+      transition: border-color 0.15s;
+      resize: vertical;
+    }
+    .b-finput:focus { border-color: #1C1917; }
+    .b-finput::placeholder { color: #aaa; }
+
+    /* Submit button */
+    .b-submit {
+      width: 100%;
+      margin-top: 8px;
+      padding: 13px;
+      background: #C9A96E;
+      color: #1C1917;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .b-submit:hover { background: #8B6914; color: #fff; }
+    .b-submit:disabled { background: #ccc; color: #888; cursor: not-allowed; }
+
+    /* OTP step */
+    .b-otp-card {
+      background: #fff;
+      border: 1px solid #E5E3DC;
+      border-radius: 14px;
+      padding: 28px;
+      text-align: center;
+    }
+    .b-otp-desc {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .b-otp-desc strong { color: #1C1917; }
+    .b-otp-input {
+      width: 100%;
+      max-width: 220px;
+      margin: 0 auto;
+      padding: 14px;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: 0.4em;
+      font-weight: 600;
+      border: 1px solid #E5E3DC;
+      border-radius: 10px;
+      font-family: 'Inter', monospace;
+      background: #FAFAF7;
+      outline: none;
+    }
+    .b-otp-input:focus { border-color: #1C1917; background: #fff; }
+    .b-otp-input-wrap {
+      margin: 16px 0 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .b-otp-actions {
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .b-link-btn {
+      background: none;
+      border: none;
+      color: #888780;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0;
+      font-family: inherit;
+    }
+    .b-link-btn:hover { color: #1C1917; text-decoration: underline; }
+    .b-otp-divider { color: #ddd; }
+    .b-otp-error {
+      margin-top: 12px;
+      padding: 10px;
+      background: #FEE2E2;
+      color: #991B1B;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    /* Success card */
+    .b-success-card {
+      background: #fff;
+      border: 1px solid #E5E3DC;
+      border-radius: 16px;
+      padding: 40px 32px;
+      text-align: center;
+    }
+    .b-success-icon {
+      width: 56px;
+      height: 56px;
+      background: #D1FAE5;
+      color: #065F46;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    .b-success-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1C1917;
+      margin-bottom: 6px;
+    }
+    .b-success-sub {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 20px;
+      line-height: 1.55;
+    }
+    .b-success-ref {
+      display: inline-block;
+      background: #FAFAF7;
+      border: 1px dashed #C9A96E;
+      border-radius: 10px;
+      padding: 14px 20px;
+    }
+    .b-success-ref-label {
+      display: block;
+      font-size: 11px;
+      color: #888780;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 3px;
+    }
+    .b-success-ref-code {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1C1917;
+      font-family: 'Inter', monospace;
+      letter-spacing: 0.05em;
+    }
+    .b-success-hint {
+      font-size: 12px;
+      color: #888780;
+      margin-top: 18px;
+      line-height: 1.55;
+    }
   </style>
 </head>
 
@@ -392,13 +596,117 @@
     </div>
   </div>
 
-  <!-- Step 3: Client info — built in Step 4C -->
+<!-- Step 3: Client info -->
   <div class="b-step" id="bStepInfo" style="display: none;">
     <div class="b-step-header">
       <div class="b-step-num">3</div>
       <div class="b-step-title">Your details</div>
     </div>
-    <div class="b-empty">Client info form coming in Step 4C.</div>
+
+    <!-- Booking summary -->
+    <div class="b-summary">
+      <div class="b-summary-row">
+        <span class="b-summary-label">Service</span>
+        <span class="b-summary-value" id="bSumService">—</span>
+      </div>
+      <div class="b-summary-row">
+        <span class="b-summary-label">Date &amp; time</span>
+        <span class="b-summary-value" id="bSumDateTime">—</span>
+      </div>
+      <div class="b-summary-row">
+        <span class="b-summary-label">Duration</span>
+        <span class="b-summary-value" id="bSumDuration">—</span>
+      </div>
+      <div class="b-summary-row b-summary-total">
+        <span class="b-summary-label">Total</span>
+        <span class="b-summary-value" id="bSumPrice">—</span>
+      </div>
+    </div>
+
+    <form id="bBookingForm" class="space-y-3 mt-5">
+      <input type="hidden" name="source" value="{{ source }}">
+
+      <div>
+        <label class="b-flabel" for="bClientName">Your name</label>
+        <input class="b-finput" type="text" id="bClientName" name="client_name"
+               required maxlength="120" placeholder="Full name">
+      </div>
+
+      <div>
+        <label class="b-flabel" for="bClientEmail">Email</label>
+        <input class="b-finput" type="email" id="bClientEmail" name="client_email"
+               required maxlength="254" placeholder="you@example.com">
+        <p class="b-fhint">We'll send a 6-digit code to verify this email.</p>
+      </div>
+
+      <div>
+        <label class="b-flabel" for="bClientPhone">Phone <span class="b-fhint-inline">(optional)</span></label>
+        <input class="b-finput" type="tel" id="bClientPhone" name="client_phone"
+               maxlength="30" placeholder="+1 555 000 0000">
+      </div>
+
+      <div>
+        <label class="b-flabel" for="bClientNotes">Notes for {{ master.username }} <span class="b-fhint-inline">(optional)</span></label>
+        <textarea class="b-finput" id="bClientNotes" name="client_notes"
+                  rows="3" maxlength="500"
+                  placeholder="Any preferences, allergies, or details to know?"></textarea>
+      </div>
+
+      <button type="submit" class="b-submit" id="bSubmitBtn">
+        <span id="bSubmitText">Continue to verification →</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Step 4: OTP verification -->
+  <div class="b-step" id="bStepOtp" style="display: none;">
+    <div class="b-step-header">
+      <div class="b-step-num">4</div>
+      <div class="b-step-title">Verify your email</div>
+    </div>
+
+    <div class="b-otp-card">
+      <p class="b-otp-desc">
+        We sent a 6-digit code to <strong id="bOtpEmail">—</strong>.
+        Enter it below to confirm your booking.
+      </p>
+
+      <div class="b-otp-input-wrap">
+        <input type="text" id="bOtpInput" inputmode="numeric" pattern="[0-9]*"
+               maxlength="6" autocomplete="one-time-code"
+               placeholder="000000" class="b-otp-input">
+      </div>
+
+      <button type="button" class="b-submit" id="bOtpVerifyBtn">
+        <span id="bOtpVerifyText">Confirm booking</span>
+      </button>
+
+      <div class="b-otp-actions">
+        <button type="button" class="b-link-btn" id="bOtpResendBtn">Resend code</button>
+        <span class="b-otp-divider">·</span>
+        <button type="button" class="b-link-btn" id="bOtpBackBtn">Change details</button>
+      </div>
+
+      <p class="b-otp-error" id="bOtpError" style="display: none;"></p>
+    </div>
+  </div>
+
+  <!-- Step 5: Success -->
+  <div class="b-step" id="bStepSuccess" style="display: none;">
+    <div class="b-success-card">
+      <div class="b-success-icon">✓</div>
+      <h2 class="b-success-title">You're booked!</h2>
+      <p class="b-success-sub" id="bSuccessSub">A confirmation email is on the way.</p>
+
+      <div class="b-success-ref">
+        <span class="b-success-ref-label">Reference</span>
+        <span class="b-success-ref-code" id="bSuccessRef">—</span>
+      </div>
+
+      <p class="b-success-hint">
+        Save this reference. You'll need it if you want to reschedule or cancel.
+      </p>
+    </div>
   </div>
 
 </div>
@@ -607,6 +915,207 @@
   }
 })();
 </script>
+<script>
+(function() {
+  // ════════════════════════════════════════════════
+  // Step 3 + 4 + 5: Form, OTP, success
+  // ════════════════════════════════════════════════
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
+                    || document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
+  const username = '{{ master.username }}';
 
+  const stepInfo    = document.getElementById('bStepInfo');
+  const stepOtp     = document.getElementById('bStepOtp');
+  const stepSuccess = document.getElementById('bStepSuccess');
+
+  const sumService  = document.getElementById('bSumService');
+  const sumDateTime = document.getElementById('bSumDateTime');
+  const sumDuration = document.getElementById('bSumDuration');
+  const sumPrice    = document.getElementById('bSumPrice');
+
+  const form         = document.getElementById('bBookingForm');
+  const submitBtn    = document.getElementById('bSubmitBtn');
+  const submitText   = document.getElementById('bSubmitText');
+
+  const otpEmail     = document.getElementById('bOtpEmail');
+  const otpInput     = document.getElementById('bOtpInput');
+  const otpVerifyBtn = document.getElementById('bOtpVerifyBtn');
+  const otpVerifyText= document.getElementById('bOtpVerifyText');
+  const otpResendBtn = document.getElementById('bOtpResendBtn');
+  const otpBackBtn   = document.getElementById('bOtpBackBtn');
+  const otpError     = document.getElementById('bOtpError');
+
+  const successRef   = document.getElementById('bSuccessRef');
+  const successSub   = document.getElementById('bSuccessSub');
+
+  let bookingRef = null;
+
+  // ── Fill the summary when slot is selected ──
+  window.addEventListener('b-slot-selected', e => {
+    const { date, slot, service } = e.detail;
+    sumService.textContent  = service.name;
+    sumDuration.textContent = service.duration + ' min';
+    sumPrice.textContent    = '$' + service.price;
+
+    const [y, m, d] = date.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    sumDateTime.textContent = `${months[dt.getMonth()]} ${dt.getDate()}, ${slot.display}`;
+  });
+
+  // ── Submit booking ──
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    if (!window.bSelectedService) { alert('Please pick a service'); return; }
+    if (!window.bSelectedSlot)    { alert('Please pick a time slot'); return; }
+
+    const fd = new FormData(form);
+    const payload = {
+      service_id:   window.bSelectedService.id,
+      slot_iso:     window.bSelectedSlot.iso,
+      client_name:  fd.get('client_name').trim(),
+      client_email: fd.get('client_email').trim(),
+      client_phone: fd.get('client_phone').trim(),
+      client_notes: fd.get('client_notes').trim(),
+      source:       fd.get('source') || 'direct_link',
+    };
+
+    submitBtn.disabled = true;
+    submitText.textContent = 'Sending verification code…';
+
+    try {
+      const res = await fetch(`/book/${username}/create/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || 'Could not create booking. Try again.');
+        submitBtn.disabled = false;
+        submitText.textContent = 'Continue to verification →';
+        return;
+      }
+
+      bookingRef = data.reference_code;
+      otpEmail.textContent = payload.client_email;
+      stepInfo.style.display = 'none';
+      stepOtp.style.display = '';
+      stepOtp.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      otpInput.focus();
+    } catch (err) {
+      alert('Network error. Please try again.');
+      submitBtn.disabled = false;
+      submitText.textContent = 'Continue to verification →';
+    }
+  });
+
+  // ── Verify OTP ──
+  otpVerifyBtn.addEventListener('click', async () => {
+    const code = otpInput.value.trim();
+    if (code.length !== 6 || !/^\d{6}$/.test(code)) {
+      showOtpError('Enter the 6-digit code from your email.');
+      return;
+    }
+
+    otpError.style.display = 'none';
+    otpVerifyBtn.disabled = true;
+    otpVerifyText.textContent = 'Verifying…';
+
+    try {
+      const res = await fetch(`/book/${username}/verify-otp/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({
+          reference_code: bookingRef,
+          code: code,
+        }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showOtpError(data.error || 'Verification failed. Try again.');
+        otpVerifyBtn.disabled = false;
+        otpVerifyText.textContent = 'Confirm booking';
+        return;
+      }
+
+      // Success — show step 5
+      successRef.textContent = bookingRef;
+      successSub.textContent = `A confirmation email is on the way to ${data.client_email}.`;
+      stepOtp.style.display = 'none';
+      stepSuccess.style.display = '';
+      stepSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      showOtpError('Network error. Please try again.');
+      otpVerifyBtn.disabled = false;
+      otpVerifyText.textContent = 'Confirm booking';
+    }
+  });
+
+  // ── Resend OTP ──
+  otpResendBtn.addEventListener('click', async () => {
+    otpResendBtn.disabled = true;
+    otpResendBtn.textContent = 'Sending…';
+
+    try {
+      const res = await fetch(`/book/${username}/resend-otp/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({ reference_code: bookingRef }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        otpResendBtn.textContent = '✓ Code resent';
+        setTimeout(() => {
+          otpResendBtn.disabled = false;
+          otpResendBtn.textContent = 'Resend code';
+        }, 3000);
+      } else {
+        showOtpError(data.error || 'Could not resend.');
+        otpResendBtn.disabled = false;
+        otpResendBtn.textContent = 'Resend code';
+      }
+    } catch (err) {
+      showOtpError('Network error.');
+      otpResendBtn.disabled = false;
+      otpResendBtn.textContent = 'Resend code';
+    }
+  });
+
+  // ── Go back to details ──
+  otpBackBtn.addEventListener('click', () => {
+    stepOtp.style.display = 'none';
+    stepInfo.style.display = '';
+    stepInfo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    submitBtn.disabled = false;
+    submitText.textContent = 'Continue to verification →';
+  });
+
+  function showOtpError(msg) {
+    otpError.textContent = msg;
+    otpError.style.display = '';
+  }
+
+  // OTP input: digits only, auto-verify when 6 digits entered
+  otpInput.addEventListener('input', e => {
+    e.target.value = e.target.value.replace(/\D/g, '');
+    if (e.target.value.length === 6) {
+      otpVerifyBtn.click();
+    }
+  });
+})();
+</script>
 </body>
 </html>

@@ -1,0 +1,14 @@
+Hi {{ booking.client_name }},
+
+Your booking is confirmed!
+
+Reference: {{ booking.reference_code }}
+With: {{ master_name }}
+Service: {{ booking.service.name }} ({{ booking.service.duration_minutes }} min)
+When: {{ booking.start_time|date:"l, F j, Y" }} at {{ booking.start_time|time:"g:i A" }}
+
+{% if booking.client_notes %}Your notes: {{ booking.client_notes }}{% endif %}
+
+Save your reference code — you'll need it if you want to reschedule or cancel.
+
+— StyleBook
