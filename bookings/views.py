@@ -483,10 +483,15 @@ def resend_otp(request, username):
     
 @login_required
 def reservations_view(request):
-    """Master's reservations page — list of all bookings."""
+    """Master's reservations page — list view or calendar view."""
     profile = request.user.profile
 
-    # Tab filter from ?tab=upcoming|past|cancelled|all (default upcoming)
+    # View mode: list (default) or calendar
+    view_mode = request.GET.get('view', 'list')
+    if view_mode not in ('list', 'calendar'):
+        view_mode = 'list'
+
+    # Tab filter for list view
     tab = request.GET.get('tab', 'upcoming')
     if tab not in ('upcoming', 'past', 'cancelled', 'all'):
         tab = 'upcoming'
@@ -494,6 +499,7 @@ def reservations_view(request):
     now = timezone.now()
     bookings_qs = Booking.objects.filter(master=profile).select_related('service')
 
+    # ── List view: tab-filtered bookings ──
     if tab == 'upcoming':
         bookings = bookings_qs.filter(
             start_time__gte=now,
@@ -508,10 +514,9 @@ def reservations_view(request):
         bookings = bookings_qs.filter(
             status__in=[Booking.STATUS_CANCELLED, Booking.STATUS_REFUSED],
         ).order_by('-start_time')
-    else:  # all
+    else:
         bookings = bookings_qs.order_by('-start_time')
 
-    # Counts for tab badges
     counts = {
         'upcoming': bookings_qs.filter(
             start_time__gte=now,
@@ -527,11 +532,64 @@ def reservations_view(request):
         'all': bookings_qs.count(),
     }
 
+    # ── Calendar view: week window based on ?week=YYYY-MM-DD ──
+    week_data = None
+    if view_mode == 'calendar':
+        week_start_str = request.GET.get('week', '')
+        try:
+            week_start = datetime.strptime(week_start_str, '%Y-%m-%d').date()
+        except (ValueError, TypeError):
+            # Default to start of current week (Monday)
+            today = now.date()
+            week_start = today - timedelta(days=today.weekday())
+
+        # Force to Monday of that week
+        week_start = week_start - timedelta(days=week_start.weekday())
+        week_end = week_start + timedelta(days=7)
+
+        # Get all bookings in this week (any non-cancelled status)
+        week_bookings = bookings_qs.filter(
+            start_time__gte=week_start,
+            start_time__lt=week_end,
+            status__in=[
+                Booking.STATUS_PENDING_OTP,
+                Booking.STATUS_CONFIRMED,
+                Booking.STATUS_COMPLETED,
+                Booking.STATUS_NO_SHOW,
+            ],
+        ).order_by('start_time')
+
+        # Build day-by-day structure
+        days = []
+        for i in range(7):
+            day_date = week_start + timedelta(days=i)
+            day_bookings = [
+                b for b in week_bookings
+                if b.start_time.date() == day_date
+            ]
+            days.append({
+                'date': day_date,
+                'is_today': day_date == now.date(),
+                'is_past': day_date < now.date(),
+                'bookings': day_bookings,
+            })
+
+        week_data = {
+            'start':      week_start,
+            'end':        week_start + timedelta(days=6),
+            'days':       days,
+            'prev_week':  week_start - timedelta(days=7),
+            'next_week':  week_start + timedelta(days=7),
+            'this_week':  now.date() - timedelta(days=now.date().weekday()),
+        }
+
     context = {
-        'active':   'reservations',
-        'tab':      tab,
-        'bookings': bookings,
-        'counts':   counts,
+        'active':    'reservations',
+        'view_mode': view_mode,
+        'tab':       tab,
+        'bookings':  bookings,
+        'counts':    counts,
+        'week_data': week_data,
     }
     return render(request, 'bookings/reservations.html', context)
 

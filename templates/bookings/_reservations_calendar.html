@@ -1,0 +1,232 @@
+<style>
+  .cal-grid {
+    display: grid;
+    grid-template-columns: 64px repeat(7, 1fr);
+    gap: 0;
+    border: 1px solid #E5E3DC;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .cal-header {
+    background: #FAFAF7;
+    border-bottom: 1px solid #E5E3DC;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 11px;
+    color: #888780;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+  .cal-header.today {
+    background: #1C1917;
+    color: #fff;
+  }
+  .cal-header-day-num {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1C1917;
+    margin-top: 2px;
+    display: block;
+  }
+  .cal-header.today .cal-header-day-num { color: #C9A96E; }
+  .cal-time-col {
+    background: #FAFAF7;
+  }
+  .cal-time-label {
+    font-size: 10px;
+    color: #888780;
+    padding: 6px 8px;
+    text-align: right;
+    border-top: 1px solid #E5E3DC;
+    font-variant-numeric: tabular-nums;
+  }
+  .cal-day-col {
+    border-left: 1px solid #E5E3DC;
+    position: relative;
+    min-height: 100%;
+  }
+  .cal-day-col.today { background: #FFFBEF; }
+  .cal-day-col.past  { background: #FAFAF7; }
+  .cal-hour-row {
+    height: 48px;
+    border-top: 1px solid #E5E3DC;
+  }
+  .cal-booking {
+    position: absolute;
+    left: 4px; right: 4px;
+    background: #1C1917;
+    color: #fff;
+    border-left: 3px solid #C9A96E;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: 11px;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    z-index: 1;
+    transition: background 0.15s;
+  }
+  .cal-booking:hover { background: #333; }
+  .cal-booking.pending {
+    background: #fffbeb;
+    color: #92400e;
+    border-left-color: #f59e0b;
+  }
+  .cal-booking.pending:hover { background: #fef3c7; }
+  .cal-booking.completed,
+  .cal-booking.no_show {
+    background: #f3f4f6;
+    color: #4b5563;
+    border-left-color: #9ca3af;
+  }
+  .cal-booking-time {
+    font-weight: 600;
+    font-size: 10px;
+    opacity: 0.85;
+  }
+  .cal-booking-name {
+    font-weight: 500;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-booking-svc {
+    font-size: 10px;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .cal-nav-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1C1917;
+  }
+  .cal-nav-btn {
+    padding: 6px 12px;
+    border: 1px solid #E5E3DC;
+    border-radius: 7px;
+    background: #fff;
+    font-size: 13px;
+    color: #1C1917;
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+  .cal-nav-btn:hover { background: #FAFAF7; }
+  .cal-nav-btn.today-btn { border-color: #1C1917; }
+</style>
+
+
+<!-- Week navigation -->
+<div class="cal-nav">
+  <div class="flex items-center gap-2">
+    <a href="?view=calendar&week={{ week_data.prev_week|date:'Y-m-d' }}" class="cal-nav-btn">← Prev</a>
+    <a href="?view=calendar&week={{ week_data.this_week|date:'Y-m-d' }}" class="cal-nav-btn today-btn">Today</a>
+    <a href="?view=calendar&week={{ week_data.next_week|date:'Y-m-d' }}" class="cal-nav-btn">Next →</a>
+  </div>
+  <div class="cal-nav-label">
+    {{ week_data.start|date:"M j" }} – {{ week_data.end|date:"M j, Y" }}
+  </div>
+</div>
+
+
+<!-- Calendar grid -->
+<div class="cal-grid">
+
+  <!-- Header row -->
+  <div class="cal-header"></div>
+  {% for day in week_data.days %}
+    <div class="cal-header {% if day.is_today %}today{% endif %}">
+      {{ day.date|date:"D" }}
+      <span class="cal-header-day-num">{{ day.date|date:"j" }}</span>
+    </div>
+  {% endfor %}
+
+  <!-- Time column -->
+  <div class="cal-time-col">
+    {% for hour in "_______________" %}
+      {% with forloop.counter|add:6 as h %}
+        <div class="cal-time-label">
+          {% if h < 12 %}{{ h }} AM
+          {% elif h == 12 %}12 PM
+          {% else %}{{ h|add:'-12' }} PM
+          {% endif %}
+        </div>
+      {% endwith %}
+    {% endfor %}
+  </div>
+
+  <!-- Day columns -->
+  {% for day in week_data.days %}
+    <div class="cal-day-col {% if day.is_today %}today{% elif day.is_past %}past{% endif %}"
+         data-date="{{ day.date|date:'Y-m-d' }}">
+      {% for _ in "_______________" %}
+        <div class="cal-hour-row"></div>
+      {% endfor %}
+
+      <!-- Bookings rendered absolutely positioned via JS -->
+      {% for b in day.bookings %}
+        <a href="{% url 'booking_detail' ref=b.reference_code %}"
+           class="cal-booking
+                  {% if b.status == 'pending_otp' %}pending
+                  {% elif b.status == 'completed' or b.status == 'no_show' %}completed
+                  {% endif %}"
+           data-start-hour="{{ b.start_time|date:'G' }}"
+           data-start-minute="{{ b.start_time|date:'i' }}"
+           data-duration="{{ b.service.duration_minutes }}">
+          <div class="cal-booking-time">{{ b.start_time|time:"g:i A" }}</div>
+          <div class="cal-booking-name">{{ b.client_name }}</div>
+          <div class="cal-booking-svc">{{ b.service.name }}</div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endfor %}
+
+</div>
+
+
+<!-- Legend -->
+<div class="flex items-center gap-4 mt-4 text-xs text-muted">
+  <span class="flex items-center gap-1.5">
+    <span class="inline-block w-3 h-3 rounded bg-ink"></span> Confirmed
+  </span>
+  <span class="flex items-center gap-1.5">
+    <span class="inline-block w-3 h-3 rounded bg-yellow-200 border-l-2 border-yellow-500"></span> Pending OTP
+  </span>
+  <span class="flex items-center gap-1.5">
+    <span class="inline-block w-3 h-3 rounded bg-gray-200 border-l-2 border-gray-400"></span> Past
+  </span>
+</div>
+
+
+<script>
+(function() {
+  // Position bookings absolutely within their day column based on start time + duration
+  // Calendar starts at 7 AM, each hour row is 48px tall.
+  const HOUR_HEIGHT = 48;
+  const FIRST_HOUR = 7;  // calendar starts at 7 AM
+  const HEADER_HEIGHT = 0;  // header is in separate grid cell
+
+  document.querySelectorAll('.cal-booking').forEach(el => {
+    const startHour   = parseInt(el.dataset.startHour);
+    const startMinute = parseInt(el.dataset.startMinute);
+    const duration    = parseInt(el.dataset.duration);
+
+    const offsetMinutes = (startHour - FIRST_HOUR) * 60 + startMinute;
+    const top    = (offsetMinutes / 60) * HOUR_HEIGHT;
+    const height = (duration / 60) * HOUR_HEIGHT - 2;
+
+    el.style.top    = (top + HEADER_HEIGHT) + 'px';
+    el.style.height = Math.max(28, height) + 'px';
+  });
+})();
+</script>

@@ -4,141 +4,44 @@
 <div class="px-8 py-6">
 
   <!-- Header -->
-  <div class="flex items-center justify-between mb-6">
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
     <div>
       <h1 class="text-2xl font-serif italic text-ink">Reservations</h1>
       <p class="text-sm text-muted mt-1">
         Manage your appointments and client bookings.
       </p>
     </div>
-  </div>
 
-  <!-- Tabs -->
-  <div class="border-b border-cream-border mb-6">
-    <div class="flex gap-1">
-      <a href="?tab=upcoming"
-         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'upcoming' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-        Upcoming
-        {% if counts.upcoming %}<span class="ml-1 px-1.5 py-0.5 bg-gold-light text-gold-dark text-xs font-semibold rounded">{{ counts.upcoming }}</span>{% endif %}
+    <!-- View toggle -->
+    <div class="inline-flex items-center bg-white border border-cream-border rounded-lg p-1">
+      <a href="?view=list{% if tab != 'upcoming' %}&tab={{ tab }}{% endif %}"
+         class="px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5
+                {% if view_mode == 'list' %}bg-ink text-white{% else %}text-muted hover:text-ink{% endif %}">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        List
       </a>
-      <a href="?tab=past"
-         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'past' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-        Past
-        {% if counts.past %}<span class="ml-1 px-1.5 py-0.5 bg-cream text-muted text-xs font-semibold rounded">{{ counts.past }}</span>{% endif %}
-      </a>
-      <a href="?tab=cancelled"
-         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'cancelled' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-        Cancelled
-        {% if counts.cancelled %}<span class="ml-1 px-1.5 py-0.5 bg-cream text-muted text-xs font-semibold rounded">{{ counts.cancelled }}</span>{% endif %}
-      </a>
-      <a href="?tab=all"
-         class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-                {% if tab == 'all' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-        All
-        {% if counts.all %}<span class="ml-1 px-1.5 py-0.5 bg-cream text-muted text-xs font-semibold rounded">{{ counts.all }}</span>{% endif %}
+      <a href="?view=calendar"
+         class="px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5
+                {% if view_mode == 'calendar' %}bg-ink text-white{% else %}text-muted hover:text-ink{% endif %}">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="2" y1="6" x2="14" y2="6" stroke="currentColor" stroke-width="1.5"/>
+          <line x1="5" y1="2" x2="5" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="11" y1="2" x2="11" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Calendar
       </a>
     </div>
   </div>
 
-  <!-- Bookings list -->
-  {% if bookings %}
-    <div class="space-y-2">
-      {% for b in bookings %}
-
-        <a href="{% url 'booking_detail' ref=b.reference_code %}"
-           class="block bg-white border border-cream-border rounded-xl p-4
-                  hover:border-gold transition-colors">
-
-          <div class="flex items-start gap-4">
-
-            <!-- Date block -->
-            <div class="text-center flex-shrink-0 px-3 py-2 bg-cream rounded-lg border border-cream-border min-w-[60px]">
-              <div class="text-[10px] text-muted uppercase tracking-wider font-medium">
-                {{ b.start_time|date:"M" }}
-              </div>
-              <div class="text-2xl font-semibold text-ink leading-none mt-1">
-                {{ b.start_time|date:"j" }}
-              </div>
-              <div class="text-[10px] text-muted mt-1">
-                {{ b.start_time|date:"D" }}
-              </div>
-            </div>
-
-            <!-- Main info -->
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap mb-0.5">
-                <span class="font-semibold text-ink text-sm">{{ b.client_name }}</span>
-
-                {% if b.first_time_client %}
-                  <span class="px-1.5 py-0.5 bg-gold-light text-gold-dark text-[10px]
-                               font-semibold rounded uppercase tracking-wide">New</span>
-                {% endif %}
-
-                {% if b.status == 'pending_otp' %}
-                  <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-[10px]
-                               font-semibold rounded uppercase tracking-wide">Pending OTP</span>
-                {% elif b.status == 'confirmed' %}
-                  <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px]
-                               font-semibold rounded uppercase tracking-wide">Confirmed</span>
-                {% elif b.status == 'completed' %}
-                  <span class="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-[10px]
-                               font-semibold rounded uppercase tracking-wide">Completed</span>
-                {% elif b.status == 'no_show' %}
-                  <span class="px-1.5 py-0.5 bg-orange-100 text-orange-800 text-[10px]
-                               font-semibold rounded uppercase tracking-wide">No-show</span>
-                {% elif b.status == 'cancelled' %}
-                  <span class="px-1.5 py-0.5 bg-red-50 text-red-700 text-[10px]
-                               font-semibold rounded uppercase tracking-wide">Cancelled</span>
-                {% elif b.status == 'refused' %}
-                  <span class="px-1.5 py-0.5 bg-red-50 text-red-700 text-[10px]
-                               font-semibold rounded uppercase tracking-wide">Refused</span>
-                {% endif %}
-              </div>
-
-              <p class="text-sm text-ink">{{ b.service.name }}</p>
-
-              <div class="flex items-center gap-3 text-xs text-muted mt-1.5">
-                <span>🕒 {{ b.start_time|time:"g:i A" }} · {{ b.service.duration_minutes }} min</span>
-                <span>·</span>
-                <span>${{ b.service.price }}</span>
-                {% if b.client_phone %}
-                  <span>·</span>
-                  <span>{{ b.client_phone }}</span>
-                {% endif %}
-              </div>
-            </div>
-
-            <!-- Reference -->
-            <div class="text-right flex-shrink-0">
-              <div class="text-[10px] text-muted uppercase tracking-wide">Ref</div>
-              <div class="text-xs font-mono font-semibold text-ink">{{ b.reference_code }}</div>
-            </div>
-          </div>
-        </a>
-
-      {% endfor %}
-    </div>
+  {% if view_mode == 'list' %}
+    {% include 'bookings/_reservations_list.html' %}
   {% else %}
-    <div class="bg-white border border-cream-border rounded-xl py-16 text-center">
-      <div class="text-4xl mb-3">📅</div>
-      <p class="text-sm font-medium text-ink mb-1">
-        {% if tab == 'upcoming' %}No upcoming bookings
-        {% elif tab == 'past' %}No past bookings
-        {% elif tab == 'cancelled' %}No cancelled bookings
-        {% else %}No bookings yet{% endif %}
-      </p>
-      <p class="text-sm text-muted max-w-sm mx-auto">
-        {% if tab == 'upcoming' %}
-          When clients book with you, they'll appear here.
-          Share your booking link: <a href="/book/{{ request.user.username }}/" class="text-gold-dark underline">/book/{{ request.user.username }}/</a>
-        {% else %}
-          Nothing to show in this tab.
-        {% endif %}
-      </p>
-    </div>
+    {% include 'bookings/_reservations_calendar.html' %}
   {% endif %}
 
 </div>
