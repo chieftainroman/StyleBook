@@ -38,12 +38,18 @@
       <div class="row"><span class="label">Total</span><span class="value">${{ booking.service.price }}</span></div>
     </div>
 
-    {% if booking.client_notes %}
+{% if booking.client_notes %}
     <p style="font-size: 13px; color: #555;"><strong>Your notes:</strong> {{ booking.client_notes }}</p>
     {% endif %}
 
+    <div style="margin: 24px 0; padding: 18px; background: #FAFAF7; border-radius: 10px; text-align: center;">
+      <p style="margin: 0 0 12px; font-size: 13px; color: #555;">Need to make changes?</p>
+      <a href="{{ reschedule_url }}" style="display: inline-block; padding: 9px 18px; background: #1C1917; color: #fff; text-decoration: none; border-radius: 7px; font-size: 13px; font-weight: 500; margin: 0 4px;">Reschedule</a>
+      <a href="{{ cancel_url }}" style="display: inline-block; padding: 9px 18px; background: #fff; color: #1C1917; text-decoration: none; border-radius: 7px; font-size: 13px; font-weight: 500; border: 1px solid #E5E3DC; margin: 0 4px;">Cancel</a>
+    </div>
+
     <div class="footer">
-      Save your reference code — you'll need it if you want to reschedule or cancel.
+      Save your reference code — you'll need it if you contact {{ master_name }} directly.
     </div>
   </div>
 </body>

@@ -18,4 +18,9 @@ path('dashboard/',                          views.dashboard_view,     name='dash
     path('book/<str:username>/resend-otp/',       views.resend_otp,               name='resend_otp'),
     path('book/<str:username>/api/availability/', views.availability_api,         name='availability_api'),
     path('book/<str:username>/api/summary/',      views.availability_summary_api, name='availability_summary_api'),
+    
+    path('manage/cancel/<str:token>/',                views.client_cancel,                  name='client_cancel'),
+    path('manage/reschedule/<str:token>/',            views.client_reschedule,              name='client_reschedule'),
+    path('manage/reschedule/<str:token>/api/slots/',  views.client_reschedule_slots_api,    name='client_reschedule_slots_api'),
+    path('manage/reschedule/<str:token>/api/summary/',views.client_reschedule_summary_api,  name='client_reschedule_summary_api'),
 ]

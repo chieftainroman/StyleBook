@@ -427,7 +427,7 @@ def verify_otp(request, username):
 
     # Send confirmation emails
     try:
-        _send_booking_confirmed_emails(booking)
+        _send_booking_confirmed_emails(booking, request=request)
     except Exception:
         pass
 
@@ -688,27 +688,250 @@ def booking_save_notes(request, ref):
     return redirect('booking_detail', ref=ref)
 
 
-def _send_booking_cancelled_email(booking, cancelled_by='master', reason=''):
-    """Notify client that their booking was cancelled."""
+def _send_booking_confirmed_emails(booking, request=None):
+    """Send confirmation to client + notification to master after OTP success."""
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    from django.conf import settings
+
+    # Build absolute cancel + reschedule URLs
+    cancel_token     = make_action_token(booking.reference_code, 'cancel')
+    reschedule_token = make_action_token(booking.reference_code, 'reschedule')
+
+    if request is not None:
+        cancel_url     = request.build_absolute_uri(f'/manage/cancel/{cancel_token}/')
+        reschedule_url = request.build_absolute_uri(f'/manage/reschedule/{reschedule_token}/')
+    else:
+        site_url = getattr(settings, 'SITE_URL', 'https://showpiecehub.com')
+        cancel_url     = f'{site_url}/manage/cancel/{cancel_token}/'
+        reschedule_url = f'{site_url}/manage/reschedule/{reschedule_token}/'
+
+    # ── Client confirmation ──
+    ctx = {
+        'booking':         booking,
+        'master_name':     booking.master.user.username,
+        'site_name':       'StyleBook',
+        'cancel_url':      cancel_url,
+        'reschedule_url':  reschedule_url,
+    }
+    
+    
+from .tokens import make_action_token, parse_action_token
+
+
+def _send_client_cancelled_notification(booking, reason=''):
+    """Email the master when the CLIENT cancels."""
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    from django.conf import settings
+
+    if not booking.master.user.email:
+        return
+
+    ctx = {
+        'booking':    booking,
+        'reason':     reason,
+        'site_name':  'StyleBook',
+    }
+    subject = f'Cancelled by client: {booking.client_name} — {booking.reference_code}'
+    text_body = render_to_string('emails/booking_cancelled_by_client_master.txt', ctx)
+    html_body = render_to_string('emails/booking_cancelled_by_client_master.html', ctx)
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[booking.master.user.email],
+    )
+    msg.attach_alternative(html_body, 'text/html')
+    msg.send(fail_silently=True)
+
+
+def client_cancel(request, token):
+    """Client cancels their booking via the link in the confirmation email."""
+    payload = parse_action_token(token)
+    if not payload or payload['action'] != 'cancel':
+        return render(request, 'bookings/client_action_invalid.html', {
+            'message': 'This cancellation link is invalid or expired.',
+        })
+
+    try:
+        booking = Booking.objects.get(reference_code=payload['ref'])
+    except Booking.DoesNotExist:
+        return render(request, 'bookings/client_action_invalid.html', {
+            'message': 'Booking not found.',
+        })
+
+    if booking.status in [Booking.STATUS_CANCELLED, Booking.STATUS_COMPLETED,
+                           Booking.STATUS_NO_SHOW, Booking.STATUS_REFUSED]:
+        return render(request, 'bookings/client_action_invalid.html', {
+            'message': 'This booking cannot be cancelled anymore.',
+            'booking': booking,
+        })
+
+    if not booking.is_cancellable():
+        return render(request, 'bookings/client_action_invalid.html', {
+            'message': 'This appointment has already happened.',
+            'booking': booking,
+        })
+
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '').strip()[:300]
+        booking.status = Booking.STATUS_CANCELLED
+        booking.cancelled_at = timezone.now()
+        booking.save(update_fields=['status', 'cancelled_at'])
+
+        try:
+            _send_booking_cancelled_email(booking, cancelled_by='client', reason=reason)
+            _send_client_cancelled_notification(booking, reason=reason)
+        except Exception:
+            pass
+
+        return render(request, 'bookings/client_cancelled_success.html', {
+            'booking': booking,
+        })
+
+    return render(request, 'bookings/client_cancel_confirm.html', {
+        'booking': booking,
+        'token':   token,
+    })
+
+
+def client_reschedule(request, token):
+    """Client reschedules their booking via email link."""
+    payload = parse_action_token(token)
+    if not payload or payload['action'] != 'reschedule':
+        return render(request, 'bookings/client_action_invalid.html', {
+            'message': 'This reschedule link is invalid or expired.',
+        })
+
+    try:
+        booking = Booking.objects.get(reference_code=payload['ref'])
+    except Booking.DoesNotExist:
+        return render(request, 'bookings/client_action_invalid.html', {
+            'message': 'Booking not found.',
+        })
+
+    if not booking.is_reschedulable():
+        return render(request, 'bookings/client_action_invalid.html', {
+            'message': 'This appointment cannot be rescheduled.',
+            'booking': booking,
+        })
+
+    if request.method == 'POST':
+        slot_iso = request.POST.get('slot_iso', '')
+        try:
+            new_start = datetime.fromisoformat(slot_iso)
+            if timezone.is_naive(new_start) and timezone.is_aware(timezone.now()):
+                new_start = timezone.make_aware(new_start)
+        except (ValueError, TypeError):
+            messages.error(request, 'Invalid time slot.')
+            return redirect('client_reschedule', token=token)
+
+        # Re-validate the slot is still available
+        available = get_available_slots(booking.master, booking.service, new_start.date())
+        naive_new = new_start.replace(tzinfo=None) if timezone.is_aware(new_start) else new_start
+        available_naive = [
+            (s.replace(tzinfo=None) if hasattr(s, 'tzinfo') and s.tzinfo else s)
+            for s in available
+        ]
+        if naive_new not in available_naive:
+            messages.error(request, 'That slot is no longer available.')
+            return redirect('client_reschedule', token=token)
+
+        old_start = booking.start_time
+        booking.start_time = new_start
+        booking.end_time   = new_start + timedelta(minutes=booking.service.duration_minutes)
+        booking.save(update_fields=['start_time', 'end_time'])
+
+        try:
+            _send_reschedule_notifications(booking, old_start)
+        except Exception:
+            pass
+
+        return render(request, 'bookings/client_rescheduled_success.html', {
+            'booking': booking,
+        })
+
+    return render(request, 'bookings/client_reschedule_picker.html', {
+        'booking': booking,
+        'token':   token,
+    })
+
+
+def _send_reschedule_notifications(booking, old_start):
+    """Email both client and master after a reschedule."""
     from django.core.mail import EmailMultiAlternatives
     from django.template.loader import render_to_string
     from django.conf import settings
 
     ctx = {
-        'booking':      booking,
-        'master_name':  booking.master.user.username,
-        'cancelled_by': cancelled_by,
-        'reason':       reason,
-        'site_name':    'StyleBook',
+        'booking':     booking,
+        'old_start':   old_start,
+        'master_name': booking.master.user.username,
+        'site_name':   'StyleBook',
     }
-    subject = f'Booking cancelled — {booking.reference_code}'
-    text_body = render_to_string('emails/booking_cancelled.txt', ctx)
-    html_body = render_to_string('emails/booking_cancelled.html', ctx)
+
+    # Client
     msg = EmailMultiAlternatives(
-        subject=subject,
-        body=text_body,
+        subject=f'Booking rescheduled — {booking.reference_code}',
+        body=render_to_string('emails/booking_rescheduled_client.txt', ctx),
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=[booking.client_email],
     )
-    msg.attach_alternative(html_body, 'text/html')
+    msg.attach_alternative(render_to_string('emails/booking_rescheduled_client.html', ctx), 'text/html')
     msg.send(fail_silently=True)
+
+    # Master
+    if booking.master.user.email:
+        ctx['client_name'] = booking.client_name
+        msg = EmailMultiAlternatives(
+            subject=f'Rescheduled: {booking.client_name} — {booking.reference_code}',
+            body=render_to_string('emails/booking_rescheduled_master.txt', ctx),
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[booking.master.user.email],
+        )
+        msg.attach_alternative(render_to_string('emails/booking_rescheduled_master.html', ctx), 'text/html')
+        msg.send(fail_silently=True)
+
+
+def client_reschedule_slots_api(request, token):
+    """JSON API: available slots for the booking being rescheduled."""
+    payload = parse_action_token(token)
+    if not payload or payload['action'] != 'reschedule':
+        return JsonResponse({'error': 'Invalid token'}, status=400)
+
+    try:
+        booking = Booking.objects.get(reference_code=payload['ref'])
+    except Booking.DoesNotExist:
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+
+    date_str = request.GET.get('date', '')
+    try:
+        target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    except ValueError:
+        return JsonResponse({'error': 'Invalid date'}, status=400)
+
+    slots = get_available_slots(booking.master, booking.service, target_date)
+    return JsonResponse({
+        'slots': [
+            {'time': s.strftime('%H:%M'), 'display': s.strftime('%-I:%M %p'), 'iso': s.isoformat()}
+            for s in slots
+        ],
+    })
+
+
+def client_reschedule_summary_api(request, token):
+    """JSON API: which dates have availability for this booking's service."""
+    payload = parse_action_token(token)
+    if not payload or payload['action'] != 'reschedule':
+        return JsonResponse({'error': 'Invalid token'}, status=400)
+
+    try:
+        booking = Booking.objects.get(reference_code=payload['ref'])
+    except Booking.DoesNotExist:
+        return JsonResponse({'error': 'Booking not found'}, status=404)
+
+    summary = get_availability_summary(booking.master, booking.service, num_days=30)
+    return JsonResponse({
+        'availability': {d.isoformat(): bool(has) for d, has in summary.items()},
+    })

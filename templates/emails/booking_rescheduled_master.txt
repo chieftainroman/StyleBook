@@ -1,0 +1,11 @@
+Hi {{ master_name }},
+
+{{ client_name }} rescheduled their booking.
+
+Previously: {{ old_start|date:"l, F j" }} at {{ old_start|time:"g:i A" }}
+Now:        {{ booking.start_time|date:"l, F j" }} at {{ booking.start_time|time:"g:i A" }}
+
+Reference: {{ booking.reference_code }}
+Service: {{ booking.service.name }}
+
+— {{ site_name }}

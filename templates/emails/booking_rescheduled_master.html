@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+           background: #FAFAF7; margin: 0; padding: 40px 20px; color: #1C1917; }
+    .container { max-width: 520px; margin: 0 auto; background: #fff;
+                 border: 1px solid #E5E3DC; border-radius: 14px; padding: 36px; }
+    .logo { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
+    .logo span { color: #C9A96E; }
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    .change { background: #FAFAF7; border-radius: 10px; padding: 18px; margin: 16px 0; }
+    .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+    .row .label { color: #888780; }
+    .row .value { color: #1C1917; font-weight: 500; }
+    .row.old .value { color: #888780; text-decoration: line-through; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">Style<span>Book</span></div>
+    <h1>Booking rescheduled</h1>
+    <p style="font-size: 14px; color: #555;">{{ client_name }} moved their appointment.</p>
+
+    <div class="change">
+      <div class="row old"><span class="label">Was</span><span class="value">{{ old_start|date:"M j" }} at {{ old_start|time:"g:i A" }}</span></div>
+      <div class="row"><span class="label">Now</span><span class="value">{{ booking.start_time|date:"M j" }} at {{ booking.start_time|time:"g:i A" }}</span></div>
+      <div class="row"><span class="label">Service</span><span class="value">{{ booking.service.name }}</span></div>
+      <div class="row"><span class="label">Reference</span><span class="value">{{ booking.reference_code }}</span></div>
+    </div>
+  </div>
+</body>
+</html>

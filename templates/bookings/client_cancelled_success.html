@@ -1,0 +1,27 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cancelled — StyleBook</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #FAFAF7; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .card { max-width: 420px; width: 100%; background: #fff; border: 1px solid #E5E3DC; border-radius: 16px; padding: 36px; text-align: center; }
+    .icon { width: 56px; height: 56px; background: #F3F4F6; color: #555; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 14px; }
+    h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; color: #1C1917; }
+    p { font-size: 14px; color: #555; line-height: 1.55; margin: 10px 0; }
+    .ref { font-family: monospace; background: #FAFAF7; padding: 5px 10px; border-radius: 6px; font-weight: 600; }
+    .btn { display: inline-block; margin-top: 18px; padding: 11px 24px; background: #1C1917; color: #fff; text-decoration: none; border-radius: 8px; font-weight: 500; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">✕</div>
+    <h1>Booking cancelled</h1>
+    <p>Your booking <span class="ref">{{ booking.reference_code }}</span> with {{ booking.master.user.username }} has been cancelled. We've notified them.</p>
+    <a href="/book/{{ booking.master.user.username }}/" class="btn">Book again →</a>
+  </div>
+</body>
+</html>

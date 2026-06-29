@@ -1,0 +1,11 @@
+Hi {{ booking.master.user.username }},
+
+{{ booking.client_name }} cancelled their booking.
+
+Reference: {{ booking.reference_code }}
+Service: {{ booking.service.name }}
+Was scheduled for: {{ booking.start_time|date:"l, F j" }} at {{ booking.start_time|time:"g:i A" }}
+
+{% if reason %}Reason: {{ reason }}{% endif %}
+
+— {{ site_name }}

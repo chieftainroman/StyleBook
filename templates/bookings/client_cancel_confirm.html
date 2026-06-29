@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cancel booking — StyleBook</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #FAFAF7; color: #1C1917; min-height: 100vh; }
+    .shell { max-width: 540px; margin: 0 auto; padding: 40px 20px; }
+    .logo { font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 32px; }
+    .logo span { color: #C9A96E; }
+    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 16px; padding: 32px; }
+    .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+    .row .label { color: #888780; }
+    .row .value { color: #1C1917; font-weight: 500; }
+    .summary { background: #FAFAF7; border-radius: 10px; padding: 18px; margin: 20px 0; }
+    .danger-btn { width: 100%; padding: 12px; background: #DC2626; color: #fff; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    .danger-btn:hover { background: #B91C1C; }
+    .ghost-btn { display: block; text-align: center; margin-top: 12px; color: #888780; font-size: 13px; text-decoration: none; }
+    .ghost-btn:hover { color: #1C1917; }
+    textarea { width: 100%; padding: 10px 13px; border: 1px solid #E5E3DC; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; outline: none; }
+    textarea:focus { border-color: #1C1917; }
+  </style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="logo">Style<span>Book</span></div>
+
+  <div class="card">
+    <h1 class="text-xl font-semibold text-ink mb-1">Cancel this booking?</h1>
+    <p class="text-sm text-muted mb-4">Once cancelled, you'll need to book again to keep this slot.</p>
+
+    <div class="summary">
+      <div class="row"><span class="label">Reference</span><span class="value font-mono">{{ booking.reference_code }}</span></div>
+      <div class="row"><span class="label">With</span><span class="value">{{ booking.master.user.username }}</span></div>
+      <div class="row"><span class="label">Service</span><span class="value">{{ booking.service.name }}</span></div>
+      <div class="row"><span class="label">When</span><span class="value">{{ booking.start_time|date:"l, F j" }} at {{ booking.start_time|time:"g:i A" }}</span></div>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <label for="reason" class="block text-xs text-muted uppercase tracking-wider mb-1.5 font-medium">
+        Reason (optional)
+      </label>
+      <textarea id="reason" name="reason" rows="2" maxlength="300"
+                placeholder="The master will see this"></textarea>
+
+      <button type="submit" class="danger-btn mt-4">
+        Yes, cancel this booking
+      </button>
+    </form>
+
+    <a href="/" class="ghost-btn">Keep my booking</a>
+  </div>
+</div>
+
+</body>
+</html>

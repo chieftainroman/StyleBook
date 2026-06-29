@@ -123,7 +123,7 @@ SERVER_EMAIL       = DEFAULT_FROM_EMAIL
 SOCIALACCOUNT_AUTO_SIGNUP = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
-
+SITE_URL = os.environ.get('SITE_URL', 'https://stylebook.onrender.com')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
