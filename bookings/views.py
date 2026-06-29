@@ -24,33 +24,6 @@ def dashboard_view(request):
         'active': 'dashboard',
     })
 
-def book_master(request, username):
-    """Public booking page for a master. Shows services + slot picker."""
-    User = get_user_model()
-    user = get_object_or_404(User, username=username)
-
-    if not hasattr(user, 'profile'):
-        raise Http404('Master not found')
-
-    profile = user.profile
-
-    if not profile.is_open_for_bookings():
-        return render(request, 'bookings/not_available.html', {'master': user})
-
-    services = profile.services.filter(is_active=True).order_by('sort_order', 'created_at')
-
-    # Source tracking from URL param: /book/<username>/?src=qr
-    source_param = request.GET.get('src', 'direct_link')
-    if source_param not in [c[0] for c in Booking.SOURCE_CHOICES]:
-        source_param = 'direct_link'
-
-    context = {
-        'master':   user,
-        'profile':  profile,
-        'services': services,
-        'source':   source_param,
-    }
-    return render(request, 'bookings/book.html', context)
 
 
 def availability_api(request, username):
@@ -195,18 +168,30 @@ def _send_otp_email(booking, code):
     msg.send(fail_silently=False)
 
 
-def _send_booking_confirmed_emails(booking):
+def _send_booking_confirmed_emails(booking, request=None):
     """Send confirmation to client + notification to master after OTP success."""
     from django.core.mail import EmailMultiAlternatives
     from django.template.loader import render_to_string
     from django.conf import settings
+    from .tokens import make_action_token
+
+    # Build absolute cancel + reschedule URLs from SITE_URL (deterministic)
+    cancel_token     = make_action_token(booking.reference_code, 'cancel')
+    reschedule_token = make_action_token(booking.reference_code, 'reschedule')
+
+    site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
+    cancel_url     = f'{site_url}/manage/cancel/{cancel_token}/'
+    reschedule_url = f'{site_url}/manage/reschedule/{reschedule_token}/'
+
+    ctx = {
+        'booking':         booking,
+        'master_name':     booking.master.user.username,
+        'site_name':       'StyleBook',
+        'cancel_url':      cancel_url,
+        'reschedule_url':  reschedule_url,
+    }
 
     # ── Client confirmation ──
-    ctx = {
-        'booking': booking,
-        'master_name': booking.master.user.username,
-        'site_name': 'StyleBook',
-    }
     subject = f'Booking confirmed — {booking.reference_code}'
     text_body = render_to_string('emails/booking_confirmed_client.txt', ctx)
     html_body = render_to_string('emails/booking_confirmed_client.html', ctx)
@@ -217,7 +202,7 @@ def _send_booking_confirmed_emails(booking):
         to=[booking.client_email],
     )
     msg.attach_alternative(html_body, 'text/html')
-    msg.send(fail_silently=True)  # don't fail the request if email fails
+    msg.send(fail_silently=False)
 
     # ── Master notification ──
     if booking.master.user.email:
@@ -232,8 +217,33 @@ def _send_booking_confirmed_emails(booking):
             to=[booking.master.user.email],
         )
         msg.attach_alternative(html_body, 'text/html')
-        msg.send(fail_silently=True)
+        msg.send(fail_silently=False)
 
+
+def _send_booking_cancelled_email(booking, cancelled_by='master', reason=''):
+    """Notify the CLIENT that their booking was cancelled."""
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    from django.conf import settings
+
+    ctx = {
+        'booking':      booking,
+        'master_name':  booking.master.user.username,
+        'cancelled_by': cancelled_by,
+        'reason':       reason,
+        'site_name':    'StyleBook',
+    }
+    subject = f'Booking cancelled — {booking.reference_code}'
+    text_body = render_to_string('emails/booking_cancelled.txt', ctx)
+    html_body = render_to_string('emails/booking_cancelled.html', ctx)
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[booking.client_email],
+    )
+    msg.attach_alternative(html_body, 'text/html')
+    msg.send(fail_silently=False)
 
 @ensure_csrf_cookie
 def book_master(request, username):
@@ -425,11 +435,14 @@ def verify_otp(request, username):
     booking.status = Booking.STATUS_CONFIRMED
     booking.save(update_fields=['status'])
 
-    # Send confirmation emails
+    # Send confirmation emails — log any errors but don't fail the request
     try:
         _send_booking_confirmed_emails(booking, request=request)
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).exception(
+            f'Failed to send confirmation emails for {booking.reference_code}: {e}'
+        )
 
     return JsonResponse({
         'reference_code': booking.reference_code,
@@ -688,33 +701,7 @@ def booking_save_notes(request, ref):
     return redirect('booking_detail', ref=ref)
 
 
-def _send_booking_confirmed_emails(booking, request=None):
-    """Send confirmation to client + notification to master after OTP success."""
-    from django.core.mail import EmailMultiAlternatives
-    from django.template.loader import render_to_string
-    from django.conf import settings
 
-    # Build absolute cancel + reschedule URLs
-    cancel_token     = make_action_token(booking.reference_code, 'cancel')
-    reschedule_token = make_action_token(booking.reference_code, 'reschedule')
-
-    if request is not None:
-        cancel_url     = request.build_absolute_uri(f'/manage/cancel/{cancel_token}/')
-        reschedule_url = request.build_absolute_uri(f'/manage/reschedule/{reschedule_token}/')
-    else:
-        site_url = getattr(settings, 'SITE_URL', 'https://showpiecehub.com')
-        cancel_url     = f'{site_url}/manage/cancel/{cancel_token}/'
-        reschedule_url = f'{site_url}/manage/reschedule/{reschedule_token}/'
-
-    # ── Client confirmation ──
-    ctx = {
-        'booking':         booking,
-        'master_name':     booking.master.user.username,
-        'site_name':       'StyleBook',
-        'cancel_url':      cancel_url,
-        'reschedule_url':  reschedule_url,
-    }
-    
     
 from .tokens import make_action_token, parse_action_token
 
