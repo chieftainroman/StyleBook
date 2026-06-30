@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="px-8 py-6 max-w-3xl">
+
+  <h1 class="text-2xl font-serif italic text-ink mb-1">Your QR code</h1>
+  <p class="text-sm text-muted mb-6">
+    Print it. Tape it to your station. Share it on Instagram. When clients scan it,
+    they land on your booking page.
+  </p>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- QR card -->
+    <div class="md:col-span-1">
+      <div class="bg-white border border-cream-border rounded-2xl p-6 text-center">
+        <img src="{% url 'qr_code_image' username=username %}?size=400"
+             alt="QR code"
+             class="w-full h-auto max-w-[280px] mx-auto rounded-lg"
+             id="qrImage">
+        <p class="text-xs font-mono text-muted mt-4 break-all">
+          stylebook.com/book/{{ username }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Right column: actions -->
+    <div class="md:col-span-2 space-y-4">
+
+      <div class="bg-white border border-cream-border rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-ink mb-3">Download</h3>
+        <p class="text-xs text-muted mb-4">
+          High resolution. Best for printing on cards, posters, station signs.
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <a href="{% url 'qr_code_image' username=username %}?size=600&download=1"
+             class="px-4 py-2 bg-ink text-white text-sm font-medium rounded-lg hover:bg-gray-800">
+            Download 600px
+          </a>
+          <a href="{% url 'qr_code_image' username=username %}?size=1000&download=1"
+             class="px-4 py-2 bg-cream border border-cream-border text-ink text-sm font-medium rounded-lg hover:bg-white">
+            Download 1000px
+          </a>
+          <a href="{% url 'qr_code_image' username=username %}?size=1200&download=1"
+             class="px-4 py-2 bg-cream border border-cream-border text-ink text-sm font-medium rounded-lg hover:bg-white">
+            Download 1200px (print)
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white border border-cream-border rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-ink mb-2">Share your booking link</h3>
+        <p class="text-xs text-muted mb-3">
+          Paste in your Instagram bio, WhatsApp signature, or text it to clients directly.
+        </p>
+
+        <div class="flex items-center gap-2 bg-cream rounded-lg p-3 mb-3">
+          <code class="flex-1 text-xs font-mono text-ink truncate select-all" id="bookingUrl">{{ booking_url }}</code>
+          <button type="button" onclick="copyUrl()"
+                  class="px-3 py-1.5 bg-white border border-cream-border rounded text-xs font-medium text-ink hover:bg-cream-border"
+                  id="copyBtn">
+            Copy
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <a href="https://wa.me/?text={{ booking_url|urlencode }}"
+             target="_blank" rel="noopener"
+             class="px-3 py-2 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg hover:bg-emerald-100">
+            Share on WhatsApp
+          </a>
+          <a href="https://t.me/share/url?url={{ booking_url|urlencode }}"
+             target="_blank" rel="noopener"
+             class="px-3 py-2 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg hover:bg-blue-100">
+            Share on Telegram
+          </a>
+          <a href="mailto:?subject=Book%20with%20me%20on%20StyleBook&body={{ booking_url|urlencode }}"
+             class="px-3 py-2 bg-cream border border-cream-border text-ink text-xs font-medium rounded-lg hover:bg-white">
+            Share via email
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-cream rounded-xl p-5">
+        <h3 class="text-sm font-semibold text-ink mb-2">Pro tips</h3>
+        <ul class="text-xs text-muted space-y-1.5 leading-relaxed">
+          <li>📱 Add the link to your <strong>Instagram bio</strong> — easiest way to convert followers</li>
+          <li>💼 Put the QR on your <strong>business cards</strong> next to your name</li>
+          <li>🪑 Print it large and tape it to your <strong>station mirror</strong> — clients can rebook while you're working</li>
+          <li>📧 Add it to your <strong>email signature</strong></li>
+          <li>📊 Bookings made via QR show up as "Source: QR code" so you can track what's working</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function copyUrl() {
+  const text = document.getElementById('bookingUrl').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    const original = btn.textContent;
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = original; }, 2000);
+  });
+}
+</script>
+{% endblock %}

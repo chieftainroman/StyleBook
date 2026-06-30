@@ -25,3 +25,4 @@ gunicorn
 cloudinary
 django-cloudinary-storage
 dj-database-url
+qrcode[pil]

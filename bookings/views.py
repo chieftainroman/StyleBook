@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta, date as date_cls
 from django.contrib.auth.decorators import login_required
 
+from django.conf import settings
 from accounts.models import MasterProfile, Service
 from .models import Booking
 from .slots import get_available_slots, get_availability_summary
@@ -921,4 +922,71 @@ def client_reschedule_summary_api(request, token):
     summary = get_availability_summary(booking.master, booking.service, num_days=30)
     return JsonResponse({
         'availability': {d.isoformat(): bool(has) for d, has in summary.items()},
+    })
+    
+    
+from django.http import HttpResponse
+
+
+def qr_code_image(request, username):
+    """
+    Return a PNG QR code that points to the master's booking page.
+    URL params:
+      ?size=400  — image size in pixels (default 400, max 1200)
+      ?download=1 — force browser download instead of inline view
+    """
+    import qrcode
+    from io import BytesIO
+
+    User = get_user_model()
+    user = get_object_or_404(User, username=username)
+
+    try:
+        size = int(request.GET.get('size', 400))
+    except (ValueError, TypeError):
+        size = 400
+    size = max(120, min(1200, size))
+
+    site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
+    booking_url = f'{site_url}/book/{user.username}/?src=qr'
+
+    # Build the QR
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=max(4, size // 50),
+        border=2,
+    )
+    qr.add_data(booking_url)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color='#1C1917', back_color='#FFFFFF').convert('RGB')
+
+    # Resize to requested size
+    img = img.resize((size, size), resample=0)  # nearest neighbor — preserves QR clarity
+
+    buf = BytesIO()
+    img.save(buf, format='PNG', optimize=True)
+    buf.seek(0)
+
+    response = HttpResponse(buf.getvalue(), content_type='image/png')
+    if request.GET.get('download'):
+        filename = f'stylebook-qr-{user.username}.png'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    else:
+        response['Content-Disposition'] = 'inline'
+    response['Cache-Control'] = 'public, max-age=86400'  # cache 1 day
+    return response
+
+
+@login_required
+def qr_code_page(request):
+    """Page showing the master their QR code with download options + share."""
+    site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
+    booking_url = f'{site_url}/book/{request.user.username}/'
+
+    return render(request, 'bookings/qr_code.html', {
+        'active':      'qr',
+        'username':    request.user.username,
+        'booking_url': booking_url,
     })

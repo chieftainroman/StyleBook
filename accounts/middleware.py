@@ -16,6 +16,7 @@ ALLOWED_PATH_PREFIXES = (
     '/profile/upload-cover/',
     '/book/',
     '/manage/',
+    '/qr/',
 )
 
 class OnboardingRequiredMiddleware:

@@ -17,9 +17,26 @@
       </svg>
       Share profile
     </button>
+
     <a href="{% url 'profile_edit' %}" class="btn-gold">
       Edit profile
     </a>
+    {% if profile_user.profile.is_open_for_bookings %}
+  <div class="mt-4">
+    <a href="/book/{{ profile_user.username }}/"
+       class="inline-flex items-center gap-2 px-5 py-2.5 bg-gold text-ink text-sm font-semibold rounded-lg hover:bg-gold-dark hover:text-white transition-colors">
+      📅 Book with {{ profile_user.username }}
+    </a>
+  </div>
+  {% endif %}
+  {% if profile_user.profile.is_open_for_bookings and not is_own_profile %}
+  <div class="bg-white border border-cream-border rounded-xl p-5 mt-6">
+    <p class="text-xs font-semibold text-muted uppercase tracking-wider mb-2">Scan to book</p>
+    <img src="{% url 'qr_code_image' username=profile_user.username %}?size=240"
+         alt="QR code"
+         class="w-32 h-32">
+  </div>
+  {% endif %}
   {% endif %}
 {% endblock %}
 
