@@ -3,12 +3,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StyleBook — For barbers, stylists & nail masters</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Showpiece — The portfolio your craft deserves</title>
+  <meta name="description" content="A portfolio platform with booking built in. For barbers, stylists, tattoo artists, and beauty professionals who want their work seen.">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -16,20 +17,23 @@
       theme: {
         extend: {
           colors: {
-            sidebar:       '#1C1917',
-            cream:         '#FAFAF7',
-            'cream-card':  '#FFFFFF',
-            'cream-border':'#E5E3DC',
-            gold:          '#C9A96E',
-            'gold-light':  '#F5EDD8',
-            'gold-dark':   '#8B6914',
-            coral:         '#E96C3C',
-            ink:           '#1C1917',
-            muted:         '#888780',
+            cream:       '#F5F1E8',
+            'cream-2':   '#FFFFFF',
+            'cream-line':'rgba(15,14,13,0.08)',
+            ink:         '#0F0E0D',
+            'ink-2':     '#1A1816',
+            muted:       'rgba(15,14,13,0.55)',
+            'muted-2':   'rgba(15,14,13,0.35)',
+            cobalt:      '#3A3AFF',
+            'cobalt-hover':'#2929E8',
+            'cobalt-bright':'#5C5CFF',
+            'dark-ink':  '#F5F1E8',
+            'dark-muted':'rgba(245,241,232,0.55)',
           },
           fontFamily: {
-            sans:  ['Inter', 'sans-serif'],
-            serif: ['Instrument Serif', 'serif'],
+            sans:    ['Inter', 'sans-serif'],
+            display: ['Anton', 'sans-serif'],
+            mono:    ['JetBrains Mono', 'monospace'],
           },
         }
       }
@@ -37,502 +41,631 @@
   </script>
 
   <style>
+    html { scroll-behavior: smooth; }
+    body { font-feature-settings: 'ss01', 'ss02'; }
+
+    /* ── Typography helpers ─────────────────────────── */
+    .display-xl { font-family: 'Anton', sans-serif; font-size: clamp(56px, 12vw, 144px); line-height: 0.88; letter-spacing: -0.03em; }
+    .display-lg { font-family: 'Anton', sans-serif; font-size: clamp(48px, 9vw, 112px); line-height: 0.9; letter-spacing: -0.03em; }
+    .display-md { font-family: 'Anton', sans-serif; font-size: clamp(36px, 6vw, 72px); line-height: 0.95; letter-spacing: -0.025em; }
+    .display-sm { font-family: 'Anton', sans-serif; font-size: 28px; line-height: 1; letter-spacing: -0.02em; }
+    .display-xs { font-family: 'Anton', sans-serif; font-size: 22px; line-height: 1.05; letter-spacing: -0.015em; }
+    .text-mono  { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .stroke-text {
+      color: transparent;
+      -webkit-text-stroke: 2px #0F0E0D;
+    }
+
+    /* ── Buttons ───────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      gap: 8px; height: 56px; min-width: 180px;
+      padding: 0 24px; border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; border: none;
+      transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+      text-decoration: none;
+    }
+    .btn-cobalt { background: #3A3AFF; color: #F5F1E8; }
+    .btn-cobalt:hover { background: #2929E8; transform: translateY(-1px); }
+    .btn-ghost-dark { background: transparent; color: #0F0E0D; border: 1px solid #0F0E0D; }
+    .btn-ghost-dark:hover { background: #0F0E0D; color: #F5F1E8; }
+    .btn-light-on-cobalt { background: #F5F1E8; color: #0F0E0D; }
+    .btn-light-on-cobalt:hover { background: #0F0E0D; color: #F5F1E8; }
+
+    .btn-sm {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 16px; border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      background: #3A3AFF; color: #F5F1E8;
+      border: none; cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+    .btn-sm:hover { background: #2929E8; }
+
+    /* ── Animated dot ──────────────────────────────── */
+    .live-dot {
+      display: inline-block; width: 6px; height: 6px;
+      background: #3A3AFF; border-radius: 50%;
+      margin-right: 8px; vertical-align: middle;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* ── Preview frame ─────────────────────────────── */
+    .preview-shadow {
+      box-shadow: 0 32px 64px -16px rgba(15,14,13,0.15), 0 8px 16px rgba(15,14,13,0.06);
+    }
+
+    /* ── Entrance animations (Motion-One driven) ───── */
+    .reveal { opacity: 0; transform: translateY(20px); }
+    .reveal-stagger > * { opacity: 0; transform: translateY(16px); }
+
+    /* ── Scroll-bar (subtle on dark sections) ──────── */
+    body::-webkit-scrollbar { width: 8px; }
+    body::-webkit-scrollbar-track { background: #F5F1E8; }
+    body::-webkit-scrollbar-thumb { background: rgba(15,14,13,0.2); border-radius: 4px; }
+    body::-webkit-scrollbar-thumb:hover { background: rgba(15,14,13,0.4); }
+
+    /* ── Showcase tile hover ────────────────────────── */
+    .showcase-tile { overflow: hidden; cursor: pointer; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
+    .showcase-tile:hover { transform: translateY(-4px); }
+    .showcase-tile-img { transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+    .showcase-tile:hover .showcase-tile-img { transform: scale(1.04); }
+    .showcase-arrow { transition: all 0.2s ease; }
+    .showcase-tile:hover .showcase-arrow { background: #3A3AFF; border-color: #3A3AFF; color: #F5F1E8; }
+
+    /* ── Filter chips ─────────────────────────────── */
+    .chip {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px; font-weight: 500;
+      color: rgba(15,14,13,0.6);
+      padding: 6px 12px;
+      border: 1px solid rgba(15,14,13,0.15);
+      border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      background: transparent; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover, .chip.is-active {
+      background: #0F0E0D; color: #F5F1E8; border-color: #0F0E0D;
+    }
+
+    /* ── Marquee ──────────────────────────────────── */
     .marquee-inner {
-      display: flex;
-      gap: 2rem;
-      animation: marquee 20s linear infinite;
-      white-space: nowrap;
+      display: flex; gap: 3rem; white-space: nowrap;
+      animation: marquee 28s linear infinite;
     }
     @keyframes marquee {
       from { transform: translateX(0); }
       to   { transform: translateX(-50%); }
+    }
+
+    /* ── Mobile nav ───────────────────────────────── */
+    @media (max-width: 768px) {
+      .mobile-hide { display: none; }
+    }
+
+    /* ── Reduce motion ────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+      .reveal, .reveal-stagger > * { opacity: 1; transform: none; }
     }
   </style>
 </head>
 
 <body class="bg-cream font-sans text-ink antialiased">
 
-  <!-- ── Nav ─────────────────────────────────────── -->
-  <nav class="sticky top-0 z-50 bg-cream border-b border-cream-border">
-    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <a href="/" class="text-xl font-semibold tracking-tight">
-        Style<span class="text-gold">Book</span>
-      </a>
-      <div class="hidden md:flex items-center gap-8">
-        <a href="#features"    class="text-sm text-muted hover:text-ink transition-colors">Features</a>
-        <a href="#how-it-works"class="text-sm text-muted hover:text-ink transition-colors">How it works</a>
-        <a href="#testimonial" class="text-sm text-muted hover:text-ink transition-colors">Reviews</a>
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- NAV                                                 -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <nav class="sticky top-0 z-50 backdrop-blur-md border-b border-cream-line"
+       style="background: rgba(245,241,232,0.85);">
+    <div class="max-w-[1280px] mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <a href="/" class="font-display text-2xl tracking-tight text-ink">
+          SHOWPIECE
+        </a>
+        <div class="hidden md:flex items-center gap-6 text-mono text-[11px] text-muted">
+          <a href="#how"      class="hover:text-cobalt transition-colors">How it works</a>
+          <a href="#features" class="hover:text-cobalt transition-colors">Features</a>
+          <a href="#pricing"  class="hover:text-cobalt transition-colors">Pricing</a>
+        </div>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         <a href="{% url 'login' %}"
-           class="text-sm font-medium text-muted hover:text-ink transition-colors px-4 py-2">
+           class="hidden sm:inline-flex items-center text-mono text-[11px] text-muted hover:text-ink transition-colors px-3 py-2">
           Sign in
         </a>
-        <a href="{% url 'register' %}"
-           class="text-sm font-medium bg-ink text-white px-4 py-2 rounded-lg
-                  hover:bg-sidebar transition-colors">
-          Start free
-        </a>
+        <a href="{% url 'register' %}" class="btn-sm">Start free</a>
       </div>
     </div>
   </nav>
 
-  <!-- ── Hero ─────────────────────────────────────── -->
-  <section class="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
-    <div class="inline-flex items-center gap-2 bg-gold-light text-gold-dark
-                text-xs font-medium px-3 py-1.5 rounded-full mb-8">
-      <span class="w-1.5 h-1.5 bg-gold rounded-full"></span>
-      Built for barbers, stylists, and nail masters
-    </div>
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- HERO                                                -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <section class="px-6 md:px-8 pt-16 md:pt-24 pb-20 md:pb-28">
+    <div class="max-w-[1280px] mx-auto">
 
-    <h1 class="font-serif italic text-5xl md:text-6xl text-ink leading-tight mb-6">
-      Stop juggling DMs.<br>
-      <span class="text-gold">Start booking.</span>
-    </h1>
-
-    <p class="text-lg text-muted max-w-xl mx-auto mb-10 leading-relaxed">
-      StyleBook keeps your bookings, client notes, and portfolio in one place —
-      and turns every finished cut into an Instagram-ready post in seconds.
-    </p>
-
-    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
-      <a href="{% url 'register' %}"
-         class="bg-coral text-white text-sm font-medium px-6 py-3 rounded-lg
-                hover:bg-opacity-90 transition-all w-full sm:w-auto text-center">
-        Get started — it's free
-      </a>
-      <a href="#how-it-works"
-         class="border border-cream-border text-ink text-sm font-medium
-                px-6 py-3 rounded-lg hover:bg-cream-card transition-all
-                w-full sm:w-auto text-center">
-        See how it works →
-      </a>
-    </div>
-
-    <div class="flex flex-wrap items-center justify-center gap-3">
-      <span class="text-xs text-muted">Trusted by 1,200+ pros</span>
-      <span class="text-cream-border">·</span>
-      <span class="text-xs text-muted">Brooklyn Cuts</span>
-      <span class="text-cream-border">·</span>
-      <span class="text-xs text-muted">FadeHouse</span>
-      <span class="text-cream-border">·</span>
-      <span class="text-xs text-muted">SalonNoir</span>
-      <span class="text-cream-border">·</span>
-      <span class="text-xs text-muted">NailLab</span>
-    </div>
-  </section>
-
-  <!-- ── App preview ───────────────────────────────── -->
-  <section class="max-w-5xl mx-auto px-6 pb-16">
-    <div class="bg-sidebar rounded-2xl overflow-hidden border border-sidebar shadow-lg">
-      <!-- Window chrome -->
-      <div class="flex items-center gap-2 px-4 py-3 border-b border-white border-opacity-10">
-        <span class="w-3 h-3 rounded-full bg-red-500"></span>
-        <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-        <span class="w-3 h-3 rounded-full bg-green-400"></span>
-        <span class="ml-4 text-xs text-muted">stylebook.app/dashboard</span>
+      <div class="reveal text-mono text-[11px] text-cobalt mb-6 md:mb-8">
+        <span class="live-dot"></span>NOW IN EARLY ACCESS · FREE TIER LIVE
       </div>
-      <!-- App layout -->
-      <div class="flex">
-        <!-- Mini sidebar -->
-        <div class="w-36 bg-black bg-opacity-20 px-3 py-4 border-r border-white border-opacity-10">
-          <p class="text-sm font-semibold text-white mb-4 px-2">
-            Style<span class="text-gold">Book</span>
-          </p>
-          <div class="space-y-0.5">
-            <div class="px-2 py-2 rounded-lg bg-white bg-opacity-10 text-white text-xs font-medium">Dashboard</div>
-            <div class="px-2 py-2 text-muted text-xs">Reservations</div>
-            <div class="px-2 py-2 text-muted text-xs">Portfolio</div>
-            <div class="px-2 py-2 text-muted text-xs">Instagram</div>
-            <div class="px-2 py-2 text-muted text-xs">Profile</div>
-          </div>
-        </div>
-        <!-- Content -->
-        <div class="flex-1 p-5">
-          <p class="text-white text-sm font-medium mb-4">Today's schedule</p>
-          <div class="grid grid-cols-3 gap-3 mb-5">
-            <div class="bg-white bg-opacity-10 rounded-lg p-3">
-              <p class="text-xs text-muted mb-1">Bookings</p>
-              <p class="text-xl font-semibold text-white">38</p>
-              <p class="text-xs text-gold mt-0.5">+12%</p>
-            </div>
-            <div class="bg-white bg-opacity-10 rounded-lg p-3">
-              <p class="text-xs text-muted mb-1">Earnings</p>
-              <p class="text-xl font-semibold text-white">$2.4k</p>
-              <p class="text-xs text-gold mt-0.5">+8%</p>
-            </div>
-            <div class="bg-white bg-opacity-10 rounded-lg p-3">
-              <p class="text-xs text-muted mb-1">Posts</p>
-              <p class="text-xl font-semibold text-white">64</p>
-              <p class="text-xs text-gold mt-0.5">+5</p>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <div class="flex items-center gap-3 bg-white bg-opacity-5 rounded-lg px-3 py-2.5">
-              <span class="w-2 h-2 rounded-full bg-yellow-400 flex-shrink-0"></span>
-              <span class="text-xs text-white flex-1">Marcus T. — Skin fade + beard</span>
-              <span class="text-xs text-muted">10:00</span>
-            </div>
-            <div class="flex items-center gap-3 bg-white bg-opacity-5 rounded-lg px-3 py-2.5">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0"></span>
-              <span class="text-xs text-white flex-1">Sofia R. — Balayage touch-up</span>
-              <span class="text-xs text-muted">11:30</span>
-            </div>
-            <div class="flex items-center gap-3 bg-white bg-opacity-5 rounded-lg px-3 py-2.5">
-              <span class="w-2 h-2 rounded-full bg-violet-400 flex-shrink-0"></span>
-              <span class="text-xs text-white flex-1">Jordan L. — Chrome gel nails</span>
-              <span class="text-xs text-muted">14:00</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ── Marquee ───────────────────────────────────── -->
-  <div class="bg-sidebar py-4 overflow-hidden mb-16">
-    <div class="marquee-inner text-sm font-medium text-muted">
-      <span>Less admin</span><span class="text-gold mx-2">·</span>
-      <span>More cuts</span><span class="text-gold mx-2">·</span>
-      <span>Better posts</span><span class="text-gold mx-2">·</span>
-      <span>Real growth</span><span class="text-gold mx-2">·</span>
-      <span>Less admin</span><span class="text-gold mx-2">·</span>
-      <span>More cuts</span><span class="text-gold mx-2">·</span>
-      <span>Better posts</span><span class="text-gold mx-2">·</span>
-      <span>Real growth</span><span class="text-gold mx-2">·</span>
-      <span>Less admin</span><span class="text-gold mx-2">·</span>
-      <span>More cuts</span><span class="text-gold mx-2">·</span>
-      <span>Better posts</span><span class="text-gold mx-2">·</span>
-      <span>Real growth</span><span class="text-gold mx-2">·</span>
-    </div>
-  </div>
+      <h1 class="reveal display-xl mb-8 md:mb-10 max-w-[900px]">
+        THE PORTFOLIO<br>
+        <span class="stroke-text">YOUR CRAFT</span><br>
+        DESERVES.
+      </h1>
 
-  <!-- ── How it works ──────────────────────────────── -->
-  <section id="how-it-works" class="bg-sidebar py-20 mb-16">
-    <div class="max-w-5xl mx-auto px-6">
-      <h2 class="font-serif italic text-3xl md:text-4xl text-white text-center mb-4">
-        Three steps. <em class="text-gold">That's the whole platform.</em>
-      </h2>
-      <p class="text-muted text-center text-sm mb-12 max-w-lg mx-auto">
-        No bloat. No 14-tab dashboards. Just the workflow you actually do every day, made faster.
+      <p class="reveal text-[17px] md:text-[18px] leading-relaxed text-muted max-w-[520px] mb-10 md:mb-12">
+        A portfolio platform with booking built in. For barbers, stylists, tattoo artists, and beauty professionals who want their work seen — not buried by an algorithm.
       </p>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div class="bg-white bg-opacity-5 rounded-xl p-6 border border-white border-opacity-10">
-          <p class="text-xs font-semibold text-gold uppercase tracking-widest mb-4">
-            01 — Book
-          </p>
-          <h3 class="text-white font-medium text-lg mb-3">
-            Add reservations with notes
-          </h3>
-          <p class="text-muted text-sm leading-relaxed">
-            Client name, time, service, and the specifics — sensitive scalp,
-            no ammonia, oval shape. It's all there when they walk in.
-          </p>
-        </div>
-
-        <div class="bg-white bg-opacity-5 rounded-xl p-6 border border-white border-opacity-10">
-          <p class="text-xs font-semibold text-gold uppercase tracking-widest mb-4">
-            02 — Post
-          </p>
-          <h3 class="text-white font-medium text-lg mb-3">
-            Photo in, Instagram out
-          </h3>
-          <p class="text-muted text-sm leading-relaxed">
-            Upload the after-shot. Pick a title — "Today I did that" or
-            "Master of work." Download the PNG. Post it.
-          </p>
-        </div>
-
-        <div class="bg-white bg-opacity-5 rounded-xl p-6 border border-white border-opacity-10">
-          <p class="text-xs font-semibold text-gold uppercase tracking-widest mb-4">
-            03 — Grow
-          </p>
-          <h3 class="text-white font-medium text-lg mb-3">
-            Build a real portfolio
-          </h3>
-          <p class="text-muted text-sm leading-relaxed">
-            Every job becomes part of your public profile — services,
-            experience, work history. Like LinkedIn, but for the chair.
-          </p>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <!-- ── Features ─────────────────────────────────── -->
-  <section id="features" class="max-w-5xl mx-auto px-6 pb-20">
-    <p class="text-xs font-semibold text-gold uppercase tracking-widest text-center mb-4">
-      Why StyleBook
-    </p>
-    <h2 class="font-serif italic text-3xl md:text-4xl text-ink text-center mb-12">
-      The work is the art.<br>The admin shouldn't be.
-    </h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-      <div class="bg-coral rounded-xl p-6">
-        <p class="text-4xl font-semibold text-white mb-2">7hrs</p>
-        <h3 class="text-white font-medium mb-2">saved every week</h3>
-        <p class="text-white text-opacity-70 text-sm leading-relaxed">
-          No more scrolling DMs to remember what a client wanted.
-        </p>
-      </div>
-
-      <div class="card p-6">
-        <p class="text-4xl font-semibold text-ink mb-2">3×</p>
-        <h3 class="text-ink font-medium mb-2">faster IG posts</h3>
-        <p class="text-muted text-sm leading-relaxed">
-          From finished cut to posted in under 60 seconds.
-        </p>
-      </div>
-
-      <div class="bg-sidebar rounded-xl p-6">
-        <p class="text-4xl font-semibold text-white mb-2">∞</p>
-        <h3 class="text-white font-medium mb-2">portfolio archive</h3>
-        <p class="text-muted text-sm leading-relaxed">
-          Every job you've ever done, searchable forever.
-        </p>
-      </div>
-
-      <div class="card p-6">
-        <p class="text-4xl font-semibold text-gold mb-2">$0</p>
-        <h3 class="text-ink font-medium mb-2">to start</h3>
-        <p class="text-muted text-sm leading-relaxed">
-          Free forever for solo pros. Pay only when you grow.
-        </p>
+      <div class="reveal flex flex-wrap items-center gap-3">
+        <a href="{% url 'register' %}" class="btn btn-cobalt">Start free</a>
+        <a href="#how" class="btn btn-ghost-dark">See how it works</a>
       </div>
 
     </div>
   </section>
 
-  <!-- ── Testimonial ───────────────────────────────── -->
-  <section id="testimonial" class="bg-gold-light py-20 mb-16">
-    <div class="max-w-2xl mx-auto px-6 text-center">
-      <blockquote class="font-serif italic text-2xl md:text-3xl text-ink
-                          leading-relaxed mb-8">
-        "I used to lose half a Saturday writing IG captions and digging
-        through old DMs. <span class="text-gold-dark">Now it's literally three taps.</span>"
-      </blockquote>
-      <div class="flex items-center justify-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-gold flex items-center
-                    justify-center text-sm font-semibold text-sidebar">
-          AK
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- PRODUCT PREVIEW                                     -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <section class="px-6 md:px-8 pb-20 md:pb-28">
+    <div class="max-w-[1280px] mx-auto reveal">
+      <div class="bg-cream-2 border border-cream-line rounded-2xl p-4 preview-shadow">
+        <div class="flex items-center gap-2 pb-3">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+          <span class="ml-3 text-mono text-[10px] text-muted-2 px-3 py-1 bg-cream rounded">showpiece.com/yourname</span>
         </div>
-        <div class="text-left">
-          <p class="text-sm font-medium text-ink">Alex Kim</p>
-          <p class="text-xs text-muted">Master Barber, Brooklyn Cuts</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- ── Templates showcase ────────────────────────── -->
-  <section class="max-w-5xl mx-auto px-6 pb-20">
-    <div class="text-center mb-12">
-      <div class="inline-flex items-center gap-2 bg-gold-light text-gold-dark
-                  text-xs font-medium px-3 py-1.5 rounded-full mb-6">
-        <span class="w-1.5 h-1.5 bg-gold rounded-full"></span>
-        Story templates
-      </div>
-      <h2 class="font-serif italic text-3xl md:text-4xl text-ink mb-4">
-        Pick a vibe. <span class="text-gold">Post in seconds.</span>
-      </h2>
-      <p class="text-muted text-sm max-w-md mx-auto">
-        Five ready-made story templates. Upload your photo, we handle the rest.
-      </p>
-    </div>
+        <div class="bg-cream rounded-lg overflow-hidden p-5 md:p-7">
+          <!-- mock cover -->
+          <div class="aspect-[16/5] rounded-md relative overflow-hidden -mb-12 bg-ink"
+               style="background-image: linear-gradient(to right, rgba(26,24,22,0.9), rgba(26,24,22,0.3)), url('https://images.unsplash.com/photo-1599387737658-04c34d0f1a59?w=1400'); background-size: cover; background-position: center;">
+            <div class="absolute bottom-4 left-5 md:left-7 font-display text-3xl md:text-5xl text-cream tracking-tight">YOUR NAME</div>
+          </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-
-      <!-- Stacked bold -->
-      <div>
-        <div class="rounded-xl overflow-hidden aspect-[9/16] relative bg-neutral-900">
-          <img src="{% static 'images/photo1.jpg' %}" alt="Skin fade"
-               class="w-full h-full object-cover opacity-60">
-          <div class="absolute bottom-0 left-0 right-0 p-4
-                      bg-gradient-to-t from-black to-transparent">
-            <div class="text-left">
-              <p class="text-coral font-bold text-xl leading-none">TODAY</p>
-              <p class="text-white font-bold text-xl leading-none">I DID</p>
-              <p class="text-gray-400 font-bold text-xl leading-none">THAT</p>
+          <div class="flex gap-4 px-5 md:px-7 relative z-10">
+            <!-- polaroid -->
+            <div class="w-20 md:w-24 h-24 md:h-28 bg-cream-2 rounded-sm p-1.5 pb-4 flex-shrink-0"
+                 style="box-shadow: 0 4px 12px rgba(0,0,0,0.15); transform: rotate(-2deg);">
+              <div class="w-full h-full bg-cover bg-center"
+                   style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=200')"></div>
             </div>
-            <p class="text-gray-400 text-xs mt-2">Skin fade + beard line</p>
-            <p class="text-gray-500 text-xs">@alex.cuts</p>
+
+            <div class="flex-1 pt-12 md:pt-14 grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <div>
+                <div class="text-mono text-[9px] text-muted mb-0.5">SPECIALTY</div>
+                <div class="font-display text-lg">BARBER</div>
+              </div>
+              <div>
+                <div class="text-mono text-[9px] text-muted mb-0.5">BASED</div>
+                <div class="font-display text-lg">YOUR CITY</div>
+              </div>
+              <div>
+                <div class="text-mono text-[9px] text-muted mb-0.5">RATES</div>
+                <div class="font-display text-lg">FROM $—</div>
+              </div>
+              <div>
+                <div class="text-mono text-[9px] text-muted mb-0.5">BOOKING</div>
+                <div class="font-display text-lg text-cobalt">OPEN</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-3 md:grid-cols-6 gap-1 mt-6 px-5 md:px-7">
+            <div class="aspect-square rounded-sm bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=300')"></div>
+            <div class="aspect-square rounded-sm bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1605497788044-5a32c7078486?w=300')"></div>
+            <div class="aspect-square rounded-sm bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1595475038665-8de2a4b72d39?w=300')"></div>
+            <div class="aspect-square rounded-sm bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1556228720-195a672e8a03?w=300')"></div>
+            <div class="aspect-square rounded-sm bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1583743089695-4b816a340f82?w=300')"></div>
+            <div class="aspect-square rounded-sm bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1610992015734-c1b73e35f76f?w=300')"></div>
           </div>
         </div>
-        <p class="text-center text-xs text-muted mt-2 font-medium">Stacked bold</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- MARQUEE                                             -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <section class="bg-ink-2 py-5 overflow-hidden">
+    <div class="marquee-inner text-mono text-[11px] text-dark-muted">
+      <span>BARBERS</span><span class="text-cobalt-bright">·</span>
+      <span>HAIR STYLISTS</span><span class="text-cobalt-bright">·</span>
+      <span>TATTOO ARTISTS</span><span class="text-cobalt-bright">·</span>
+      <span>MAKEUP ARTISTS</span><span class="text-cobalt-bright">·</span>
+      <span>LASH TECHNICIANS</span><span class="text-cobalt-bright">·</span>
+      <span>NAIL ARTISTS</span><span class="text-cobalt-bright">·</span>
+      <span>ESTHETICIANS</span><span class="text-cobalt-bright">·</span>
+      <span>BARBERS</span><span class="text-cobalt-bright">·</span>
+      <span>HAIR STYLISTS</span><span class="text-cobalt-bright">·</span>
+      <span>TATTOO ARTISTS</span><span class="text-cobalt-bright">·</span>
+      <span>MAKEUP ARTISTS</span><span class="text-cobalt-bright">·</span>
+      <span>LASH TECHNICIANS</span><span class="text-cobalt-bright">·</span>
+      <span>NAIL ARTISTS</span><span class="text-cobalt-bright">·</span>
+      <span>ESTHETICIANS</span><span class="text-cobalt-bright">·</span>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- HOW IT WORKS                                        -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <section id="how" class="bg-ink-2 text-dark-ink px-6 md:px-8 py-24 md:py-32">
+    <div class="max-w-[1280px] mx-auto">
+
+      <div class="flex flex-col md:flex-row justify-between md:items-end gap-6 mb-12 md:mb-16 reveal">
+        <h2 class="display-md text-dark-ink max-w-[700px]">
+          HOW IT WORKS.<br>NO BLOAT.
+        </h2>
+        <div class="text-mono text-[11px] text-dark-muted">[ THREE STEPS ]</div>
       </div>
 
-      <!-- Editorial -->
-      <div>
-        <div class="rounded-xl overflow-hidden aspect-[9/16] relative bg-neutral-900">
-          <img src="{% static 'images/photo2.jpg' %}" alt="Fresh cut"
-               class="w-full h-full object-cover opacity-50">
-          <div class="absolute inset-0 p-4 flex flex-col">
-            <span class="inline-flex items-center gap-1 bg-coral text-white
-                         text-xs font-semibold px-2 py-1 rounded-full w-fit">
-              MASTER OF WORK
-            </span>
-            <p class="text-white font-serif italic text-lg mt-3 leading-tight">
-              Fresh cut,<br>clean lines,<br>zero compromise.
-            </p>
-          </div>
-          <div class="absolute bottom-0 left-0 right-0 bg-black p-3">
-            <p class="text-gold text-xs font-medium">Skin fade + taper</p>
-            <p class="text-gray-500 text-xs">@alex.cuts</p>
-          </div>
-        </div>
-        <p class="text-center text-xs text-muted mt-2 font-medium">Editorial</p>
-      </div>
-
-      <!-- Monthly wrap -->
-      <div>
-        <div class="rounded-xl overflow-hidden aspect-[9/16] bg-yellow-400
-                    flex flex-col items-center justify-center p-4">
-          <p class="text-yellow-800 text-xs font-semibold uppercase tracking-widest mb-4">
-            StyleBook Monthly
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/10 border border-white/10 rounded-2xl overflow-hidden reveal-stagger">
+        <div class="bg-ink-2 p-7 md:p-9">
+          <div class="font-display text-[80px] md:text-[88px] leading-none -tracking-[0.03em] text-cobalt mb-6">01</div>
+          <h3 class="display-sm mb-4">BUILD YOUR PROFILE</h3>
+          <p class="text-[14px] leading-relaxed text-dark-muted mb-5">
+            Upload your work, add your services and pricing, share your experience. Showpiece handles the layout, typography, and spacing.
           </p>
-          <p class="text-8xl font-bold text-yellow-900 leading-none">38</p>
-          <p class="text-2xl font-bold text-yellow-800 mt-1">CLIENTS</p>
-          <p class="text-yellow-700 text-xs mt-2 text-center">
-            served this month<br>+12% from last month
-          </p>
+          <div class="text-mono text-[10px] text-dark-muted pt-4 border-t border-white/10">[ FREE FOREVER ]</div>
         </div>
-        <p class="text-center text-xs text-muted mt-2 font-medium">Monthly wrap</p>
-      </div>
 
-      <!-- Before/after -->
-      <div>
-        <div class="rounded-xl overflow-hidden aspect-[9/16] relative bg-neutral-900">
-          <div class="h-1/2 overflow-hidden relative">
-            <img src="{% static 'images/photo3.jpg' %}" alt="Before"
-                 class="w-full h-full object-cover">
-            <span class="absolute top-2 left-2 text-white text-xs font-semibold">
-              Before
-            </span>
-          </div>
-          <div class="h-1/2 overflow-hidden relative">
-            <img src="{% static 'images/photo4.jpg' %}" alt="After"
-                 class="w-full h-full object-cover">
-            <span class="absolute bottom-2 left-2 text-white text-xs font-semibold">
-              After
-            </span>
-          </div>
-          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                      w-8 h-8 rounded-full bg-coral flex items-center justify-center
-                      text-white text-xs font-bold">
-            VS
-          </div>
-        </div>
-        <p class="text-center text-xs text-muted mt-2 font-medium">Before / after</p>
-      </div>
-
-      <!-- Coral bold -->
-      <div>
-        <div class="rounded-xl overflow-hidden aspect-[9/16] bg-coral
-                    flex flex-col p-4">
-          <div class="flex items-center justify-between mb-auto">
-            <p class="text-white text-xs font-semibold">
-              Style<span class="text-yellow-200">Book</span>
-            </p>
-            <p class="text-white text-opacity-70 text-xs">May 2025</p>
-          </div>
-          <div class="my-4">
-            <p class="text-white font-bold text-2xl leading-tight">
-              FRESH <span class="text-yellow-200">FROM</span> THE CHAIR
-            </p>
-            <p class="text-white text-opacity-70 text-xs mt-2 leading-relaxed">
-              Balayage touch-up with Olaplex treatment.
-            </p>
-          </div>
-          <div class="mt-auto bg-white bg-opacity-10 rounded-lg overflow-hidden h-24">
-            <img src="{% static 'images/photo5.jpg' %}" alt="Balayage"
-                 class="w-full h-full object-cover opacity-80">
-          </div>
-          <p class="text-white text-xs font-medium mt-3 text-center">
-            Book now — link in bio
+        <div class="bg-ink-2 p-7 md:p-9">
+          <div class="font-display text-[80px] md:text-[88px] leading-none -tracking-[0.03em] text-cobalt mb-6">02</div>
+          <h3 class="display-sm mb-4">SHARE YOUR LINK</h3>
+          <p class="text-[14px] leading-relaxed text-dark-muted mb-5">
+            One URL — showpiece.com/yourname — plus a downloadable QR code for cards and station signs. Put it in your Instagram bio.
           </p>
+          <div class="text-mono text-[10px] text-dark-muted pt-4 border-t border-white/10">[ INCLUDED ]</div>
         </div>
-        <p class="text-center text-xs text-muted mt-2 font-medium">Coral bold</p>
+
+        <div class="bg-ink-2 p-7 md:p-9">
+          <div class="font-display text-[80px] md:text-[88px] leading-none -tracking-[0.03em] text-cobalt mb-6">03</div>
+          <h3 class="display-sm mb-4">GET BOOKED</h3>
+          <p class="text-[14px] leading-relaxed text-dark-muted mb-5">
+            Clients pick a service, pick a time, verify by email. The booking lands on your dashboard. They can reschedule or cancel themselves.
+          </p>
+          <div class="text-mono text-[10px] text-dark-muted pt-4 border-t border-white/10">[ INCLUDED ]</div>
+        </div>
       </div>
 
     </div>
   </section>
 
-  <!-- ── Final CTA ─────────────────────────────────── -->
-  <section class="bg-sidebar py-20">
-    <div class="max-w-2xl mx-auto px-6 text-center">
-      <h2 class="font-serif italic text-3xl md:text-4xl text-white mb-4">
-        Your craft deserves <span class="text-gold">better tools.</span>
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- FEATURES                                            -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <section id="features" class="bg-cream-2 px-6 md:px-8 py-24 md:py-32">
+    <div class="max-w-[1280px] mx-auto">
+
+      <div class="flex flex-col md:flex-row justify-between md:items-end gap-6 mb-12 reveal">
+        <h2 class="display-md max-w-[700px]">
+          WHAT'S<br>INSIDE.
+        </h2>
+        <div class="text-mono text-[11px] text-muted-2">[ EVERY FEATURE, EVERY PLAN ]</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-cream-line border border-cream-line rounded-2xl overflow-hidden reveal-stagger">
+
+        <div class="bg-cream-2 p-7 md:p-9">
+          <div class="w-10 h-10 border border-ink rounded-lg flex items-center justify-center mb-6 text-mono text-[14px] font-bold">P</div>
+          <div class="text-mono text-[10px] text-muted-2 mb-3">[ PORTFOLIO ]</div>
+          <h3 class="display-xs mb-3">EDITORIAL PROFILE</h3>
+          <p class="text-[14px] leading-relaxed text-muted">
+            A magazine-grade profile page with portfolio, bio, services, experience timeline, honors, and certificates.
+          </p>
+        </div>
+
+        <div class="bg-cream-2 p-7 md:p-9">
+          <div class="w-10 h-10 border border-ink rounded-lg flex items-center justify-center mb-6 text-mono text-[14px] font-bold">B</div>
+          <div class="text-mono text-[10px] text-muted-2 mb-3">[ BOOKING ]</div>
+          <h3 class="display-xs mb-3">SLOT PICKER + OTP</h3>
+          <p class="text-[14px] leading-relaxed text-muted">
+            Clients book in under sixty seconds. Email-verified. Cancellation and reschedule links built into every confirmation.
+          </p>
+        </div>
+
+        <div class="bg-cream-2 p-7 md:p-9">
+          <div class="w-10 h-10 border border-ink rounded-lg flex items-center justify-center mb-6 text-mono text-[14px] font-bold">Q</div>
+          <div class="text-mono text-[10px] text-muted-2 mb-3">[ SHARE ]</div>
+          <h3 class="display-xs mb-3">QR CODE GENERATOR</h3>
+          <p class="text-[14px] leading-relaxed text-muted">
+            Auto-generated QR for your profile. Download in three sizes — perfect for cards, posters, and station signs.
+          </p>
+        </div>
+
+        <div class="bg-cream-2 p-7 md:p-9">
+          <div class="w-10 h-10 border border-ink rounded-lg flex items-center justify-center mb-6 text-mono text-[14px] font-bold">T</div>
+          <div class="text-mono text-[10px] text-muted-2 mb-3">[ POST ]</div>
+          <h3 class="display-xs mb-3">INSTAGRAM TEMPLATES</h3>
+          <p class="text-[14px] leading-relaxed text-muted">
+            Turn finished work into editorial Instagram stories. Twenty-four templates across four design families.
+          </p>
+        </div>
+
+        <div class="bg-cream-2 p-7 md:p-9">
+          <div class="w-10 h-10 border border-ink rounded-lg flex items-center justify-center mb-6 text-mono text-[14px] font-bold">D</div>
+          <div class="text-mono text-[10px] text-muted-2 mb-3">[ DASHBOARD ]</div>
+          <h3 class="display-xs mb-3">RESERVATIONS</h3>
+          <p class="text-[14px] leading-relaxed text-muted">
+            Calendar and list view. Status tracking. Private master notes. Client history. Everything to run the chair.
+          </p>
+        </div>
+
+        <div class="bg-cream-2 p-7 md:p-9">
+          <div class="w-10 h-10 border border-ink rounded-lg flex items-center justify-center mb-6 text-mono text-[14px] font-bold">E</div>
+          <div class="text-mono text-[10px] text-muted-2 mb-3">[ EMAILS ]</div>
+          <h3 class="display-xs mb-3">AUTO NOTIFICATIONS</h3>
+          <p class="text-[14px] leading-relaxed text-muted">
+            Branded emails for confirmation, cancellation, and reschedule — sent automatically. To both you and your client.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- PRICING                                             -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <section id="pricing" class="bg-cream px-6 md:px-8 py-24 md:py-32">
+    <div class="max-w-[1080px] mx-auto">
+
+      <div class="flex flex-col md:flex-row justify-between md:items-end gap-6 mb-12 reveal">
+        <h2 class="display-md max-w-[700px]">
+          HONEST<br>PRICING.
+        </h2>
+        <div class="text-mono text-[11px] text-muted-2">[ START FREE · UPGRADE WHEN YOU NEED MORE ]</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 reveal-stagger">
+
+        <!-- FREE -->
+        <div class="bg-cream-2 border border-cream-line rounded-2xl p-8 md:p-10">
+          <div class="text-mono text-[11px] text-muted mb-4">FREE</div>
+          <div class="font-display text-[88px] leading-none -tracking-[0.03em] mb-1">
+            <span class="text-[24px] align-super opacity-50">$</span>0
+          </div>
+          <div class="text-mono text-[11px] text-muted-2 mb-8">FOREVER · NO CARD</div>
+
+          <ul class="space-y-0 mb-8">
+            <li class="flex gap-3 py-2.5 border-b border-cream-line text-[14px]">
+              <span class="text-cobalt font-mono font-semibold flex-shrink-0">/</span>
+              <span>Full profile + portfolio</span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b border-cream-line text-[14px]">
+              <span class="text-cobalt font-mono font-semibold flex-shrink-0">/</span>
+              <span><strong>20 bookings</strong> per month</span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b border-cream-line text-[14px]">
+              <span class="text-cobalt font-mono font-semibold flex-shrink-0">/</span>
+              <span><strong>5 Instagram templates</strong> per month</span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b border-cream-line text-[14px]">
+              <span class="text-cobalt font-mono font-semibold flex-shrink-0">/</span>
+              <span>QR code generator</span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b border-cream-line text-[14px]">
+              <span class="text-cobalt font-mono font-semibold flex-shrink-0">/</span>
+              <span>Master dashboard</span>
+            </li>
+            <li class="flex gap-3 py-2.5 text-[14px]">
+              <span class="text-cobalt font-mono font-semibold flex-shrink-0">/</span>
+              <span>Auto-notification emails</span>
+            </li>
+          </ul>
+
+          <a href="{% url 'register' %}" class="btn btn-ghost-dark w-full">Start free</a>
+        </div>
+
+        <!-- PRO -->
+        <div class="bg-ink text-dark-ink border border-ink rounded-2xl p-8 md:p-10">
+          <div class="text-mono text-[11px] text-cobalt-bright mb-4">PRO</div>
+          <div class="font-display text-[88px] leading-none -tracking-[0.03em] mb-1">
+            <span class="text-[24px] align-super opacity-50">$</span>19.99
+          </div>
+          <div class="text-mono text-[11px] mb-8" style="color: rgba(245,241,232,0.55);">PER MONTH · CANCEL ANY TIME</div>
+
+          <ul class="space-y-0 mb-8">
+            <li class="flex gap-3 py-2.5 border-b text-[14px]" style="border-color: rgba(245,241,232,0.1);">
+              <span class="text-cobalt-bright font-mono font-semibold flex-shrink-0">/</span>
+              <span>Everything in Free, plus:</span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b text-[14px]" style="border-color: rgba(245,241,232,0.1);">
+              <span class="text-cobalt-bright font-mono font-semibold flex-shrink-0">/</span>
+              <span><strong>Unlimited bookings</strong></span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b text-[14px]" style="border-color: rgba(245,241,232,0.1);">
+              <span class="text-cobalt-bright font-mono font-semibold flex-shrink-0">/</span>
+              <span><strong>Unlimited Instagram templates</strong></span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b text-[14px]" style="border-color: rgba(245,241,232,0.1);">
+              <span class="text-cobalt-bright font-mono font-semibold flex-shrink-0">/</span>
+              <span>Premium template families</span>
+            </li>
+            <li class="flex gap-3 py-2.5 border-b text-[14px]" style="border-color: rgba(245,241,232,0.1);">
+              <span class="text-cobalt-bright font-mono font-semibold flex-shrink-0">/</span>
+              <span>Priority support</span>
+            </li>
+            <li class="flex gap-3 py-2.5 text-[14px]">
+              <span class="text-cobalt-bright font-mono font-semibold flex-shrink-0">/</span>
+              <span>Pro badge on your profile</span>
+            </li>
+          </ul>
+
+          <a href="{% url 'register' %}" class="btn btn-cobalt w-full">Go Pro</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- COBALT FINAL CTA                                    -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <section class="bg-cobalt text-dark-ink px-6 md:px-8 py-28 md:py-36 text-center">
+    <div class="max-w-[900px] mx-auto reveal">
+      <h2 class="display-lg mb-10 md:mb-12">
+        READY TO<br>BUILD?
       </h2>
-      <p class="text-muted text-sm mb-8">
-        Join 1,200+ pros already on StyleBook. Free forever, no card needed.
-      </p>
-      <a href="{% url 'register' %}"
-         class="inline-flex items-center gap-2 bg-coral text-white text-sm
-                font-medium px-8 py-3 rounded-lg hover:bg-opacity-90 transition-all">
-        Start free →
+      <a href="{% url 'register' %}" class="btn btn-light-on-cobalt" style="min-width: 280px; height: 64px; font-size: 12px;">
+        Create your profile →
       </a>
+      <div class="mt-5 text-mono text-[11px]" style="color: rgba(245,241,232,0.8);">
+        FREE TIER · NO CARD · NO LOCK-IN
+      </div>
     </div>
   </section>
 
-  <!-- ── Footer ────────────────────────────────────── -->
-  <footer class="bg-ink py-12">
-    <div class="max-w-5xl mx-auto px-6">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-        <div>
-          <p class="text-lg font-semibold text-white mb-2">
-            Style<span class="text-gold">Book</span>
-          </p>
-          <p class="text-sm text-muted leading-relaxed">
-            The platform for barbers, stylists, and nail masters.
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- FOOTER                                              -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <footer class="bg-cream-2 border-t border-cream-line px-6 md:px-8 pt-16 pb-6">
+    <div class="max-w-[1280px] mx-auto">
+
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-8 md:gap-10 pb-12 border-b border-cream-line">
+
+        <div class="col-span-2 md:col-span-1">
+          <div class="font-display text-2xl tracking-tight mb-3">SHOWPIECE</div>
+          <p class="text-[13px] leading-relaxed text-muted max-w-[220px]">
+            A portfolio platform with booking built in. For serious beauty and grooming professionals.
           </p>
         </div>
+
         <div>
-          <p class="text-xs font-semibold text-muted uppercase tracking-widest mb-4">
-            Product
-          </p>
+          <h4 class="text-mono text-[10px] text-muted-2 mb-4">PRODUCT</h4>
           <div class="space-y-2">
-            <a href="#features"     class="block text-sm text-muted hover:text-white transition-colors">Features</a>
-            <a href="#how-it-works" class="block text-sm text-muted hover:text-white transition-colors">How it works</a>
-            <a href="#testimonial"  class="block text-sm text-muted hover:text-white transition-colors">Reviews</a>
+            <a href="#features" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Profile</a>
+            <a href="#features" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Booking</a>
+            <a href="#features" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">QR codes</a>
+            <a href="#features" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Templates</a>
           </div>
         </div>
+
         <div>
-          <p class="text-xs font-semibold text-muted uppercase tracking-widest mb-4">
-            Account
-          </p>
+          <h4 class="text-mono text-[10px] text-muted-2 mb-4">LEARN</h4>
           <div class="space-y-2">
-            <a href="{% url 'login' %}"    class="block text-sm text-muted hover:text-white transition-colors">Sign in</a>
-            <a href="{% url 'register' %}" class="block text-sm text-muted hover:text-white transition-colors">Create account</a>
+            <a href="#how" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">How it works</a>
+            <a href="#features" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Features</a>
+            <a href="#pricing" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Pricing</a>
           </div>
         </div>
+
         <div>
-          <p class="text-xs font-semibold text-muted uppercase tracking-widest mb-4">
-            Connect
-          </p>
+          <h4 class="text-mono text-[10px] text-muted-2 mb-4">ACCOUNT</h4>
           <div class="space-y-2">
-            <a href="#" class="block text-sm text-muted hover:text-white transition-colors">Instagram</a>
-            <a href="#" class="block text-sm text-muted hover:text-white transition-colors">Twitter / X</a>
-            <a href="#" class="block text-sm text-muted hover:text-white transition-colors">Contact us</a>
+            <a href="{% url 'login' %}"    class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Sign in</a>
+            <a href="{% url 'register' %}" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Start free</a>
           </div>
         </div>
+
+        <div>
+          <h4 class="text-mono text-[10px] text-muted-2 mb-4">COMPANY</h4>
+          <div class="space-y-2">
+            <a href="#" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Privacy</a>
+            <a href="#" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Terms</a>
+            <a href="#" class="block text-mono text-[11px] text-muted hover:text-cobalt transition-colors normal-case tracking-normal">Contact</a>
+          </div>
+        </div>
+
       </div>
-      <div class="border-t border-white border-opacity-10 pt-6">
-        <p class="text-xs text-muted text-center">© 2025 StyleBook. Built for Demo Day.</p>
+
+      <div class="flex flex-col md:flex-row justify-between items-center gap-3 pt-6 text-mono text-[10px] text-muted-2">
+        <span>© 2026 SHOWPIECE</span>
+        <span>EARLY ACCESS</span>
       </div>
+
     </div>
   </footer>
 
-  <style>
-    .card {
-      background: #FFFFFF;
-      border: 1px solid #E5E3DC;
-      border-radius: 12px;
-      padding: 20px;
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- MOTION + SCROLL                                     -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <script type="module">
+    import { animate, inView, stagger } from 'https://cdn.jsdelivr.net/npm/motion@10.18.0/+esm';
+
+    const EASE = [0.22, 1, 0.36, 1];
+
+    // Hero entrance — staggered, fires immediately on load
+    const heroReveal = document.querySelectorAll('section:first-of-type .reveal');
+    if (heroReveal.length) {
+      animate(
+        heroReveal,
+        { opacity: [0, 1], transform: ['translateY(20px)', 'translateY(0)'] },
+        { duration: 0.7, delay: stagger(0.12), easing: EASE }
+      );
     }
-  </style>
+
+    // Scroll-triggered reveals — fires once per element when in view
+    inView('.reveal:not(:first-child)', (info) => {
+      animate(
+        info.target,
+        { opacity: [0, 1], transform: ['translateY(20px)', 'translateY(0)'] },
+        { duration: 0.6, easing: EASE }
+      );
+    }, { margin: '0px 0px -80px 0px' });
+
+    // Staggered children reveals
+    inView('.reveal-stagger', (info) => {
+      const children = info.target.children;
+      animate(
+        children,
+        { opacity: [0, 1], transform: ['translateY(16px)', 'translateY(0)'] },
+        { duration: 0.5, delay: stagger(0.08), easing: EASE }
+      );
+    }, { margin: '0px 0px -80px 0px' });
+  </script>
+
+  <!-- Lenis smooth scroll -->
+  <script type="module">
+    import Lenis from 'https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/+esm';
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const lenis = new Lenis({
+        duration: 1.1,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        smoothTouch: false,
+      });
+      function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+      requestAnimationFrame(raf);
+
+      // Make anchor links work with Lenis
+      document.querySelectorAll('a[href^="#"]').forEach(a => {
+        a.addEventListener('click', (e) => {
+          const id = a.getAttribute('href');
+          if (id.length > 1) {
+            const target = document.querySelector(id);
+            if (target) {
+              e.preventDefault();
+              lenis.scrollTo(target, { offset: -80 });
+            }
+          }
+        });
+      });
+    }
+  </script>
 
 </body>
 </html>
