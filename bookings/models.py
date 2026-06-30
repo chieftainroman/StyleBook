@@ -30,10 +30,11 @@ class Booking(models.Model):
     SOURCE_OTHER      = 'other'
 
     SOURCE_CHOICES = [
-        (SOURCE_DIRECT,    'Direct link'),
-        (SOURCE_QR,        'QR code'),
-        (SOURCE_INSTAGRAM, 'Instagram'),
-        (SOURCE_OTHER,     'Other'),
+        ('direct_link',  'Direct link'),
+        ('profile_link', 'Profile link'),
+        ('qr',           'QR code'),
+        ('instagram',    'Instagram'),
+        ('other',        'Other'),
     ]
 
     # ── Identification ──

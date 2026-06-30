@@ -948,7 +948,7 @@ def qr_code_image(request, username):
     size = max(120, min(1200, size))
 
     site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
-    booking_url = f'{site_url}/book/{user.username}/?src=qr'
+    profile_url = f'{site_url}/profile/{user.username}/?src=qr'
 
     # Build the QR
     qr = qrcode.QRCode(
@@ -957,7 +957,7 @@ def qr_code_image(request, username):
         box_size=max(4, size // 50),
         border=2,
     )
-    qr.add_data(booking_url)
+    qr.add_data(profile_url)
     qr.make(fit=True)
 
     img = qr.make_image(fill_color='#1C1917', back_color='#FFFFFF').convert('RGB')
@@ -983,10 +983,10 @@ def qr_code_image(request, username):
 def qr_code_page(request):
     """Page showing the master their QR code with download options + share."""
     site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
-    booking_url = f'{site_url}/book/{request.user.username}/'
+    profile_url = f'{site_url}/profile/{request.user.username}/'
 
     return render(request, 'bookings/qr_code.html', {
         'active':      'qr',
         'username':    request.user.username,
-        'booking_url': booking_url,
+        'profile_url': profile_url,
     })

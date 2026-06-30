@@ -19,7 +19,7 @@
              class="w-full h-auto max-w-[280px] mx-auto rounded-lg"
              id="qrImage">
         <p class="text-xs font-mono text-muted mt-4 break-all">
-          stylebook.com/book/{{ username }}
+          stylebook.com/profile/{{ username }}
         </p>
       </div>
     </div>
@@ -49,13 +49,14 @@
       </div>
 
       <div class="bg-white border border-cream-border rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-ink mb-2">Share your booking link</h3>
+        <h3 class="text-sm font-semibold text-ink mb-2">Share your profile</h3>
         <p class="text-xs text-muted mb-3">
-          Paste in your Instagram bio, WhatsApp signature, or text it to clients directly.
+          Your profile shows your work, experience, and a Book button. Paste it in your Instagram bio,
+          WhatsApp signature, or text it to clients directly.
         </p>
 
         <div class="flex items-center gap-2 bg-cream rounded-lg p-3 mb-3">
-          <code class="flex-1 text-xs font-mono text-ink truncate select-all" id="bookingUrl">{{ booking_url }}</code>
+          <code class="flex-1 text-xs font-mono text-ink truncate select-all" id="bookingUrl">{{ profile_url }}</code>
           <button type="button" onclick="copyUrl()"
                   class="px-3 py-1.5 bg-white border border-cream-border rounded text-xs font-medium text-ink hover:bg-cream-border"
                   id="copyBtn">
@@ -84,11 +85,11 @@
       <div class="bg-cream rounded-xl p-5">
         <h3 class="text-sm font-semibold text-ink mb-2">Pro tips</h3>
         <ul class="text-xs text-muted space-y-1.5 leading-relaxed">
-          <li>📱 Add the link to your <strong>Instagram bio</strong> — easiest way to convert followers</li>
-          <li>💼 Put the QR on your <strong>business cards</strong> next to your name</li>
-          <li>🪑 Print it large and tape it to your <strong>station mirror</strong> — clients can rebook while you're working</li>
+          <li>📱 Add your profile link to your <strong>Instagram bio</strong> — new visitors see your portfolio + experience before booking</li>
+          <li>💼 Put the QR on your <strong>business cards</strong> — scanners see your work first, then book</li>
+          <li>🪑 Print it large and tape it to your <strong>station mirror</strong> — clients can browse your portfolio while you work</li>
           <li>📧 Add it to your <strong>email signature</strong></li>
-          <li>📊 Bookings made via QR show up as "Source: QR code" so you can track what's working</li>
+          <li>📊 Visitors who land via QR/link show up as "Source: QR code" on bookings — so you can track what's working</li>
         </ul>
       </div>
 
