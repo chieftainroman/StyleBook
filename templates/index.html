@@ -179,61 +179,36 @@
       filter: blur(40px);
       will-change: transform;
     }
-    .hero-orb-1 {
-      width: 560px; height: 560px;
-      top: -80px; right: -120px;
-      animation: drift-1 22s ease-in-out infinite;
-    }
-    .hero-orb-2 {
-      width: 340px; height: 340px;
-      bottom: -60px; left: 40%;
-      background: radial-gradient(circle at 40% 40%, rgba(58,58,255,0.08), rgba(58,58,255,0.02) 55%, transparent 75%);
-      animation: drift-2 28s ease-in-out infinite;
-    }
-    .hero-ring {
-      position: absolute;
-      border-radius: 50%;
-      border: 1px solid rgba(15,14,13,0.12);
-      will-change: transform;
-    }
-    .hero-ring-1 {
-      width: 120px; height: 120px;
-      top: 12%; right: 18%;
-      animation: drift-slow 18s ease-in-out infinite;
-    }
-    .hero-ring-2 {
-      width: 64px; height: 64px;
-      top: 55%; right: 8%;
-      border-color: rgba(58,58,255,0.28);
-      animation: drift-slow 14s ease-in-out infinite reverse;
-    }
-    .hero-ring-3 {
-      width: 200px; height: 200px;
-      top: 42%; right: 32%;
-      border-color: rgba(15,14,13,0.06);
-      animation: drift-1 26s ease-in-out infinite;
-    }
-    .hero-ring-4 {
-      width: 40px; height: 40px;
-      top: 22%; right: 42%;
-      border-color: rgba(15,14,13,0.15);
-      animation: drift-slow 12s ease-in-out infinite;
-    }
+    .hero-orb-1  { animation: drift-1 40s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .hero-orb-2  { animation: drift-2 48s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .hero-ring-1 { animation: drift-slow 32s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .hero-ring-2 { animation: drift-slow 26s cubic-bezier(0.45, 0, 0.55, 1) infinite reverse; }
+    .hero-ring-3 { animation: drift-1 44s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+    .hero-ring-4 { animation: drift-slow 22s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
     .hero-content {
       position: relative;
       z-index: 1;
     }
     @keyframes drift-1 {
-      0%, 100% { transform: translate(0, 0); }
-      50%      { transform: translate(-30px, 20px); }
+      0%   { transform: translate(0, 0); }
+      25%  { transform: translate(-24px, 18px); }
+      50%  { transform: translate(-40px, -8px); }
+      75%  { transform: translate(-16px, -22px); }
+      100% { transform: translate(0, 0); }
     }
     @keyframes drift-2 {
-      0%, 100% { transform: translate(0, 0); }
-      50%      { transform: translate(40px, -25px); }
+      0%   { transform: translate(0, 0); }
+      20%  { transform: translate(28px, -12px); }
+      45%  { transform: translate(42px, 14px); }
+      70%  { transform: translate(18px, 28px); }
+      100% { transform: translate(0, 0); }
     }
     @keyframes drift-slow {
-      0%, 100% { transform: translate(0, 0); }
-      50%      { transform: translate(15px, -10px); }
+      0%   { transform: translate(0, 0); }
+      30%  { transform: translate(14px, -8px); }
+      55%  { transform: translate(6px, -18px); }
+      80%  { transform: translate(-10px, -6px); }
+      100% { transform: translate(0, 0); }
     }
 
     /* Hide the largest shapes on very small screens so hero stays clean */
