@@ -3,12 +3,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}StyleBook{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>{% block title %}Showpiece{% endblock %}</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -16,21 +16,23 @@
       theme: {
         extend: {
           colors: {
-            sidebar:        '#1C1917',
-            'sidebar-hover':'#2C2C2A',
-            'sidebar-active':'#333330',
-            cream:          '#FAFAF7',
-            'cream-card':   '#FFFFFF',
-            'cream-border': '#E5E3DC',
-            gold:           '#C9A96E',
-            'gold-light':   '#F5EDD8',
-            'gold-dark':    '#8B6914',
-            ink:            '#1C1917',
-            muted:          '#888780',
+            cream:       '#F5F1E8',
+            'cream-2':   '#FFFFFF',
+            'cream-line':'rgba(15,14,13,0.08)',
+            'cream-hover':'rgba(15,14,13,0.04)',
+            ink:         '#0F0E0D',
+            'ink-2':     '#1A1816',
+            muted:       'rgba(15,14,13,0.55)',
+            'muted-2':   'rgba(15,14,13,0.35)',
+            cobalt:      '#3A3AFF',
+            'cobalt-hover':'#2929E8',
+            'cobalt-bright':'#5C5CFF',
+            'cobalt-tint': 'rgba(58,58,255,0.08)',
           },
           fontFamily: {
-            sans:  ['Inter', 'sans-serif'],
-            serif: ['Instrument Serif', 'serif'],
+            sans:    ['Space Grotesk', 'Inter', 'sans-serif'],
+            display: ['Anton', 'sans-serif'],
+            mono:    ['JetBrains Mono', 'monospace'],
           },
         }
       }
@@ -38,252 +40,612 @@
   </script>
 
   <style>
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 4px; }
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body { font-feature-settings: 'ss01', 'ss02'; }
+
+    /* ── Scrollbar ─────────────────────────────────── */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
-    /* Sidebar link transition */
-    .nav-link { transition: background .15s, color .15s; }
-    /* Flash messages */
-    .flash-success { background: #D1FAE5; color: #065F46; }
-    .flash-error   { background: #FEE2E2; color: #991B1B; }
-    .flash-info    { background: #DBEAFE; color: #1E40AF; }
-    .flash-warning { background: #FEF3C7; color: #92400E; }
+    ::-webkit-scrollbar-thumb { background: rgba(15,14,13,0.15); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(15,14,13,0.3); }
+
+    /* ── Top nav ─────────────────────────────────── */
+    .sp-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 20px;
+      background: rgba(245,241,232,0.85);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(15,14,13,0.08);
+      position: sticky; top: 0; z-index: 40;
+      flex-shrink: 0;
+    }
+    @media (min-width: 768px) { .sp-nav { padding: 14px 32px; } }
+
+    .sp-nav-left { display: flex; align-items: center; gap: 24px; min-width: 0; }
+    @media (min-width: 768px) { .sp-nav-left { gap: 32px; } }
+
+    .sp-logo {
+      font-family: 'Anton', sans-serif; font-size: 22px;
+      letter-spacing: -0.02em; color: #0F0E0D;
+      line-height: 1; text-decoration: none;
+      flex-shrink: 0;
+    }
+
+    /* Segmented pill nav */
+    .sp-links {
+      display: flex; align-items: center; gap: 2px;
+      padding: 3px;
+      background: rgba(15,14,13,0.04);
+      border-radius: 10px;
+    }
+    .sp-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 14px; border-radius: 7px;
+      font-size: 13px; font-weight: 500;
+      color: rgba(15,14,13,0.65);
+      text-decoration: none; cursor: pointer;
+      transition: all 0.15s;
+      border: none; background: transparent;
+      letter-spacing: -0.005em;
+      white-space: nowrap;
+    }
+    .sp-link:hover { color: #0F0E0D; }
+    .sp-link.is-active {
+      background: #FFFFFF; color: #0F0E0D;
+      box-shadow: 0 1px 2px rgba(15,14,13,0.06), 0 0 0 1px rgba(15,14,13,0.04);
+    }
+    .sp-link svg { flex-shrink: 0; }
+
+    .sp-link-label { display: inline; }
+    @media (max-width: 900px) {
+      .sp-link-label { display: none; }
+      .sp-link { padding: 8px 10px; }
+    }
+
+    .sp-badge {
+      min-width: 18px; height: 18px; padding: 0 5px;
+      background: #3A3AFF; color: #F5F1E8;
+      border-radius: 9px; font-size: 10px; font-weight: 600;
+      display: inline-flex; align-items: center; justify-content: center;
+      letter-spacing: 0;
+    }
+
+    /* Right side controls */
+    .sp-nav-right { display: flex; align-items: center; gap: 6px; }
+    @media (min-width: 768px) { .sp-nav-right { gap: 8px; } }
+
+    .sp-icon-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: transparent; border: none;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: rgba(15,14,13,0.55);
+      transition: all 0.15s; position: relative;
+    }
+    .sp-icon-btn:hover { background: rgba(15,14,13,0.04); color: #0F0E0D; }
+    .sp-icon-btn.has-dot::after {
+      content: ''; position: absolute; top: 8px; right: 9px;
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #3A3AFF;
+      border: 2px solid #F5F1E8;
+    }
+
+    .sp-primary {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 0 14px; height: 36px;
+      background: #0F0E0D; color: #F5F1E8;
+      border: none; border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s;
+      letter-spacing: -0.005em; text-decoration: none;
+      white-space: nowrap;
+    }
+    .sp-primary:hover { background: #3A3AFF; }
+    .sp-primary-plus {
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 16px; margin-top: -1px;
+    }
+    .sp-primary-label { display: inline; }
+    @media (max-width: 640px) {
+      .sp-primary-label { display: none; }
+      .sp-primary { padding: 0 10px; }
+    }
+
+    /* User dropdown trigger */
+    .sp-user {
+      display: flex; align-items: center; gap: 8px;
+      padding: 4px 10px 4px 4px;
+      border-radius: 10px;
+      background: rgba(15,14,13,0.04);
+      border: 1px solid rgba(15,14,13,0.06);
+      cursor: pointer; transition: all 0.15s;
+      text-decoration: none;
+      position: relative;
+    }
+    .sp-user:hover { background: rgba(15,14,13,0.06); border-color: rgba(15,14,13,0.1); }
+    .sp-avatar {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: linear-gradient(135deg, #3A3AFF, #5C5CFF);
+      display: flex; align-items: center; justify-content: center;
+      color: #F5F1E8; font-size: 11px; font-weight: 600;
+      letter-spacing: 0.02em; flex-shrink: 0;
+      overflow: hidden;
+    }
+    .sp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .sp-user-name {
+      font-size: 13px; font-weight: 500;
+      color: #0F0E0D; letter-spacing: -0.005em;
+    }
+    @media (max-width: 640px) { .sp-user-name { display: none; } }
+
+    /* User dropdown menu */
+    .sp-menu {
+      position: absolute; top: calc(100% + 6px); right: 0;
+      min-width: 220px;
+      background: #FFFFFF;
+      border: 1px solid rgba(15,14,13,0.08);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 10px 40px -10px rgba(15,14,13,0.2), 0 2px 8px rgba(15,14,13,0.06);
+      opacity: 0; visibility: hidden;
+      transform: translateY(-4px);
+      transition: all 0.15s;
+      z-index: 50;
+    }
+    .sp-user.is-open .sp-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+    .sp-menu-header {
+      padding: 12px 12px 8px; border-bottom: 1px solid rgba(15,14,13,0.06);
+      margin-bottom: 4px;
+    }
+    .sp-menu-name { font-size: 13px; font-weight: 600; color: #0F0E0D; letter-spacing: -0.005em; }
+    .sp-menu-email { font-size: 12px; color: rgba(15,14,13,0.55); margin-top: 2px; letter-spacing: -0.005em; }
+    .sp-menu-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      color: #0F0E0D; text-decoration: none;
+      cursor: pointer; transition: background 0.15s;
+      letter-spacing: -0.005em;
+      background: transparent; border: none; width: 100%; text-align: left;
+    }
+    .sp-menu-item:hover { background: rgba(15,14,13,0.04); }
+    .sp-menu-item svg { color: rgba(15,14,13,0.5); flex-shrink: 0; }
+    .sp-menu-divider {
+      height: 1px; background: rgba(15,14,13,0.06);
+      margin: 4px 0;
+    }
+
+    /* Theme toggle inside menu */
+    .sp-theme {
+      display: flex; gap: 2px; padding: 3px;
+      background: rgba(15,14,13,0.05); border-radius: 8px;
+      margin: 4px;
+    }
+    .sp-theme-btn {
+      flex: 1; padding: 6px 8px;
+      background: transparent; border: none;
+      color: rgba(15,14,13,0.55);
+      font-size: 11px; font-weight: 500;
+      cursor: pointer; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: all 0.15s;
+      letter-spacing: -0.005em;
+      font-family: inherit;
+    }
+    .sp-theme-btn:hover { color: #0F0E0D; }
+    .sp-theme-btn.is-active {
+      background: #FFFFFF; color: #0F0E0D;
+      box-shadow: 0 1px 2px rgba(15,14,13,0.06);
+    }
+
+    /* ── Page shell ────────────────────────────────── */
+    .sp-page-title {
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(32px, 5vw, 48px);
+      line-height: 0.95; letter-spacing: -0.025em;
+      color: #0F0E0D;
+    }
+    .sp-page-sub {
+      font-size: 15px; color: rgba(15,14,13,0.55);
+      margin-top: 8px; line-height: 1.55; letter-spacing: -0.005em;
+    }
+
+    .sp-eyebrow {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: rgba(15,14,13,0.55);
+      letter-spacing: -0.005em; margin-bottom: 8px;
+    }
+    .sp-eyebrow-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #3A3AFF;
+      animation: sp-pulse 2s ease-in-out infinite;
+    }
+    @keyframes sp-pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* ── Cards / panels ────────────────────────────── */
+    .card {
+      background: #FFFFFF;
+      border: 1px solid rgba(15,14,13,0.06);
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    /* ── Buttons ───────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #0F0E0D; color: #FFFFFF;
+      font-size: 13px; font-weight: 500;
+      padding: 9px 16px; border-radius: 10px;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: background 0.15s;
+      letter-spacing: -0.005em;
+    }
+    .btn-primary:hover { background: #3A3AFF; }
+
+    .btn-cobalt {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #3A3AFF; color: #F5F1E8;
+      font-size: 13px; font-weight: 500;
+      padding: 9px 16px; border-radius: 10px;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: background 0.15s;
+      letter-spacing: -0.005em;
+    }
+    .btn-cobalt:hover { background: #2929E8; }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #FFFFFF; color: #0F0E0D;
+      font-size: 13px; font-weight: 500;
+      padding: 9px 16px; border-radius: 10px;
+      border: 1px solid rgba(15,14,13,0.08);
+      cursor: pointer; text-decoration: none;
+      transition: all 0.15s;
+      letter-spacing: -0.005em;
+    }
+    .btn-ghost:hover { border-color: rgba(15,14,13,0.2); }
+
+    .btn-gold {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #3A3AFF; color: #F5F1E8;
+      font-size: 13px; font-weight: 500;
+      padding: 9px 16px; border-radius: 10px;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: background 0.15s;
+      letter-spacing: -0.005em;
+    }
+    .btn-gold:hover { background: #2929E8; }
+
+    /* ── Forms ─────────────────────────────────────── */
+    .form-input {
+      display: block; width: 100%;
+      background: #FFFFFF;
+      border: 1px solid rgba(15,14,13,0.08);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px; color: #0F0E0D;
+      font-family: inherit;
+      outline: none; transition: border-color 0.15s;
+      letter-spacing: -0.005em;
+    }
+    .form-input:focus { border-color: #3A3AFF; box-shadow: 0 0 0 3px rgba(58,58,255,0.1); }
+    .form-input::placeholder { color: rgba(15,14,13,0.4); }
+    textarea.form-input { resize: vertical; min-height: 80px; }
+
+    .form-label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: rgba(15,14,13,0.6);
+      margin-bottom: 6px;
+      letter-spacing: -0.005em;
+    }
+
+    /* Section title (used by legacy pages) */
+    .section-title {
+      font-size: 11px; font-weight: 600;
+      color: rgba(15,14,13,0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    /* ── Flash messages ────────────────────────────── */
+    .flash {
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px; font-weight: 500;
+      margin-bottom: 12px;
+      letter-spacing: -0.005em;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .flash-success { background: rgba(5,150,105,0.1); color: #065F46; border: 1px solid rgba(5,150,105,0.2); }
+    .flash-error   { background: rgba(220,38,38,0.08); color: #991B1B; border: 1px solid rgba(220,38,38,0.15); }
+    .flash-info    { background: rgba(58,58,255,0.08); color: #1E3A8A; border: 1px solid rgba(58,58,255,0.15); }
+    .flash-warning { background: rgba(245,158,11,0.1); color: #92400E; border: 1px solid rgba(245,158,11,0.2); }
+
+    /* ── Legacy compat (nav-link / tab-btn) ────────── */
+    .nav-link { transition: background 0.15s, color 0.15s; }
+    .tab-btn { transition: background 0.15s, color 0.15s; }
+    .hidden { display: none; }
+
+    /* ── Reduced motion ────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
   </style>
 
   {% block extra_head %}{% endblock %}
 </head>
 
-<body class="bg-cream font-sans text-ink antialiased">
-<div class="flex h-screen overflow-hidden">
+<body class="bg-cream font-sans text-ink antialiased min-h-screen flex flex-col">
 
-  <!-- ── Sidebar ───────────────────────────────────── -->
-  <aside class="w-56 bg-sidebar flex flex-col flex-shrink-0 h-full">
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- TOP NAV                                             -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <nav class="sp-nav">
+    <div class="sp-nav-left">
+      <a href="{% url 'dashboard' %}" class="sp-logo">SHOWPIECE</a>
 
-    <!-- Logo -->
-    <div class="px-5 py-5 border-b border-sidebar-active">
-      <a href="{% url 'dashboard' %}" class="block">
-        <span class="text-white font-semibold text-lg tracking-tight">
-          Style<span class="text-gold">Book</span>
-        </span>
-        <span class="block text-xs text-muted mt-0.5">Professional platform</span>
-      </a>
-    </div>
+      <div class="sp-links">
 
-    <!-- Nav -->
-    <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-
-      <a href="{% url 'dashboard' %}"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                {% if active == 'dashboard' %}bg-sidebar-active text-white{% else %}text-muted hover:bg-sidebar-hover hover:text-white{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-          <rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor"/>
-          <rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>
-          <rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>
-          <rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".5"/>
-        </svg>
-        Dashboard
-      </a>
-
-      <a href="{% url 'reservations' %}"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                {% if active == 'reservations' %}bg-sidebar-active text-white{% else %}text-muted hover:bg-sidebar-hover hover:text-white{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-          <rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.2"/>
-          <path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-        </svg>
-        Reservations
-      </a>
-
-      <a href="{% url 'portfolio' %}"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                {% if active == 'portfolio' %}bg-sidebar-active text-white{% else %}text-muted hover:bg-sidebar-hover hover:text-white{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-          <rect x="1" y="1" width="6" height="9" rx="1.5" fill="currentColor" opacity=".5"/>
-          <rect x="9" y="1" width="6" height="5" rx="1.5" fill="currentColor"/>
-          <rect x="9" y="8" width="6" height="7" rx="1.5" fill="currentColor" opacity=".5"/>
-          <rect x="1" y="12" width="6" height="3" rx="1.5" fill="currentColor"/>
-        </svg>
-        Portfolio
-      </a>
-
-      <a href="{% url 'instagram' %}"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                {% if active == 'instagram' %}bg-sidebar-active text-white{% else %}text-muted hover:bg-sidebar-hover hover:text-white{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-          <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.2"/>
-          <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/>
-          <circle cx="11.5" cy="4.5" r="0.8" fill="currentColor"/>
-        </svg>
-        Instagram post
-      </a>
-
-      <a href="{% url 'my_profile' %}"
-         class="nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm
-                {% if active == 'profile' %}bg-sidebar-active text-white{% else %}text-muted hover:bg-sidebar-hover hover:text-white{% endif %}">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-          <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.2"/>
-          <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-        </svg>
-        My profile
-      </a>
-      <a href="{% url 'qr_code_page' %}"
-   class="{% if active == 'qr' %}bg-sidebar-active text-white{% else %}text-muted hover:bg-sidebar-hover hover:text-white{% endif %} block">
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-    <rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/>
-    <rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/>
-    <rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.7"/>
-    <rect x="11" y="11" width="2" height="2" fill="currentColor"/>
-    <rect x="13" y="13" width="2" height="2" fill="currentColor"/>
-  </svg>
-  My QR code
-</a>
-    </nav>
-
-    <!-- User footer -->
-    <div class="px-3 py-3 border-t border-sidebar-active">
-      <div class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-full overflow-hidden bg-gold flex items-center justify-center
-                  text-xs font-semibold text-sidebar">
-        {% if user.profile.avatar_url %}
-          <img src="{{ user.profile.avatar_url }}"
-              alt="{{ user.username }}"
-              class="w-full h-full object-cover">
-        {% else %}
-          {{ user.username|slice:":2"|upper }}
-        {% endif %}
-      </div>
-        <div class="flex-1 min-w-0">
-          <div class="text-white text-sm font-medium truncate">{{ user.username }}</div>
-          <div class="text-muted text-xs truncate">
-            {{ user.profile.get_specialty_display|default:"Professional" }}
-          </div>
-        </div>
-        <a href="{% url 'logout' %}"
-           class="text-muted hover:text-white transition-colors flex-shrink-0"
-           title="Sign out">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M6 2H4a2 2 0 00-2 2v8a2 2 0 002 2h2M10.5 11.5L14 8l-3.5-3.5M14 8H6"
-                  stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        <a href="{% url 'dashboard' %}"
+           class="sp-link {% if active == 'dashboard' %}is-active{% endif %}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="1.5" y="1.5" width="5.5" height="5.5" rx="1.5" fill="currentColor"/>
+            <rect x="9" y="1.5" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".35"/>
+            <rect x="1.5" y="9" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".35"/>
+            <rect x="9" y="9" width="5.5" height="5.5" rx="1.5" fill="currentColor" opacity=".35"/>
           </svg>
+          <span class="sp-link-label">Home</span>
         </a>
+
+        <a href="{% url 'reservations' %}"
+           class="sp-link {% if active == 'reservations' %}is-active{% endif %}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="1.5" y="3" width="13" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M5 1.5v3M11 1.5v3M1.5 7h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="sp-link-label">Bookings</span>
+        </a>
+
+        <a href="{% url 'portfolio' %}"
+           class="sp-link {% if active == 'portfolio' %}is-active{% endif %}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="1.5" y="1.5" width="5.5" height="8.5" rx="1.5" fill="currentColor" opacity=".35"/>
+            <rect x="9" y="1.5" width="5.5" height="4.5" rx="1.5" fill="currentColor"/>
+            <rect x="9" y="7.5" width="5.5" height="7" rx="1.5" fill="currentColor" opacity=".35"/>
+            <rect x="1.5" y="11.5" width="5.5" height="3" rx="1.5" fill="currentColor"/>
+          </svg>
+          <span class="sp-link-label">Portfolio</span>
+        </a>
+
+        <a href="{% url 'instagram' %}"
+           class="sp-link {% if active == 'instagram' %}is-active{% endif %}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="2" width="12" height="12" rx="3.5" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
+            <circle cx="11.5" cy="4.5" r="0.7" fill="currentColor"/>
+          </svg>
+          <span class="sp-link-label">Templates</span>
+        </a>
+
+        <a href="{% url 'my_profile' %}"
+           class="sp-link {% if active == 'profile' %}is-active{% endif %}">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M2.5 14c0-3 2.5-4.5 5.5-4.5S13.5 11 13.5 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          <span class="sp-link-label">Profile</span>
+        </a>
+
       </div>
     </div>
 
-  </aside>
+    <div class="sp-nav-right">
 
-  <!-- ── Main content ───────────────────────────────── -->
-  <div class="flex-1 flex flex-col overflow-hidden">
+      <a href="{% url 'qr_code_page' %}"
+         class="sp-icon-btn"
+         title="Your QR code">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="10" y="10" width="1.5" height="1.5" fill="currentColor"/>
+          <rect x="13" y="10" width="1.5" height="1.5" fill="currentColor"/>
+          <rect x="10" y="13" width="1.5" height="1.5" fill="currentColor"/>
+          <rect x="13" y="13" width="1.5" height="1.5" fill="currentColor"/>
+        </svg>
+      </a>
 
-    <!-- Topbar -->
-    <header class="bg-cream border-b border-cream-border px-8 py-4 flex items-center justify-between flex-shrink-0">
-      <div>
-        <h1 class="text-xl font-serif italic text-ink">
-          {% block page_title %}Dashboard{% endblock %}
-        </h1>
-        <p class="text-sm text-muted mt-0.5">{% block page_sub %}{% endblock %}</p>
-      </div>
-      <div class="flex items-center gap-3">
-        {% block topbar_actions %}{% endblock %}
-      </div>
-    </header>
+      <a href="/book/{{ user.username }}/"
+         target="_blank"
+         class="sp-primary">
+        <span class="sp-primary-plus">+</span>
+        <span class="sp-primary-label">Share booking link</span>
+      </a>
 
-    <!-- Flash messages -->
-    <div class="px-8 pt-4">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="flash-{{ message.tags }} rounded-lg px-4 py-3 text-sm mb-2 font-medium">
-            {{ message }}
+      <div class="sp-user" id="userMenu">
+        <div class="sp-avatar">
+          {% if user.profile.avatar_url %}
+            <img src="{{ user.profile.avatar_url }}" alt="{{ user.username }}">
+          {% else %}
+            {{ user.username|slice:":2"|upper }}
+          {% endif %}
+        </div>
+        <span class="sp-user-name">{{ user.username }}</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="color: rgba(15,14,13,0.45);">
+          <path d="M3 5l3 3 3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+
+        <div class="sp-menu">
+          <div class="sp-menu-header">
+            <div class="sp-menu-name">{{ user.username }}</div>
+            <div class="sp-menu-email">{{ user.email }}</div>
           </div>
-        {% endfor %}
-      {% endif %}
+
+          <a href="{% url 'my_profile' %}" class="sp-menu-item">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M2.5 14c0-3 2.5-4.5 5.5-4.5S13.5 11 13.5 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+            View public profile
+          </a>
+
+          <a href="{% url 'profile_edit' %}" class="sp-menu-item">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M9.5 2.5l4 4L6 14H2v-4l7.5-7.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+            </svg>
+            Edit profile
+          </a>
+
+          <a href="{% url 'qr_code_page' %}" class="sp-menu-item">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
+              <rect x="10" y="10" width="1.5" height="1.5" fill="currentColor"/>
+              <rect x="13" y="13" width="1.5" height="1.5" fill="currentColor"/>
+            </svg>
+            My QR code
+          </a>
+
+          <div class="sp-menu-divider"></div>
+
+          <div class="sp-theme" role="group" aria-label="Theme">
+            <button type="button" class="sp-theme-btn is-active" data-theme="light">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="3" fill="currentColor"/>
+                <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.5 3.5l1.4 1.4M11.1 11.1l1.4 1.4M3.5 12.5l1.4-1.4M11.1 4.9l1.4-1.4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+              Light
+            </button>
+            <button type="button" class="sp-theme-btn" data-theme="dark">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <path d="M12 9.5A5 5 0 016.5 4c0-.5.1-1 .2-1.4A5.5 5.5 0 108.5 13.5a5 5 0 003.5-4z" fill="currentColor"/>
+              </svg>
+              Dark
+            </button>
+          </div>
+
+          <div class="sp-menu-divider"></div>
+
+          <a href="{% url 'logout' %}" class="sp-menu-item">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+              <path d="M6 2H4a2 2 0 00-2 2v8a2 2 0 002 2h2M10.5 11.5L14 8l-3.5-3.5M14 8H6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Sign out
+          </a>
+        </div>
+      </div>
+
     </div>
+  </nav>
 
-    <!-- Page content -->
-    <main class="flex-1 overflow-y-auto px-8 py-6">
-      {% block content %}{% endblock %}
-    </main>
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- PAGE HEADER (title, sub, actions)                   -->
+  <!-- ═════════════════════════════════════════════════ -->
+  {% block page_header %}
+  <header class="max-w-[1240px] mx-auto w-full px-5 md:px-8 pt-8 md:pt-10 pb-4 md:pb-6 flex flex-col md:flex-row justify-between md:items-end gap-4">
+    <div class="flex-1 min-w-0">
+      {% block page_eyebrow %}{% endblock %}
+      <h1 class="sp-page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+      {% block page_sub_wrapper %}
+        {% block page_sub %}{% endblock %}
+      {% endblock %}
+    </div>
+    <div class="flex flex-wrap items-center gap-2 pb-1 flex-shrink-0">
+      {% block topbar_actions %}{% endblock %}
+    </div>
+  </header>
+  {% endblock %}
 
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- FLASH MESSAGES                                      -->
+  <!-- ═════════════════════════════════════════════════ -->
+  {% if messages %}
+  <div class="max-w-[1240px] mx-auto w-full px-5 md:px-8">
+    {% for message in messages %}
+      <div class="flash flash-{{ message.tags|default:'info' }}">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink: 0;">
+          {% if message.tags == 'success' %}
+            <path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          {% elif message.tags == 'error' %}
+            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          {% else %}
+            <circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M8 5v4M8 11h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          {% endif %}
+        </svg>
+        {{ message }}
+      </div>
+    {% endfor %}
   </div>
-</div>
+  {% endif %}
 
-<!-- Global button styles via Tailwind -->
-<style>
-  .btn-primary {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: #1C1917; color: #fff;
-    font-size: 14px; font-weight: 500;
-    padding: 8px 16px; border-radius: 8px;
-    border: none; cursor: pointer; text-decoration: none;
-    transition: background .15s;
-  }
-  .btn-primary:hover { background: #333330; }
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- MAIN CONTENT                                        -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <main class="max-w-[1240px] mx-auto w-full px-5 md:px-8 py-4 md:py-6 flex-1">
+    {% block content %}{% endblock %}
+  </main>
 
-  .btn-ghost {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: transparent; color: #1C1917;
-    font-size: 14px; font-weight: 500;
-    padding: 8px 16px; border-radius: 8px;
-    border: 1px solid #E5E3DC; cursor: pointer; text-decoration: none;
-    transition: background .15s;
-  }
-  .btn-ghost:hover { background: #fff; }
+  <!-- ═════════════════════════════════════════════════ -->
+  <!-- SCRIPTS                                             -->
+  <!-- ═════════════════════════════════════════════════ -->
+  <script>
+    /* ── User menu dropdown ────────────────────────── */
+    (function() {
+      const menu = document.getElementById('userMenu');
+      if (!menu) return;
 
-  .btn-gold {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: #C9A96E; color: #1C1917;
-    font-size: 14px; font-weight: 500;
-    padding: 8px 16px; border-radius: 8px;
-    border: none; cursor: pointer; text-decoration: none;
-    transition: background .15s, color .15s;
-  }
-  .btn-gold:hover { background: #8B6914; color: #fff; }
+      menu.addEventListener('click', (e) => {
+        if (e.target.closest('.sp-menu-item') || e.target.closest('.sp-theme-btn')) return;
+        menu.classList.toggle('is-open');
+        e.stopPropagation();
+      });
 
-  .btn-gold.w-full { width: 100%; justify-content: center; }
-  .btn-primary.w-full { width: 100%; justify-content: center; }
+      document.addEventListener('click', (e) => {
+        if (!menu.contains(e.target)) {
+          menu.classList.remove('is-open');
+        }
+      });
 
-  .form-input {
-    display: block; width: 100%;
-    background: #fff; border: 1px solid #E5E3DC;
-    border-radius: 8px; padding: 8px 12px;
-    font-size: 14px; color: #1C1917;
-    outline: none; transition: border-color .15s;
-    font-family: inherit;
-  }
-  .form-input:focus { border-color: #1C1917; }
-  .form-input::placeholder { color: #888780; }
-  textarea.form-input { resize: none; }
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') menu.classList.remove('is-open');
+      });
+    })();
 
-  .form-label {
-    display: block;
-    font-size: 11px; font-weight: 500;
-    color: #888780; margin-bottom: 6px;
-    text-transform: uppercase; letter-spacing: 0.05em;
-  }
+    /* ── Theme toggle ──────────────────────────────── */
+    (function() {
+      const KEY = 'showpiece-theme';
+      const saved = localStorage.getItem(KEY) || 'light';
 
-  .card {
-    background: #fff; border: 1px solid #E5E3DC;
-    border-radius: 12px; padding: 20px;
-  }
+      function apply(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.querySelectorAll('.sp-theme-btn').forEach(b => {
+          b.classList.toggle('is-active', b.dataset.theme === theme);
+        });
+      }
 
-  .section-title {
-    font-size: 11px; font-weight: 600;
-    color: #888780; text-transform: uppercase;
-    letter-spacing: 0.1em; margin-bottom: 16px;
-    display: block;
-  }
+      apply(saved);
 
-  .nav-link { transition: background .15s, color .15s; }
-  .flash-success { background: #D1FAE5; color: #065F46; }
-  .flash-error   { background: #FEE2E2; color: #991B1B; }
-  .flash-info    { background: #DBEAFE; color: #1E40AF; }
-  .flash-warning { background: #FEF3C7; color: #92400E; }
+      document.querySelectorAll('.sp-theme-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const theme = btn.dataset.theme;
+          localStorage.setItem(KEY, theme);
+          apply(theme);
+        });
+      });
+    })();
+  </script>
 
-  .tab-btn { transition: background .15s, color .15s; }
-  .hidden { display: none; }
-</style>
-
-<script src="{% static 'js/main.js' %}"></script>
-{% block extra_scripts %}{% endblock %}
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>
