@@ -163,6 +163,84 @@
       }
       .reveal, .reveal-stagger > * { opacity: 1; transform: none; }
     }
+
+    /* ── Hero background shapes ────────────────────── */
+    .hero-shapes {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero-orb {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(15,14,13,0.14), rgba(15,14,13,0.04) 60%, transparent 75%);
+      filter: blur(40px);
+      will-change: transform;
+    }
+    .hero-orb-1 {
+      width: 560px; height: 560px;
+      top: -80px; right: -120px;
+      animation: drift-1 22s ease-in-out infinite;
+    }
+    .hero-orb-2 {
+      width: 340px; height: 340px;
+      bottom: -60px; left: 40%;
+      background: radial-gradient(circle at 40% 40%, rgba(58,58,255,0.08), rgba(58,58,255,0.02) 55%, transparent 75%);
+      animation: drift-2 28s ease-in-out infinite;
+    }
+    .hero-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(15,14,13,0.12);
+      will-change: transform;
+    }
+    .hero-ring-1 {
+      width: 120px; height: 120px;
+      top: 12%; right: 18%;
+      animation: drift-slow 18s ease-in-out infinite;
+    }
+    .hero-ring-2 {
+      width: 64px; height: 64px;
+      top: 55%; right: 8%;
+      border-color: rgba(58,58,255,0.28);
+      animation: drift-slow 14s ease-in-out infinite reverse;
+    }
+    .hero-ring-3 {
+      width: 200px; height: 200px;
+      top: 42%; right: 32%;
+      border-color: rgba(15,14,13,0.06);
+      animation: drift-1 26s ease-in-out infinite;
+    }
+    .hero-ring-4 {
+      width: 40px; height: 40px;
+      top: 22%; right: 42%;
+      border-color: rgba(15,14,13,0.15);
+      animation: drift-slow 12s ease-in-out infinite;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+    @keyframes drift-1 {
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(-30px, 20px); }
+    }
+    @keyframes drift-2 {
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(40px, -25px); }
+    }
+    @keyframes drift-slow {
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(15px, -10px); }
+    }
+
+    /* Hide the largest shapes on very small screens so hero stays clean */
+    @media (max-width: 640px) {
+      .hero-ring-3 { display: none; }
+      .hero-orb-1  { width: 400px; height: 400px; right: -180px; }
+    }
   </style>
 </head>
 
@@ -197,8 +275,16 @@
   <!-- ═════════════════════════════════════════════════ -->
   <!-- HERO                                                -->
   <!-- ═════════════════════════════════════════════════ -->
-  <section class="px-6 md:px-8 pt-16 md:pt-24 pb-20 md:pb-28">
-    <div class="max-w-[1280px] mx-auto">
+  <section class="relative px-6 md:px-8 pt-16 md:pt-24 pb-20 md:pb-28 overflow-hidden">
+    <div class="hero-shapes">
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-ring hero-ring-1"></div>
+      <div class="hero-ring hero-ring-2"></div>
+      <div class="hero-ring hero-ring-3"></div>
+      <div class="hero-ring hero-ring-4"></div>
+    </div>
+    <div class="hero-content max-w-[1280px] mx-auto">
 
       <div class="reveal text-mono text-[11px] text-cobalt mb-6 md:mb-8">
         <span class="live-dot"></span>NOW IN EARLY ACCESS · FREE TIER LIVE
