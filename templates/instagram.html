@@ -1,644 +1,604 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Instagram templates — Showpiece{% endblock %}
-
-{% block page_eyebrow %}
-  <div class="sp-eyebrow">
-    <span class="sp-eyebrow-dot"></span>
-    <span>Instagram templates</span>
-  </div>
-{% endblock %}
-
-{% block page_title %}Post your work.{% endblock %}
-
-{% block page_sub %}
-  <p class="sp-page-sub max-w-[520px]">
-    Editorial templates. Turn a finished job into a story-ready image in seconds.
-  </p>
-{% endblock %}
-
-{% block topbar_actions %}
-  <div class="ig-quota">
-    <div class="ig-quota-body">
-      <div class="ig-quota-label">Free this month</div>
-      <div class="ig-quota-value">5<span class="ig-quota-total"> / 5</span></div>
-      <div class="ig-quota-bar"><div class="ig-quota-fill" style="width: 100%;"></div></div>
-    </div>
-    <a href="#pricing" class="ig-quota-upgrade">Go Pro</a>
-  </div>
-{% endblock %}
-
+{% block title %}Instagram Post — StyleBook{% endblock %}
+{% block page_title %}Instagram post generator{% endblock %}
+{% block page_sub %}Upload a photo — get a ready-to-post template{% endblock %}
 
 {% block content %}
 
-<style>
-  /* ── Quota widget ──────────────────────────────── */
-  .ig-quota {
-    display: flex; align-items: center; gap: 14px;
-    padding: 8px 14px 8px 16px;
-    background: #FFFFFF;
-    border: 1px solid rgba(15,14,13,0.08);
-    border-radius: 12px;
-  }
-  .ig-quota-body { min-width: 100px; }
-  .ig-quota-label {
-    font-size: 11px; color: rgba(15,14,13,0.5);
-    letter-spacing: -0.005em; margin-bottom: 2px;
-  }
-  .ig-quota-value {
-    font-family: 'Anton', sans-serif;
-    font-size: 20px; letter-spacing: -0.02em; line-height: 1;
-    color: #0F0E0D;
-  }
-  .ig-quota-total { color: rgba(15,14,13,0.35); }
-  .ig-quota-bar {
-    width: 80px; height: 4px;
-    background: rgba(15,14,13,0.08);
-    border-radius: 2px; overflow: hidden;
-    margin-top: 8px;
-  }
-  .ig-quota-fill {
-    height: 100%; background: #3A3AFF;
-    border-radius: 2px;
-  }
-  .ig-quota-upgrade {
-    padding: 8px 14px;
-    background: #0F0E0D; color: #F5F1E8;
-    border: none; border-radius: 8px;
-    font-size: 12px; font-weight: 500;
-    cursor: pointer; transition: background 0.15s;
-    letter-spacing: -0.005em; text-decoration: none;
-    font-family: inherit;
-    display: inline-flex; align-items: center; white-space: nowrap;
-  }
-  .ig-quota-upgrade:hover { background: #3A3AFF; }
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-  /* ── Family filter pills ────────────────────────── */
-  .ig-families {
-    display: inline-flex; align-items: center; gap: 2px;
-    padding: 3px;
-    background: rgba(15,14,13,0.04);
-    border-radius: 10px;
-    margin-bottom: 24px;
-    overflow-x: auto;
-    max-width: 100%;
-  }
-  .ig-family {
-    display: inline-flex; align-items: center; gap: 8px;
-    padding: 8px 14px; border-radius: 7px;
-    font-size: 13px; font-weight: 500;
-    color: rgba(15,14,13,0.65);
-    cursor: pointer; transition: all 0.15s;
-    border: none; background: transparent;
-    letter-spacing: -0.005em; white-space: nowrap;
-    text-decoration: none; font-family: inherit;
-  }
-  .ig-family:hover { color: #0F0E0D; }
-  .ig-family.is-active {
-    background: #FFFFFF; color: #0F0E0D;
-    box-shadow: 0 1px 2px rgba(15,14,13,0.06);
-  }
-  .ig-family-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; padding: 2px 6px;
-    background: rgba(15,14,13,0.08);
-    border-radius: 4px;
-    color: rgba(15,14,13,0.5);
-    letter-spacing: 0.05em;
-  }
-  .ig-family.is-active .ig-family-count {
-    background: rgba(58,58,255,0.15); color: #3A3AFF;
-  }
-
-  /* ── Section headings between families ─────────── */
-  .ig-family-section { margin-bottom: 40px; }
-  .ig-family-section:last-child { margin-bottom: 0; }
-  .ig-family-heading {
-    display: flex; align-items: baseline; gap: 12px;
-    margin-bottom: 4px;
-  }
-  .ig-family-title {
-    font-family: 'Anton', sans-serif;
-    font-size: 28px; line-height: 1;
-    letter-spacing: -0.02em; color: #0F0E0D;
-  }
-  .ig-family-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: rgba(15,14,13,0.4);
-    text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  .ig-family-desc {
-    font-size: 13px; color: rgba(15,14,13,0.55);
-    margin-bottom: 16px; letter-spacing: -0.005em;
-    max-width: 520px;
-  }
-
-  /* ── Template grid ──────────────────────────────── */
-  .ig-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 14px;
-  }
-  .ig-template {
-    background: #FFFFFF;
-    border: 1px solid rgba(15,14,13,0.06);
-    border-radius: 14px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: block;
-    position: relative;
-    text-align: left;
-    font-family: inherit;
-    padding: 0;
-    width: 100%;
-    color: inherit;
-  }
-  .ig-template:hover {
-    border-color: rgba(15,14,13,0.2);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px -8px rgba(15,14,13,0.1);
-  }
-
-  /* ── Preview card (rendered per template) ────── */
-  .ig-preview {
-    aspect-ratio: 9/16;
-    position: relative;
-    overflow: hidden;
-  }
-  .ig-preview-content {
-    position: absolute; inset: 0;
-    padding: 15% 8% 12%;
-    display: flex; flex-direction: column;
-    justify-content: space-between;
-    z-index: 2;
-  }
-  .ig-fb-brand {
-    font-family: 'Anton', sans-serif;
-    font-size: 11px; letter-spacing: -0.01em; line-height: 1;
-  }
-  .ig-fb-title {
-    font-family: 'Anton', sans-serif;
-    font-size: 22px; line-height: 0.92;
-    letter-spacing: -0.03em;
-  }
-  .ig-fb-title.outlined {
-    color: transparent;
-    -webkit-text-stroke: 1px currentColor;
-  }
-  .ig-fb-title.cobalt { color: #3A3AFF; }
-  .ig-fb-sub {
-    font-family: 'Anton', sans-serif;
-    font-size: 14px; line-height: 1;
-    letter-spacing: -0.02em;
-    opacity: 0.7; margin-top: 4px;
-  }
-  .ig-fb-meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 7px; letter-spacing: 0.1em;
-    text-transform: uppercase; opacity: 0.85;
-  }
-
-  /* Family-specific palette treatments */
-  .pv-masterpiece      { background: #F5F1E8; color: #0F0E0D; }
-  .pv-perfect_details  { background: #0F0E0D; color: #F5F1E8; }
-  .pv-perfect_details .ig-fb-title:not(.outlined):not(.cobalt) { color: #F5F1E8; }
-  .pv-art_of_beauty    { background: #3A3AFF; color: #F5F1E8; }
-  .pv-art_of_beauty .ig-fb-title:not(.outlined):not(.cobalt) { color: #F5F1E8; }
-  .pv-new_set_new_you  { background: #F5F1E8; color: #0F0E0D; }
-
-  .ig-template-info { padding: 12px 14px; background: #FFFFFF; }
-  .ig-template-name {
-    font-size: 13px; font-weight: 500;
-    color: #0F0E0D; letter-spacing: -0.005em;
-    margin-bottom: 2px;
-  }
-  .ig-template-family {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: rgba(15,14,13,0.5);
-    text-transform: uppercase; letter-spacing: 0.08em;
-  }
-
-  /* ── Modal ──────────────────────────────────────── */
-  .ig-modal-bg {
-    position: fixed; inset: 0;
-    background: rgba(10, 9, 8, 0.6);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 100; padding: 20px; overflow-y: auto;
-  }
-  .ig-modal-bg.active { display: flex; }
-  .ig-modal {
-    background: #FFFFFF;
-    border: 1px solid rgba(15,14,13,0.08);
-    border-radius: 16px;
-    max-width: 520px; width: 100%;
-    box-shadow: 0 20px 60px -20px rgba(15,14,13,0.4);
-    overflow: hidden;
-  }
-  .ig-modal-head {
-    display: flex; justify-content: space-between; align-items: flex-start;
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid rgba(15,14,13,0.06);
-    gap: 16px;
-  }
-  .ig-modal-title-wrap { flex: 1; min-width: 0; }
-  .ig-modal-eyebrow {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: rgba(15,14,13,0.5);
-    text-transform: uppercase; letter-spacing: 0.1em;
-    margin-bottom: 4px;
-  }
-  .ig-modal-title {
-    font-family: 'Anton', sans-serif;
-    font-size: 24px; line-height: 1;
-    letter-spacing: -0.02em; color: #0F0E0D;
-  }
-  .ig-modal-close {
-    background: transparent;
-    border: 1px solid rgba(15,14,13,0.1);
-    color: rgba(15,14,13,0.55);
-    border-radius: 8px;
-    width: 32px; height: 32px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.15s;
-    flex-shrink: 0; font-family: inherit;
-  }
-  .ig-modal-close:hover {
-    color: #0F0E0D; border-color: rgba(15,14,13,0.25);
-  }
-  .ig-modal-body { padding: 20px; }
-  .ig-form-group { margin-bottom: 14px; }
-  .ig-label {
-    display: block; font-size: 12px; font-weight: 500;
-    color: rgba(15,14,13,0.6);
-    margin-bottom: 6px; letter-spacing: -0.005em;
-  }
-  .ig-input, .ig-textarea {
-    display: block; width: 100%;
-    padding: 10px 12px;
-    background: #FFFFFF;
-    border: 1px solid rgba(15,14,13,0.1);
-    border-radius: 10px;
-    font-size: 14px; color: #0F0E0D;
-    outline: none; transition: all 0.15s;
-    font-family: inherit; letter-spacing: -0.005em;
-  }
-  .ig-input:focus, .ig-textarea:focus {
-    border-color: #3A3AFF;
-    box-shadow: 0 0 0 3px rgba(58,58,255,0.1);
-  }
-  .ig-input::placeholder, .ig-textarea::placeholder { color: rgba(15,14,13,0.4); }
-  .ig-textarea { resize: vertical; min-height: 72px; }
-  .ig-hint { font-size: 11px; color: rgba(15,14,13,0.5); margin-top: 4px; letter-spacing: -0.005em; }
-
-  .ig-file {
-    display: block; width: 100%;
-    padding: 14px;
-    background: #FFFFFF;
-    border: 1px dashed rgba(15,14,13,0.2);
-    border-radius: 10px;
-    text-align: center;
-    cursor: pointer; transition: all 0.15s;
-  }
-  .ig-file:hover { border-color: #3A3AFF; background: rgba(58,58,255,0.02); }
-  .ig-file-icon {
-    width: 32px; height: 32px; border-radius: 8px;
-    background: rgba(58,58,255,0.08); color: #3A3AFF;
-    display: inline-flex; align-items: center; justify-content: center;
-    margin-bottom: 6px;
-  }
-  .ig-file-label { font-size: 13px; font-weight: 500; color: #0F0E0D; letter-spacing: -0.005em; }
-  .ig-file-hint { font-size: 11px; color: rgba(15,14,13,0.5); margin-top: 2px; letter-spacing: -0.005em; }
-  .ig-file input { display: none; }
-  .ig-file-selected {
-    display: none; padding: 10px;
-    background: rgba(58,58,255,0.05);
-    border: 1px solid rgba(58,58,255,0.15);
-    border-radius: 10px;
-    align-items: center; gap: 10px;
-    margin-top: 8px;
-  }
-  .ig-file-selected.active { display: flex; }
-  .ig-file-selected-name {
-    flex: 1; font-size: 12px; color: #0F0E0D;
-    letter-spacing: -0.005em;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  }
-
-  .ig-modal-foot {
-    display: flex; gap: 8px; justify-content: flex-end;
-    padding: 16px 20px;
-    border-top: 1px solid rgba(15,14,13,0.06);
-    background: #FAFAF7;
-  }
-  .ig-btn-cancel {
-    padding: 10px 16px;
-    background: transparent; color: rgba(15,14,13,0.65);
-    border: 1px solid rgba(15,14,13,0.1);
-    border-radius: 10px;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all 0.15s;
-    font-family: inherit; letter-spacing: -0.005em;
-  }
-  .ig-btn-cancel:hover {
-    color: #0F0E0D; border-color: rgba(15,14,13,0.25);
-  }
-  .ig-btn-generate {
-    padding: 10px 18px;
-    background: #0F0E0D; color: #F5F1E8;
-    border: none; border-radius: 10px;
-    font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: background 0.15s;
-    font-family: inherit; letter-spacing: -0.005em;
-    display: inline-flex; align-items: center; gap: 6px;
-  }
-  .ig-btn-generate:hover { background: #3A3AFF; }
-  .ig-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
-</style>
-
-
-{# ── Family filter tabs ────────────────────────────── #}
-<div class="ig-families" id="familyTabs">
-  <button type="button" class="ig-family is-active" data-family="all">
-    All <span class="ig-family-count" id="count-all">0</span>
-  </button>
-  <button type="button" class="ig-family" data-family="masterpiece">
-    Masterpiece <span class="ig-family-count" id="count-masterpiece">0</span>
-  </button>
-  <button type="button" class="ig-family" data-family="perfect_details">
-    Perfect Details <span class="ig-family-count" id="count-perfect_details">0</span>
-  </button>
-  <button type="button" class="ig-family" data-family="art_of_beauty">
-    The Art of Beauty <span class="ig-family-count" id="count-art_of_beauty">0</span>
-  </button>
-  <button type="button" class="ig-family" data-family="new_set_new_you">
-    New Set / New You <span class="ig-family-count" id="count-new_set_new_you">0</span>
-  </button>
-</div>
-
-
-{# Grid container — templates rendered client-side #}
-<div id="ig-grid-root"></div>
-
-
-{# ═════════════════════════════════════════════════════ #}
-{# GENERATION MODAL                                       #}
-{# ═════════════════════════════════════════════════════ #}
-<div class="ig-modal-bg" id="templateModal">
-  <div class="ig-modal">
-    <div class="ig-modal-head">
-      <div class="ig-modal-title-wrap">
-        <div class="ig-modal-eyebrow" id="modalFamily">[ FAMILY ]</div>
-        <h2 class="ig-modal-title" id="modalTitle">Generate template</h2>
-      </div>
-      <button type="button" class="ig-modal-close" onclick="closeTemplateModal()" aria-label="Close">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        </svg>
-      </button>
-    </div>
-
-    <form method="post"
-          enctype="multipart/form-data"
-          action="{% url 'instagram_generate' %}"
-          id="templateForm">
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- LEFT: Form                                          -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div>
+    <form id="igForm" enctype="multipart/form-data">
       {% csrf_token %}
-      <input type="hidden" name="template_key" id="modalTemplateKey">
+
+      <!-- ─── Upload zone ─────────────────────────── -->
+      <p class="section-title">Upload photo</p>
+      <div class="card p-0 overflow-hidden mb-4">
+
+        <div id="uploadZone" class="relative">
+          <input type="file" name="photo" id="photoInput"
+                 accept="image/*" required
+                 style="position:absolute; inset:0; width:100%; height:100%;
+                        opacity:0; cursor:pointer; z-index:10;">
+          <div class="flex flex-col items-center justify-center py-10 px-6
+                      border-2 border-dashed border-cream-border rounded-xl
+                      text-center pointer-events-none">
+            <div class="w-10 h-10 rounded-full bg-cream flex items-center
+                        justify-center mb-3">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-muted">
+                <path d="M12 5v10M8 8.5L12 5l4 3.5" stroke="currentColor"
+                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
+                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-ink mb-1">Click to choose a photo</p>
+            <p class="text-xs text-muted">JPG, PNG — max 5MB</p>
+          </div>
+        </div>
+
+        <!-- Preview thumbnail (hidden until file picked) -->
+        <div id="previewThumb" style="display:none;" class="relative bg-cream">
+          <img id="thumbImg" src="" alt=""
+               style="display:block; width:100%; max-height:320px;
+                      object-fit:contain; margin:0 auto;">
+          <button type="button" onclick="removePhoto()"
+                  class="absolute top-3 right-3 w-8 h-8 bg-ink text-white
+                         rounded-full flex items-center justify-center
+                         hover:bg-black transition-all text-sm font-medium">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── Details ─────────────────────────────── -->
+      <p class="section-title">Details</p>
+      <div class="card mb-4">
+        <div class="mb-3">
+          <label class="form-label" for="service">Service performed</label>
+          <input class="form-input" type="text" id="service" name="service"
+                 placeholder="e.g. Skin fade + beard line"
+                 value="{{ prefill_service|default:'' }}" required>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="form-label" for="client_name">Client name (optional)</label>
+            <input class="form-input" type="text" id="client_name" name="client_name"
+                   placeholder="e.g. Marcus T."
+                   value="{{ prefill_client|default:'' }}">
+          </div>
+          <div>
+            <label class="form-label" for="ig_handle">Your IG handle</label>
+            <input class="form-input" type="text" id="ig_handle" name="ig_handle"
+                   placeholder="@alex.cuts"
+                   value="{{ profile.ig_handle|default:'' }}">
+          </div>
+        </div>
+      </div>
+
+
+<!-- ─── Template picker — 2-col grid with thumbnails ── -->
+      <p class="section-title">Choose template</p>
+      <div class="card mb-4">
+        <div id="templateGrid" class="grid grid-cols-2 gap-3">
+          <!-- Populated dynamically from TEMPLATES JSON -->
+        </div>
+      </div>
+
+      <!-- ─── Caption + hashtags ─────────────────── -->
+      <p class="section-title">Caption</p>
+      <div class="card mb-4">
+        <div class="mb-3">
+          <label class="form-label" for="caption">Caption (optional)</label>
+          <textarea class="form-input" id="caption" name="caption" rows="3"
+                    placeholder="Fresh fade done today. Drop a comment if you want one..."></textarea>
+        </div>
+        <div>
+          <label class="form-label" for="hashtags">Hashtags</label>
+          <input class="form-input" type="text" id="hashtags" name="hashtags"
+                 placeholder="#barbershop #fade #skinfade"
+                 value="#barbershop #stylebook">
+        </div>
+      </div>
+
       {% if reservation_id %}
         <input type="hidden" name="reservation_id" value="{{ reservation_id }}">
       {% endif %}
 
-      <div class="ig-modal-body">
+      <!-- Hidden — JS sets this when a template is picked -->
+      <input type="hidden" name="template" id="templateInput" value="">
 
-        <div class="ig-form-group">
-          <label class="ig-label" for="serviceInput">Service</label>
-          <input type="text"
-                 id="serviceInput"
-                 name="service"
-                 class="ig-input"
-                 placeholder="e.g. Skin fade, Beard shape-up"
-                 value="{{ prefill_service|default:'' }}"
-                 maxlength="60"
-                 required>
-        </div>
+      <button type="submit" id="submitBtn"
+              class="btn-gold w-full justify-center py-3 text-base">
+        Generate post
+      </button>
 
-        <div class="ig-form-group">
-          <label class="ig-label" for="clientInput">Client name <span style="color: rgba(15,14,13,0.4); font-weight: 400;">(optional)</span></label>
-          <input type="text"
-                 id="clientInput"
-                 name="client_name"
-                 class="ig-input"
-                 placeholder="e.g. Marcus"
-                 value="{{ prefill_client|default:'' }}"
-                 maxlength="60">
-        </div>
-
-        <div class="ig-form-group">
-          <label class="ig-label" for="imageInput">Photo of the finished work</label>
-          <label class="ig-file" for="imageInput">
-            <div class="ig-file-icon">
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
-                <circle cx="5.5" cy="7" r="1" fill="currentColor"/>
-                <path d="M2 11l4-4 4 4 3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <div class="ig-file-label">Click to upload</div>
-            <div class="ig-file-hint">JPG or PNG · max 8 MB</div>
-            <input type="file"
-                   id="imageInput"
-                   name="image"
-                   accept="image/*"
-                   required
-                   onchange="showFileSelected(this)">
-          </label>
-
-          <div class="ig-file-selected" id="fileSelected">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="color: #3A3AFF;">
-              <path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <span class="ig-file-selected-name" id="fileSelectedName">image.jpg</span>
-          </div>
-        </div>
-
-      </div>
-
-      <div class="ig-modal-foot">
-        <button type="button" class="ig-btn-cancel" onclick="closeTemplateModal()">Cancel</button>
-        <button type="submit" class="ig-btn-generate" id="generateBtn">
-          <span id="generateBtnText">Generate</span>
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
+      <p id="formError" class="hidden mt-3 text-sm text-red-600"></p>
     </form>
   </div>
-</div>
 
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- RIGHT: Preview / skeleton / result / error          -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <div>
+    <p class="section-title" id="resultTitle">Preview</p>
 
-{# ═════════════════════════════════════════════════════ #}
-{# CLIENT-SIDE RENDER (templates_json from view context)  #}
-{# ═════════════════════════════════════════════════════ #}
-{{ templates_json|json_script:"templates-data" }}
+    <!-- ─── EMPTY STATE (default) ──────────────── -->
+    <div id="emptyState" class="card flex flex-col items-center justify-center
+                                py-20 text-center border-2 border-dashed">
+      <div class="w-14 h-14 rounded-full bg-cream flex items-center
+                  justify-center mb-4">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-muted">
+          <rect x="2" y="2" width="20" height="20" rx="4"
+                stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="17" cy="7" r="1" fill="currentColor"/>
+        </svg>
+      </div>
+      <p class="text-sm font-medium text-ink mb-1">
+        Your post preview will appear here
+      </p>
+      <p class="text-sm text-muted max-w-xs">
+        Fill in the details, pick a template, and hit generate.
+      </p>
+    </div>
 
-<script>
-  const USERNAME = '{{ user.username|escapejs }}';
-  const raw = document.getElementById('templates-data').textContent;
-  const templates = JSON.parse(JSON.parse(raw));  // json_script wraps once, view already json.dumps'd once
-
-  const FAMILY_LABELS = {
-    masterpiece:     'Masterpiece',
-    perfect_details: 'Perfect Details',
-    art_of_beauty:   'The Art of Beauty',
-    new_set_new_you: 'New Set / New You',
-  };
-
-  const FAMILY_DESCS = {
-    masterpiece:     "Bold display type. Statement-forward. Your work is the headline.",
-    perfect_details: "Deep ink backgrounds. Cobalt accents. For editorial precision.",
-    art_of_beauty:   "Cobalt-first. Confident. When the color needs to say it.",
-    new_set_new_you: "Cream and calm. For before/after moments and fresh chapters.",
-  };
-
-  /* ── Group templates by family ───────────────── */
-  const grouped = {};
-  templates.forEach(t => {
-    if (!grouped[t.family]) grouped[t.family] = [];
-    grouped[t.family].push(t);
-  });
-
-  /* ── Update family counts in the pills ───────── */
-  document.getElementById('count-all').textContent = templates.length;
-  Object.keys(grouped).forEach(fam => {
-    const el = document.getElementById('count-' + fam);
-    if (el) el.textContent = grouped[fam].length;
-  });
-
-  /* ── Render preview card HTML for a template ── */
-  function renderPreview(t) {
-    const cls = t.outlined ? 'ig-fb-title outlined' : 'ig-fb-title';
-    return `
-      <div class="ig-preview pv-${t.family}">
-        <div class="ig-preview-content">
-          <div class="ig-fb-brand">SHOWPIECE</div>
-          <div>
-            <div class="${cls}">${t.title}</div>
-            ${t.subtitle ? `<div class="ig-fb-sub">${t.subtitle}</div>` : ''}
+    <!-- ─── SKELETON STATE (while polling) ─────── -->
+    <div id="skeletonState" class="hidden">
+      <div class="card p-0 overflow-hidden mb-4">
+        <div class="flex items-center gap-3 px-4 py-3 border-b border-cream-border">
+          <div class="w-8 h-8 rounded-full bg-cream-border animate-pulse"></div>
+          <div class="h-3 w-24 bg-cream-border rounded animate-pulse"></div>
+        </div>
+        <div id="skeletonBox" class="relative bg-gradient-to-br from-cream to-cream-border
+                                     overflow-hidden"
+             style="width:100%; aspect-ratio: 9 / 16;">
+          <div class="absolute inset-0 shimmer"></div>
+          <div class="absolute inset-0 flex flex-col items-center justify-center">
+            <div class="w-12 h-12 rounded-full border-4 border-ink/20
+                        border-t-ink animate-spin mb-4"></div>
+            <p class="text-sm font-medium text-ink" id="loaderMsg">
+              Generating your post…
+            </p>
+            <p class="text-xs text-muted mt-1">Usually takes 5-10 seconds</p>
           </div>
-          <div class="ig-fb-meta">@${USERNAME.toUpperCase()}</div>
         </div>
       </div>
-    `;
-  }
+    </div>
 
-  /* ── Render the whole grid ───────────────────── */
-  function renderGrid() {
-    const root = document.getElementById('ig-grid-root');
-    const order = ['masterpiece', 'perfect_details', 'art_of_beauty', 'new_set_new_you'];
-
-    root.innerHTML = order.map(fam => {
-      if (!grouped[fam]) return '';
-      const label = FAMILY_LABELS[fam];
-      const desc  = FAMILY_DESCS[fam];
-      const items = grouped[fam].map(t => `
-        <button type="button" class="ig-template"
-                onclick="openTemplateModal('${escape(t.key)}', '${escape(t.title)}', '${escape(label)}')">
-          ${renderPreview(t)}
-          <div class="ig-template-info">
-            <div class="ig-template-name">${t.title}${t.subtitle ? ' <span style="color: rgba(15,14,13,0.45); font-weight: 400;">' + t.subtitle + '</span>' : ''}</div>
-            <div class="ig-template-family">${label.toUpperCase()}</div>
+    <!-- ─── RESULT STATE (filled by JS) ────────── -->
+    <div id="resultState" class="hidden">
+      <div class="card p-0 overflow-hidden mb-4">
+        <div class="flex items-center gap-3 px-4 py-3 border-b border-cream-border">
+          <div class="w-8 h-8 rounded-full bg-gold flex items-center justify-center
+                      text-xs font-semibold text-sidebar">
+            {{ user.username|slice:":2"|upper }}
           </div>
+          <span class="text-sm font-medium text-ink">
+            {{ profile.ig_handle|default:user.username }}
+          </span>
+        </div>
+        <div class="bg-cream flex items-center justify-center p-0">
+          <img id="resultImg" src="" alt="Generated post"
+               class="w-full h-auto block"
+               style="max-height: 80vh; object-fit: contain;">
+        </div>
+        <div id="resultCaption" class="px-4 py-3 border-t border-cream-border hidden">
+          <p class="text-sm text-ink" id="captionText"></p>
+          <p class="text-sm text-blue-500 mt-1" id="hashtagsText"></p>
+        </div>
+      </div>
+
+      <!-- Pillow fallback warning -->
+      <div id="fallbackWarning" class="hidden mb-3 p-3 bg-yellow-50
+                                       border border-yellow-200 rounded-lg
+                                       text-sm text-yellow-800"></div>
+
+      <div class="flex flex-col gap-3">
+        <a id="downloadLink" href="#" download
+           class="btn-gold w-full justify-center py-3">
+          Download PNG
+        </a>
+        <button type="button" onclick="regenerate()"
+                class="btn-ghost w-full justify-center py-3">
+          Try a different template
         </button>
-      `).join('');
+        <a href="{% url 'portfolio' %}"
+           class="btn-ghost w-full justify-center py-3">
+          View in portfolio
+        </a>
+      </div>
+    </div>
 
-      return `
-        <section class="ig-family-section" data-family="${fam}">
-          <div class="ig-family-heading">
-            <h2 class="ig-family-title">${label}</h2>
-            <span class="ig-family-mono">[ ${grouped[fam].length} TEMPLATES ]</span>
+    <!-- ─── ERROR STATE ───────────────────────── -->
+    <div id="errorState" class="hidden card border-2 border-red-200
+                                bg-red-50 p-6 text-center">
+      <p class="text-sm font-medium text-red-700 mb-2">Generation failed</p>
+      <p class="text-sm text-red-600" id="errorMsg">Something went wrong.</p>
+      <button type="button" onclick="resetForm()"
+              class="btn-ghost mt-4 justify-center py-2 px-4 inline-flex">
+        Try again
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Shimmer animation for skeleton loader -->
+<style>
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s infinite;
+  }
+  @keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Template thumbnail cards */
+  .tpl-card {
+    position: relative;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.18s ease;
+    cursor: pointer;
+    background: #fff;
+  }
+  .tpl-card:hover {
+    border-color: #1a1a1a;
+    transform: translateY(-2px);
+  }
+  .tpl-card.is-selected {
+    border-color: #C9A96E;
+    box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.18);
+  }
+  .tpl-thumb-wrap {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    background: linear-gradient(135deg, #f3eee8, #e5e3dc);
+    overflow: hidden;
+  }
+  .tpl-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .tpl-thumb.loaded {
+    opacity: 1;
+  }
+  .tpl-thumb-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .tpl-meta {
+    padding: 10px 12px;
+    text-align: left;
+  }
+  .tpl-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.2;
+  }
+  .tpl-style {
+    font-size: 11px;
+    color: #888;
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+  .tpl-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #C9A96E;
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 2;
+  }
+  .tpl-card.is-selected .tpl-check {
+    display: flex;
+  }
+</style>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Template catalog injected by Django, parsed by JS -->
+<script id="templatesData" type="application/json">{{ templates_json|safe }}</script>
+
+<script>
+  // ════════════════════════════════════════════════════
+  // Catalog of templates from the backend
+  // ════════════════════════════════════════════════════
+  const TEMPLATES = JSON.parse(document.getElementById('templatesData').textContent);
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  // ════════════════════════════════════════════════════
+  // Template picker — rebuilds when format changes
+  // ════════════════════════════════════════════════════
+  const templateGrid  = document.getElementById('templateGrid');
+  const templateInput = document.getElementById('templateInput');
+
+function buildTemplatePicker() {
+    const list = TEMPLATES['story'] || [];
+    templateGrid.innerHTML = '';
+
+    if (list.length === 0) {
+      templateGrid.innerHTML = '<p class="text-sm text-muted col-span-2">No templates available.</p>';
+      templateInput.value = '';
+      return;
+    }
+
+    list.forEach((tpl, idx) => {
+      const isFirst = idx === 0;
+      const card = document.createElement('div');
+      card.className = 'tpl-card' + (isFirst ? ' is-selected' : '');
+      card.dataset.tplId = tpl.id;
+      card.innerHTML = `
+        <div class="tpl-check">✓</div>
+        <div class="tpl-thumb-wrap">
+          <img class="tpl-thumb"
+               src="/instagram/thumbnail/${tpl.id}/"
+               alt="${tpl.name}"
+               loading="lazy"
+               onload="this.classList.add('loaded'); this.nextElementSibling.style.display='none';"
+               onerror="this.style.display='none';">
+          <div class="tpl-thumb-loader">
+            <div class="w-8 h-8 rounded-full border-2 border-ink/10 border-t-ink/40 animate-spin"></div>
           </div>
-          <p class="ig-family-desc">${desc}</p>
-          <div class="ig-grid">${items}</div>
-        </section>
+        </div>
+        <div class="tpl-meta">
+          <div class="tpl-name">${tpl.name}</div>
+          <div class="tpl-style">${tpl.style}</div>
+        </div>
       `;
-    }).join('');
+      card.addEventListener('click', () => selectTemplate(tpl.id));
+      templateGrid.appendChild(card);
+    });
+
+    templateInput.value = list[0].id;
   }
 
-  function escape(s) {
-    return String(s).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  function selectTemplate(id) {
+    templateInput.value = id;
+    document.querySelectorAll('.tpl-card').forEach(c => {
+      c.classList.toggle('is-selected', c.dataset.tplId === id);
+    });
   }
 
-  renderGrid();
+  buildTemplatePicker();
 
-  /* ── Family filter click handler ─────────────── */
-  document.getElementById('familyTabs').addEventListener('click', (e) => {
-    const btn = e.target.closest('.ig-family');
-    if (!btn) return;
 
-    document.querySelectorAll('.ig-family').forEach(b => b.classList.remove('is-active'));
-    btn.classList.add('is-active');
 
-    const family = btn.dataset.family;
-    const sections = document.querySelectorAll('.ig-family-section');
 
-    if (family === 'all') {
-      sections.forEach(s => s.style.display = '');
+  // ════════════════════════════════════════════════════
+  // Photo upload preview
+  // ════════════════════════════════════════════════════
+  (function() {
+    const input   = document.getElementById('photoInput');
+    const zone    = document.getElementById('uploadZone');
+    const preview = document.getElementById('previewThumb');
+    const thumb   = document.getElementById('thumbImg');
+
+    input.addEventListener('change', function() {
+      const file = this.files && this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        thumb.src             = ev.target.result;
+        zone.style.display    = 'none';
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    window.removePhoto = function() {
+      input.value           = '';
+      thumb.src             = '';
+      zone.style.display    = 'block';
+      preview.style.display = 'none';
+    };
+  })();
+
+  // ════════════════════════════════════════════════════
+  // UI state machine
+  // ════════════════════════════════════════════════════
+  const $ = id => document.getElementById(id);
+
+  function showState(name) {
+    ['emptyState', 'skeletonState', 'resultState', 'errorState'].forEach(s => {
+      $(s).classList.toggle('hidden', s !== name);
+    });
+    $('resultTitle').textContent = {
+      emptyState:    'Preview',
+      skeletonState: 'Generating…',
+      resultState:   'Your post is ready',
+      errorState:    'Something went wrong',
+    }[name];
+  }
+
+  // ════════════════════════════════════════════════════
+  // Rotating loader messages
+  // ════════════════════════════════════════════════════
+  const LOADER_MSGS = [
+    'Generating your post…',
+    'Calling Placid…',
+    'Rendering pixels…',
+    'Almost ready…',
+  ];
+  let msgInterval = null;
+
+  function startLoaderMessages() {
+    let i = 0;
+    $('loaderMsg').textContent = LOADER_MSGS[0];
+    msgInterval = setInterval(() => {
+      i = (i + 1) % LOADER_MSGS.length;
+      $('loaderMsg').textContent = LOADER_MSGS[i];
+    }, 2200);
+  }
+
+  function stopLoaderMessages() {
+    if (msgInterval) clearInterval(msgInterval);
+    msgInterval = null;
+  }
+
+  // ════════════════════════════════════════════════════
+  // Form submission + polling
+  // ════════════════════════════════════════════════════
+  const form    = document.getElementById('igForm');
+  const submit  = document.getElementById('submitBtn');
+  const formErr = document.getElementById('formError');
+
+  let pollTimer = null;
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    formErr.classList.add('hidden');
+
+    if (!templateInput.value) {
+      formErr.textContent = 'Please choose a template.';
+      formErr.classList.remove('hidden');
+      return;
+    }
+
+    const formData = new FormData(form);
+    submitGeneration(formData);
+  });
+
+  function submitGeneration(formData) {
+    showState('skeletonState');
+    submit.disabled    = true;
+    submit.textContent = 'Generating…';
+    startLoaderMessages();
+
+    fetch('{% url "instagram_generate" %}', {
+      method:  'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body:    formData,
+    })
+    .then(async r => {
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || 'Generation failed.');
+      return data;
+    })
+    .then(data => {
+      if (data.status === 'finished') {
+        showResult(data);
+      } else {
+        startPolling(data.job_id);
+      }
+    })
+    .catch(err => {
+      showError(err.message);
+    });
+  }
+
+  function startPolling(jobId) {
+    let attempts = 0;
+    const maxAttempts = 60;  // 60 × 2 sec = 2 minutes max
+
+    pollTimer = setInterval(() => {
+      attempts += 1;
+      if (attempts > maxAttempts) {
+        clearInterval(pollTimer);
+        showError('Timed out waiting for render. Please try again.');
+        return;
+      }
+
+      fetch(`/instagram/status/${jobId}/`)
+        .then(async r => {
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok && data.status !== 'error') {
+            throw new Error(data.error || `HTTP ${r.status}`);
+          }
+          return data;
+        })
+        .then(data => {
+          if (data.status === 'finished') {
+            clearInterval(pollTimer);
+            showResult(data);
+          } else if (data.status === 'error') {
+            clearInterval(pollTimer);
+            showError(data.error || 'Render failed.');
+          }
+          // else: still processing — keep polling
+        })
+        .catch(err => {
+          clearInterval(pollTimer);
+          showError(err.message);
+        });
+    }, 2000);
+  }
+
+  function showResult(data) {
+    stopLoaderMessages();
+    submit.disabled    = false;
+    submit.textContent = 'Generate post';
+
+    $('resultImg').src     = data.image_url;
+    $('downloadLink').href = data.image_url;
+
+    if (data.caption || data.hashtags) {
+      $('captionText').textContent  = data.caption || '';
+      $('hashtagsText').textContent = data.hashtags || '';
+      $('resultCaption').classList.remove('hidden');
     } else {
-      sections.forEach(s => {
-        s.style.display = s.dataset.family === family ? '' : 'none';
-      });
+      $('resultCaption').classList.add('hidden');
     }
-  });
 
-  /* ── Modal open / close ──────────────────────── */
-  function openTemplateModal(templateKey, templateTitle, familyName) {
-    document.getElementById('modalTemplateKey').value = templateKey;
-    document.getElementById('modalTitle').textContent = templateTitle;
-    document.getElementById('modalFamily').textContent = '[ ' + familyName.toUpperCase() + ' ]';
-    document.getElementById('templateModal').classList.add('active');
-    document.body.style.overflow = 'hidden';
-    setTimeout(() => {
-      const sv = document.getElementById('serviceInput');
-      if (!sv.value) sv.focus();
-    }, 50);
+    const warn = $('fallbackWarning');
+    if (data.fallback && data.warning) {
+      warn.textContent = data.warning;
+      warn.classList.remove('hidden');
+    } else {
+      warn.classList.add('hidden');
+    }
+
+    showState('resultState');
   }
 
-  function closeTemplateModal() {
-    document.getElementById('templateModal').classList.remove('active');
-    document.body.style.overflow = '';
-    document.getElementById('templateForm').reset();
-    document.getElementById('fileSelected').classList.remove('active');
-    // restore prefills after reset
-    document.getElementById('serviceInput').value = '{{ prefill_service|default:''|escapejs }}';
-    document.getElementById('clientInput').value = '{{ prefill_client|default:''|escapejs }}';
+  function showError(msg) {
+    stopLoaderMessages();
+    if (pollTimer) clearInterval(pollTimer);
+    submit.disabled    = false;
+    submit.textContent = 'Generate post';
+    $('errorMsg').textContent = msg;
+    showState('errorState');
   }
 
-  function showFileSelected(input) {
-    if (input.files && input.files[0]) {
-      document.getElementById('fileSelectedName').textContent = input.files[0].name;
-      document.getElementById('fileSelected').classList.add('active');
-    }
-  }
+  window.resetForm = function() {
+    showState('emptyState');
+  };
 
-  document.getElementById('templateModal').addEventListener('click', (e) => {
-    if (e.target.id === 'templateModal') closeTemplateModal();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && document.getElementById('templateModal').classList.contains('active')) {
-      closeTemplateModal();
-    }
-  });
-
-  document.getElementById('templateForm').addEventListener('submit', () => {
-    const btn = document.getElementById('generateBtn');
-    document.getElementById('generateBtnText').textContent = 'Generating…';
-    btn.disabled = true;
-  });
+  window.regenerate = function() {
+    showState('emptyState');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 </script>
-
 {% endblock %}
