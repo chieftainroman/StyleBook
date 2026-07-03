@@ -497,7 +497,7 @@
 
     <form method="post"
           enctype="multipart/form-data"
-          action="{% url 'generate_template' %}"
+          action="{% url 'instagram_generate' %}"
           id="templateForm">
       {% csrf_token %}
       <input type="hidden" name="template_id" id="modalTemplateId">
