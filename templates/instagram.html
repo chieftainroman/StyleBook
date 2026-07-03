@@ -19,20 +19,17 @@
 {% endblock %}
 
 {% block topbar_actions %}
-  {# Quota widget lives up here on the header row #}
   <div class="ig-quota">
     <div class="ig-quota-body">
-      <div class="ig-quota-label">Free templates left</div>
+      <div class="ig-quota-label">Free this month</div>
       <div class="ig-quota-value">
-        {{ templates_remaining|default:5 }}<span class="ig-quota-total"> / 5</span>
+        {{ generations_remaining|default:5 }}<span class="ig-quota-total"> / {{ generations_limit|default:5 }}</span>
       </div>
       <div class="ig-quota-bar">
-        <div class="ig-quota-fill" style="width: {% widthratio templates_remaining|default:5 5 100 %}%;"></div>
+        <div class="ig-quota-fill" style="width: {% widthratio generations_remaining|default:5 generations_limit|default:5 100 %}%;"></div>
       </div>
     </div>
-    {% if not user.profile.is_pro %}
-      <a href="{% url 'pricing' %}" class="ig-quota-upgrade">Go Pro</a>
-    {% endif %}
+    <a href="#pricing" class="ig-quota-upgrade">Go Pro</a>
   </div>
 {% endblock %}
 
@@ -40,7 +37,7 @@
 {% block content %}
 
 <style>
-  /* ── Quota widget (also used by topbar_actions) ── */
+  /* ── Quota widget ──────────────────────────────── */
   .ig-quota {
     display: flex; align-items: center; gap: 14px;
     padding: 8px 14px 8px 16px;
@@ -93,7 +90,7 @@
     border-radius: 10px;
     margin-bottom: 24px;
     overflow-x: auto;
-    max-width: 100%;
+    max-width: fit-content;
   }
   .ig-family {
     display: inline-flex; align-items: center; gap: 8px;
@@ -125,6 +122,30 @@
     color: #3A3AFF;
   }
 
+  /* ── Section headings between families ─────────── */
+  .ig-family-section { margin-bottom: 40px; }
+  .ig-family-section:last-child { margin-bottom: 0; }
+  .ig-family-heading {
+    display: flex; align-items: baseline; gap: 12px;
+    margin-bottom: 4px;
+  }
+  .ig-family-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 28px; line-height: 1;
+    letter-spacing: -0.02em;
+    color: #0F0E0D;
+  }
+  .ig-family-mono {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: rgba(15,14,13,0.4);
+    text-transform: uppercase; letter-spacing: 0.1em;
+  }
+  .ig-family-desc {
+    font-size: 13px; color: rgba(15,14,13,0.55);
+    margin-bottom: 16px; letter-spacing: -0.005em;
+    max-width: 520px;
+  }
+
   /* ── Template grid ──────────────────────────────── */
   .ig-grid {
     display: grid;
@@ -142,77 +163,31 @@
     color: inherit;
     display: block;
     position: relative;
+    text-align: left;
+    font-family: inherit;
+    padding: 0;
+    width: 100%;
   }
   .ig-template:hover {
     border-color: rgba(15,14,13,0.2);
     transform: translateY(-2px);
     box-shadow: 0 8px 24px -8px rgba(15,14,13,0.1);
   }
-  .ig-template.is-selected {
-    border-color: #3A3AFF;
-    box-shadow: 0 0 0 3px rgba(58,58,255,0.15);
-  }
-  .ig-template.is-locked {
-    cursor: not-allowed;
-    opacity: 0.65;
-  }
-  .ig-template.is-locked:hover {
-    transform: none;
-    box-shadow: none;
-  }
-
   .ig-preview {
     aspect-ratio: 9/16;
     position: relative;
     overflow: hidden;
+    background: #F5F1E8;
   }
-  .ig-preview-content {
+  .ig-preview img {
     position: absolute; inset: 0;
-    padding: 18% 8% 15%;
-    display: flex; flex-direction: column;
-    justify-content: space-between;
-    z-index: 2;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .ig-preview-brand {
-    font-family: 'Anton', sans-serif;
-    font-size: 12px; letter-spacing: -0.01em;
-    line-height: 1;
+  .ig-template:hover .ig-preview img {
+    transform: scale(1.03);
   }
-  .ig-preview-title {
-    font-family: 'Anton', sans-serif;
-    line-height: 0.92; letter-spacing: -0.03em;
-  }
-  .ig-preview-title.lg { font-size: 30px; }
-  .ig-preview-title.md { font-size: 24px; }
-  .ig-preview-title.sm { font-size: 20px; }
-  .ig-preview-meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 7px; letter-spacing: 0.1em;
-    text-transform: uppercase;
-    opacity: 0.85;
-  }
-
-  /* Preview background variants */
-  .pv-brutalist { background: #F5F1E8; color: #0F0E0D; }
-  .pv-cobalt { background: #3A3AFF; color: #F5F1E8; }
-  .pv-dark { background: #0F0E0D; color: #F5F1E8; }
-  .pv-dark .cobalt-word { color: #5C5CFF; }
-  .pv-editorial {
-    background: #F5F1E8; color: #0F0E0D;
-    background-size: cover; background-position: center;
-  }
-  .pv-photo-overlay {
-    color: #F5F1E8;
-    background-size: cover; background-position: center;
-    position: relative;
-  }
-  .pv-photo-overlay::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: linear-gradient(to bottom, rgba(15,14,13,0.7), rgba(15,14,13,0.4));
-    z-index: 1;
-  }
-
   .ig-template-info {
     padding: 12px 14px;
     background: #FFFFFF;
@@ -228,33 +203,28 @@
     text-transform: uppercase; letter-spacing: 0.08em;
   }
 
-  .ig-badge-pro {
-    position: absolute; top: 8px; right: 8px;
-    padding: 3px 7px;
-    background: rgba(15,14,13,0.75);
-    color: #F5F1E8;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 8px; letter-spacing: 0.1em;
-    border-radius: 4px; z-index: 3;
-    backdrop-filter: blur(4px);
-  }
-
-  .ig-lock-icon {
+  /* ── Fallback preview (when preview_url missing) ── */
+  .ig-preview-fallback {
     position: absolute; inset: 0;
-    display: flex; align-items: center; justify-content: center;
-    background: rgba(15,14,13,0.4);
-    z-index: 4;
-    opacity: 0;
-    transition: opacity 0.15s;
+    padding: 18% 8% 15%;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    z-index: 2;
   }
-  .ig-template.is-locked:hover .ig-lock-icon { opacity: 1; }
-  .ig-lock-badge {
-    padding: 8px 14px;
-    background: #0F0E0D; color: #F5F1E8;
-    border-radius: 8px;
-    font-size: 12px; font-weight: 500;
-    letter-spacing: -0.005em;
-    display: inline-flex; align-items: center; gap: 6px;
+  .ig-fb-brand {
+    font-family: 'Anton', sans-serif;
+    font-size: 12px; letter-spacing: -0.01em;
+  }
+  .ig-fb-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 26px; line-height: 0.92;
+    letter-spacing: -0.03em;
+  }
+  .ig-fb-title.cobalt { color: #3A3AFF; }
+  .ig-fb-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7px; letter-spacing: 0.1em;
+    text-transform: uppercase; opacity: 0.85;
   }
 
   /* ── Empty state ────────────────────────────────── */
@@ -279,100 +249,220 @@
   }
   .ig-empty-desc {
     font-size: 13px; color: rgba(15,14,13,0.55);
+    letter-spacing: -0.005em; margin-bottom: 16px;
+  }
+
+  /* ── Modal ──────────────────────────────────────── */
+  .ig-modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(10, 9, 8, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .ig-modal-bg.active { display: flex; }
+  .ig-modal {
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 16px;
+    max-width: 480px; width: 100%;
+    padding: 0;
+    box-shadow: 0 20px 60px -20px rgba(15,14,13,0.4);
+    overflow: hidden;
+  }
+  .ig-modal-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid rgba(15,14,13,0.06);
+    gap: 16px;
+  }
+  .ig-modal-title-wrap { flex: 1; }
+  .ig-modal-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: rgba(15,14,13,0.5);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+  .ig-modal-title {
+    font-family: 'Anton', sans-serif;
+    font-size: 24px; line-height: 1;
+    letter-spacing: -0.02em; color: #0F0E0D;
+  }
+  .ig-modal-close {
+    background: transparent;
+    border: 1px solid rgba(15,14,13,0.1);
+    color: rgba(15,14,13,0.55);
+    border-radius: 8px;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.15s;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+  .ig-modal-close:hover {
+    color: #0F0E0D;
+    border-color: rgba(15,14,13,0.25);
+  }
+  .ig-modal-body { padding: 20px; }
+  .ig-form-group { margin-bottom: 14px; }
+  .ig-label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: rgba(15,14,13,0.6);
+    margin-bottom: 6px; letter-spacing: -0.005em;
+  }
+  .ig-input, .ig-textarea, .ig-select {
+    display: block; width: 100%;
+    padding: 10px 12px;
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.1);
+    border-radius: 10px;
+    font-size: 14px; color: #0F0E0D;
+    outline: none; transition: all 0.15s;
+    font-family: inherit;
     letter-spacing: -0.005em;
+  }
+  .ig-input:focus, .ig-textarea:focus, .ig-select:focus {
+    border-color: #3A3AFF;
+    box-shadow: 0 0 0 3px rgba(58,58,255,0.1);
+  }
+  .ig-input::placeholder, .ig-textarea::placeholder { color: rgba(15,14,13,0.4); }
+  .ig-textarea { resize: vertical; min-height: 72px; font-family: inherit; }
+
+  .ig-file {
+    display: block; width: 100%;
+    padding: 14px;
+    background: #FFFFFF;
+    border: 1px dashed rgba(15,14,13,0.2);
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ig-file:hover { border-color: #3A3AFF; background: rgba(58,58,255,0.02); }
+  .ig-file-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: rgba(58,58,255,0.08); color: #3A3AFF;
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 6px;
+  }
+  .ig-file-label { font-size: 13px; font-weight: 500; color: #0F0E0D; letter-spacing: -0.005em; }
+  .ig-file-hint { font-size: 11px; color: rgba(15,14,13,0.5); margin-top: 2px; letter-spacing: -0.005em; }
+  .ig-file input { display: none; }
+
+  .ig-modal-foot {
+    display: flex; gap: 8px; justify-content: flex-end;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(15,14,13,0.06);
+    background: #FAFAF7;
+  }
+  .ig-btn-cancel {
+    padding: 10px 16px;
+    background: transparent; color: rgba(15,14,13,0.65);
+    border: 1px solid rgba(15,14,13,0.1);
+    border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    font-family: inherit; letter-spacing: -0.005em;
+  }
+  .ig-btn-cancel:hover {
+    color: #0F0E0D;
+    border-color: rgba(15,14,13,0.25);
+  }
+  .ig-btn-generate {
+    padding: 10px 18px;
+    background: #0F0E0D; color: #F5F1E8;
+    border: none; border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+    font-family: inherit; letter-spacing: -0.005em;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .ig-btn-generate:hover { background: #3A3AFF; }
+  .ig-btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Selected file preview */
+  .ig-file-selected {
+    display: none;
+    padding: 10px;
+    background: rgba(58,58,255,0.05);
+    border: 1px solid rgba(58,58,255,0.15);
+    border-radius: 10px;
+    align-items: center; gap: 10px;
+    margin-top: 8px;
+  }
+  .ig-file-selected.active { display: flex; }
+  .ig-file-selected-name {
+    flex: 1; font-size: 12px; color: #0F0E0D;
+    letter-spacing: -0.005em;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 </style>
 
 
 {# ── Family filter tabs ────────────────────────────── #}
-<div class="ig-families">
-  <a href="?family=all"
-     class="ig-family {% if current_family == 'all' or not current_family %}is-active{% endif %}">
-    All <span class="ig-family-count">24</span>
-  </a>
-  <a href="?family=masterpiece"
-     class="ig-family {% if current_family == 'masterpiece' %}is-active{% endif %}">
-    Masterpiece <span class="ig-family-count">6</span>
-  </a>
-  <a href="?family=perfect-details"
-     class="ig-family {% if current_family == 'perfect-details' %}is-active{% endif %}">
-    Perfect Details <span class="ig-family-count">6</span>
-  </a>
-  <a href="?family=art-of-beauty"
-     class="ig-family {% if current_family == 'art-of-beauty' %}is-active{% endif %}">
-    The Art of Beauty <span class="ig-family-count">6</span>
-  </a>
-  <a href="?family=new-set-new-you"
-     class="ig-family {% if current_family == 'new-set-new-you' %}is-active{% endif %}">
-    New Set / New You <span class="ig-family-count">6</span>
-  </a>
+<div class="ig-families" id="familyTabs">
+  <button type="button" class="ig-family is-active" data-family="all">
+    All <span class="ig-family-count">{{ template_families|length }}</span>
+  </button>
+  {% for family_key, family_data in template_families.items %}
+    <button type="button" class="ig-family" data-family="{{ family_key }}">
+      {{ family_data.name }}
+      <span class="ig-family-count">{{ family_data.templates|length }}</span>
+    </button>
+  {% endfor %}
 </div>
 
 
-{# ── Template grid ─────────────────────────────────── #}
-{% if templates %}
-  <div class="ig-grid">
-    {% for template in templates %}
-      {# `template` is a dict/obj expected with:
-           id, name, family, style (brutalist|cobalt|dark|editorial|photo-overlay),
-           title_line_1, title_line_2, cobalt_word (bool for line 2),
-           is_pro, is_locked, image_url (optional for editorial/photo-overlay)
-      #}
-      <a href="{% if template.is_locked %}{% url 'pricing' %}{% else %}{% url 'instagram_create' template_id=template.id %}{% endif %}"
-         class="ig-template {% if template.is_locked %}is-locked{% endif %}"
-         {% if template.is_locked %}title="Upgrade to Pro to use this template"{% endif %}>
+{# ── Template families ─────────────────────────────── #}
+{% if template_families %}
 
-        {% if template.is_pro %}
-          <span class="ig-badge-pro">PRO</span>
-        {% endif %}
+  {% for family_key, family_data in template_families.items %}
+    <section class="ig-family-section" data-family="{{ family_key }}">
+      <div class="ig-family-heading">
+        <h2 class="ig-family-title">{{ family_data.name }}</h2>
+        <span class="ig-family-mono">[ {{ family_data.templates|length }} TEMPLATES ]</span>
+      </div>
+      {% if family_data.description %}
+        <p class="ig-family-desc">{{ family_data.description }}</p>
+      {% endif %}
 
-        <div class="ig-preview pv-{{ template.style|default:'brutalist' }}"
-             {% if template.image_url and template.style == 'editorial' %}
-               style="background-image: linear-gradient(rgba(245,241,232,0.85), rgba(245,241,232,0.6)), url('{{ template.image_url }}');"
-             {% elif template.image_url and template.style == 'photo-overlay' %}
-               style="background-image: url('{{ template.image_url }}');"
-             {% endif %}>
-          <div class="ig-preview-content">
-            <div class="ig-preview-brand">SHOWPIECE</div>
-            <div>
-              {% if template.title_line_1 %}
-                <div class="ig-preview-title {{ template.size|default:'lg' }}">{{ template.title_line_1 }}</div>
-              {% endif %}
-              {% if template.title_line_2 %}
-                <div class="ig-preview-title {{ template.size|default:'lg' }}{% if template.cobalt_word and template.style == 'dark' %} cobalt-word{% endif %}"
-                     {% if template.cobalt_word and template.style != 'dark' %}style="color: #3A3AFF;"{% endif %}>
-                  {{ template.title_line_2 }}
+      <div class="ig-grid">
+        {% for template in family_data.templates %}
+          <button type="button"
+                  class="ig-template"
+                  onclick="openTemplateModal('{{ template.id }}', '{{ template.name|escapejs }}', '{{ family_data.name|escapejs }}')">
+            <div class="ig-preview">
+              {% if template.preview_url %}
+                <img src="{{ template.preview_url }}"
+                     alt="{{ template.name }}"
+                     loading="lazy">
+              {% else %}
+                <div class="ig-preview-fallback"
+                     style="{% cycle 'background: #F5F1E8; color: #0F0E0D;' 'background: #3A3AFF; color: #F5F1E8;' 'background: #0F0E0D; color: #F5F1E8;' %}">
+                  <div class="ig-fb-brand">SHOWPIECE</div>
+                  <div>
+                    <div class="ig-fb-title">{{ family_data.name|upper|slice:":8" }}</div>
+                    <div class="ig-fb-title cobalt">{{ template.name|upper|slice:":8" }}</div>
+                  </div>
+                  <div class="ig-fb-meta">@{{ user.username|upper }}</div>
                 </div>
               {% endif %}
             </div>
-            <div class="ig-preview-meta">
-              @{{ user.username|upper }}
-              {% if template.show_date %} · {% now "M j"|upper %}{% endif %}
+            <div class="ig-template-info">
+              <div class="ig-template-name">{{ template.name }}</div>
+              <div class="ig-template-family">{{ family_data.name|upper }}</div>
             </div>
-          </div>
-        </div>
-
-        {% if template.is_locked %}
-          <div class="ig-lock-icon">
-            <span class="ig-lock-badge">
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <rect x="3" y="7" width="10" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-                <path d="M5 7V5a3 3 0 016 0v2" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              Unlock with Pro
-            </span>
-          </div>
-        {% endif %}
-
-        <div class="ig-template-info">
-          <div class="ig-template-name">{{ template.name }}</div>
-          <div class="ig-template-family">{{ template.family|upper }}</div>
-        </div>
-      </a>
-    {% endfor %}
-  </div>
+          </button>
+        {% endfor %}
+      </div>
+    </section>
+  {% endfor %}
 
 {% else %}
+
   <div class="ig-empty">
     <div class="ig-empty-icon">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -381,9 +471,178 @@
         <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
       </svg>
     </div>
-    <div class="ig-empty-title">No templates in this family yet</div>
-    <div class="ig-empty-desc">Try a different family or check back soon.</div>
+    <div class="ig-empty-title">No templates available yet</div>
+    <div class="ig-empty-desc">Check back soon — we're adding new families every week.</div>
   </div>
+
 {% endif %}
+
+
+{# ═════════════════════════════════════════════════════ #}
+{# GENERATION MODAL                                       #}
+{# ═════════════════════════════════════════════════════ #}
+<div class="ig-modal-bg" id="templateModal">
+  <div class="ig-modal">
+    <div class="ig-modal-head">
+      <div class="ig-modal-title-wrap">
+        <div class="ig-modal-eyebrow" id="modalFamily">[ FAMILY ]</div>
+        <h2 class="ig-modal-title" id="modalTitle">Generate template</h2>
+      </div>
+      <button type="button" class="ig-modal-close" onclick="closeTemplateModal()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+          <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <form method="post"
+          enctype="multipart/form-data"
+          action="{% url 'generate_template' %}"
+          id="templateForm">
+      {% csrf_token %}
+      <input type="hidden" name="template_id" id="modalTemplateId">
+
+      <div class="ig-modal-body">
+
+        <div class="ig-form-group">
+          <label class="ig-label" for="serviceInput">Service</label>
+          <input type="text"
+                 id="serviceInput"
+                 name="service"
+                 class="ig-input"
+                 placeholder="e.g. Skin fade, Beard shape-up"
+                 maxlength="60"
+                 required>
+        </div>
+
+        <div class="ig-form-group">
+          <label class="ig-label" for="dateInput">Date</label>
+          <input type="text"
+                 id="dateInput"
+                 name="date"
+                 class="ig-input"
+                 placeholder="e.g. Today, Jun 29 2026"
+                 value="{% now 'M j, Y' %}"
+                 maxlength="30"
+                 required>
+        </div>
+
+        <div class="ig-form-group">
+          <label class="ig-label" for="imageInput">Photo of the finished work</label>
+          <label class="ig-file" for="imageInput">
+            <div class="ig-file-icon">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+                <circle cx="5.5" cy="7" r="1" fill="currentColor"/>
+                <path d="M2 11l4-4 4 4 3-3 3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <div class="ig-file-label">Click to upload</div>
+            <div class="ig-file-hint">JPG or PNG · max 8 MB</div>
+            <input type="file"
+                   id="imageInput"
+                   name="image"
+                   accept="image/*"
+                   required
+                   onchange="showFileSelected(this)">
+          </label>
+
+          <div class="ig-file-selected" id="fileSelected">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style="color: #3A3AFF;">
+              <path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span class="ig-file-selected-name" id="fileSelectedName">image.jpg</span>
+          </div>
+        </div>
+
+        <div class="ig-form-group">
+          <label class="ig-label" for="notesInput">Notes <span style="color: rgba(15,14,13,0.4); font-weight: 400;">(optional)</span></label>
+          <textarea id="notesInput"
+                    name="notes"
+                    class="ig-textarea"
+                    placeholder="Anything worth mentioning about this piece?"
+                    maxlength="200"></textarea>
+        </div>
+
+      </div>
+
+      <div class="ig-modal-foot">
+        <button type="button" class="ig-btn-cancel" onclick="closeTemplateModal()">Cancel</button>
+        <button type="submit" class="ig-btn-generate" id="generateBtn">
+          <span id="generateBtnText">Generate</span>
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+  /* ── Family filter (client-side scroll to section) ── */
+  document.getElementById('familyTabs').addEventListener('click', (e) => {
+    const btn = e.target.closest('.ig-family');
+    if (!btn) return;
+
+    document.querySelectorAll('.ig-family').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+
+    const family = btn.dataset.family;
+    const sections = document.querySelectorAll('.ig-family-section');
+
+    if (family === 'all') {
+      sections.forEach(s => s.style.display = '');
+    } else {
+      sections.forEach(s => {
+        s.style.display = s.dataset.family === family ? '' : 'none';
+      });
+      const target = document.querySelector(`.ig-family-section[data-family="${family}"]`);
+      if (target) window.scrollTo({ top: target.offsetTop - 100, behavior: 'smooth' });
+    }
+  });
+
+  /* ── Modal ─────────────────────────────────────── */
+  function openTemplateModal(templateId, templateName, familyName) {
+    document.getElementById('modalTemplateId').value = templateId;
+    document.getElementById('modalTitle').textContent = templateName;
+    document.getElementById('modalFamily').textContent = '[ ' + familyName.toUpperCase() + ' ]';
+    document.getElementById('templateModal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('serviceInput').focus(), 50);
+  }
+
+  function closeTemplateModal() {
+    document.getElementById('templateModal').classList.remove('active');
+    document.body.style.overflow = '';
+    document.getElementById('templateForm').reset();
+    document.getElementById('fileSelected').classList.remove('active');
+    document.getElementById('dateInput').value = '{% now "M j, Y" %}';
+  }
+
+  function showFileSelected(input) {
+    if (input.files && input.files[0]) {
+      document.getElementById('fileSelectedName').textContent = input.files[0].name;
+      document.getElementById('fileSelected').classList.add('active');
+    }
+  }
+
+  document.getElementById('templateModal').addEventListener('click', (e) => {
+    if (e.target.id === 'templateModal') closeTemplateModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('templateModal').classList.contains('active')) {
+      closeTemplateModal();
+    }
+  });
+
+  document.getElementById('templateForm').addEventListener('submit', () => {
+    const btn = document.getElementById('generateBtn');
+    const text = document.getElementById('generateBtnText');
+    btn.disabled = true;
+    text.textContent = 'Generating…';
+  });
+</script>
 
 {% endblock %}
