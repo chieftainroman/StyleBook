@@ -19,37 +19,36 @@
 {% endblock %}
 
 {% block topbar_actions %}
-  <a href="{% url 'instagram' %}" class="btn-cobalt">
-    + Upload work
-  </a>
+  <a href="{% url 'instagram' %}" class="btn-cobalt">+ Upload work</a>
 {% endblock %}
 
 {% block extra_head %}
 <style>
   .pf-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    margin-bottom: 18px;
+    position: sticky;
+    top: 66px;
+    z-index: 20;
+    margin: -6px -2px 18px;
+    padding: 6px 2px;
+    background: rgba(245,241,232,0.88);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   .pf-filters {
     display: flex;
-    align-items: center;
     gap: 4px;
     padding: 3px;
     background: rgba(15,14,13,0.04);
     border: 1px solid rgba(15,14,13,0.06);
     border-radius: 10px;
     overflow-x: auto;
-    max-width: 100%;
+    scrollbar-width: none;
   }
 
+  .pf-filters::-webkit-scrollbar { display: none; }
+
   .pf-filter-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     height: 34px;
     padding: 0 14px;
     border: 0;
@@ -59,24 +58,19 @@
     font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.15s;
     font-family: inherit;
     white-space: nowrap;
   }
 
-  .pf-filter-btn:hover {
-    color: #0F0E0D;
-  }
-
   .pf-filter-btn.is-active {
-    background: #FFFFFF;
+    background: #fff;
     color: #0F0E0D;
     box-shadow: 0 1px 2px rgba(15,14,13,0.06), 0 0 0 1px rgba(15,14,13,0.04);
   }
 
   .pf-grid {
     display: grid;
-    grid-template-columns: repeat(1, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 18px;
   }
 
@@ -101,13 +95,7 @@
   .pf-media {
     position: relative;
     aspect-ratio: 1 / 1;
-    background:
-      linear-gradient(45deg, rgba(15,14,13,0.025) 25%, transparent 25%),
-      linear-gradient(-45deg, rgba(15,14,13,0.025) 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, rgba(15,14,13,0.025) 75%),
-      linear-gradient(-45deg, transparent 75%, rgba(15,14,13,0.025) 75%);
-    background-size: 18px 18px;
-    background-position: 0 0, 0 9px, 9px -9px, -9px 0;
+    background: #fff;
     overflow: hidden;
   }
 
@@ -141,17 +129,16 @@
     align-items: center;
     justify-content: center;
     gap: 7px;
-    height: 36px;
-    padding: 0 13px;
+    min-height: 38px;
+    padding: 0 14px;
     border-radius: 10px;
     border: 0;
-    background: #FFFFFF;
+    background: #fff;
     color: #0F0E0D;
     font-size: 12px;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.15s;
     font-family: inherit;
     white-space: nowrap;
   }
@@ -162,14 +149,13 @@
   }
 
   .pf-meta {
-    padding: 14px 15px 15px;
+    padding: 14px 15px 12px;
   }
 
   .pf-service {
     font-size: 14px;
     font-weight: 600;
     color: #0F0E0D;
-    letter-spacing: -0.005em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -207,14 +193,25 @@
 
   .pf-mobile-actions {
     display: none;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
     padding: 0 15px 15px;
   }
 
   .pf-mobile-actions .pf-action {
     width: 100%;
+    min-height: 44px;
     background: #0F0E0D;
     color: #F5F1E8;
+  }
+
+  .pf-mobile-actions .pf-action.secondary {
+    background: rgba(15,14,13,0.05);
+    color: #0F0E0D;
+  }
+
+  .pf-mobile-actions.single {
+    grid-template-columns: 1fr;
   }
 
   .pf-empty {
@@ -236,7 +233,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 4px;
   }
 
   .pf-empty-title {
@@ -263,14 +259,12 @@
     background: rgba(15,14,13,0.72);
   }
 
-  .pf-modal.is-open {
-    display: flex;
-  }
+  .pf-modal.is-open { display: flex; }
 
   .pf-modal-dialog {
-    width: min(92vw, 820px);
+    width: min(92vw, 860px);
     max-height: 92vh;
-    background: #FFFFFF;
+    background: #fff;
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 24px 80px rgba(0,0,0,0.28);
@@ -285,17 +279,10 @@
     border-bottom: 1px solid rgba(15,14,13,0.08);
   }
 
-  .pf-modal-title {
-    min-width: 0;
-  }
-
   .pf-modal-title strong {
     display: block;
     font-size: 14px;
     color: #0F0E0D;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .pf-modal-title span {
@@ -314,7 +301,6 @@
     color: #0F0E0D;
     cursor: pointer;
     font-size: 20px;
-    line-height: 1;
   }
 
   .pf-modal-body {
@@ -329,15 +315,16 @@
     max-width: 100%;
     max-height: calc(92vh - 98px);
     object-fit: contain;
-    display: block;
     border-radius: 8px;
-    background: #FFFFFF;
+    background: #fff;
   }
 
   @media (max-width: 640px) {
     .pf-toolbar {
-      align-items: stretch;
-      flex-direction: column;
+      top: 58px;
+      margin-left: -20px;
+      margin-right: -20px;
+      padding: 8px 20px;
     }
 
     .pf-filters {
@@ -345,20 +332,44 @@
     }
 
     .pf-filter-btn {
-      flex: 1;
-      padding: 0 10px;
+      flex: 1 0 auto;
+      min-width: 78px;
+      height: 38px;
+    }
+
+    .pf-grid {
+      gap: 16px;
+    }
+
+    .pf-card {
+      border-radius: 12px;
+      margin-left: -2px;
+      margin-right: -2px;
+    }
+
+    .pf-media {
+      aspect-ratio: 1 / 1;
+      background: #fff;
     }
 
     .pf-overlay {
       display: none;
     }
 
-    .pf-mobile-actions {
-      display: flex;
+    .pf-meta {
+      padding: 13px 14px 10px;
     }
 
-    .pf-media {
-      aspect-ratio: 1 / 1;
+    .pf-service {
+      font-size: 15px;
+    }
+
+    .pf-subline span {
+      font-size: 12px;
+    }
+
+    .pf-mobile-actions {
+      display: grid;
     }
 
     .pf-modal {
@@ -372,29 +383,10 @@
 
 <div class="pf-toolbar">
   <div class="pf-filters" aria-label="Portfolio filters">
-    <button type="button"
-            onclick="filterPortfolio('all', this)"
-            class="filter-btn pf-filter-btn is-active">
-      All
-    </button>
-
-    <button type="button"
-            onclick="filterPortfolio('Barber', this)"
-            class="filter-btn pf-filter-btn">
-      Barber
-    </button>
-
-    <button type="button"
-            onclick="filterPortfolio('Hair Stylist', this)"
-            class="filter-btn pf-filter-btn">
-      Hair
-    </button>
-
-    <button type="button"
-            onclick="filterPortfolio('Nail Master', this)"
-            class="filter-btn pf-filter-btn">
-      Nails
-    </button>
+    <button type="button" onclick="filterPortfolio('all', this)" class="filter-btn pf-filter-btn is-active">All</button>
+    <button type="button" onclick="filterPortfolio('Barber', this)" class="filter-btn pf-filter-btn">Barber</button>
+    <button type="button" onclick="filterPortfolio('Hair Stylist', this)" class="filter-btn pf-filter-btn">Hair</button>
+    <button type="button" onclick="filterPortfolio('Nail Master', this)" class="filter-btn pf-filter-btn">Nails</button>
   </div>
 </div>
 
@@ -407,65 +399,47 @@
           <div class="pf-media">
             {% if item.generated_image %}
               {% if 'http' in item.generated_image %}
-                <img src="{{ item.generated_image }}"
-                     alt="{{ item.service }}">
+                <img src="{{ item.generated_image }}" alt="{{ item.service }}">
               {% else %}
-                <img src="/media/generated/{{ item.generated_image }}"
-                     alt="{{ item.service }}">
+                <img src="/media/generated/{{ item.generated_image }}" alt="{{ item.service }}">
               {% endif %}
             {% else %}
               {% if 'http' in item.image %}
-                <img src="{{ item.image }}"
-                     alt="{{ item.service }}">
+                <img src="{{ item.image }}" alt="{{ item.service }}">
               {% else %}
-                <img src="/media/uploads/{{ item.image }}"
-                     alt="{{ item.service }}">
+                <img src="/media/uploads/{{ item.image }}" alt="{{ item.service }}">
               {% endif %}
             {% endif %}
 
             <div class="pf-overlay">
               {% if item.generated_image %}
                 {% if 'http' in item.generated_image %}
-                  <button type="button"
-                          class="pf-action pf-view-btn"
+                  <button type="button" class="pf-action pf-view-btn"
                           data-preview-src="{{ item.generated_image }}"
                           data-preview-title="{{ item.service }}"
                           data-preview-meta="{{ item.client_name }} - {{ item.date }}">
                     View full size
                   </button>
-
-                  <a href="{{ item.generated_image }}"
-                     download
-                     class="pf-action">
-                    Download PNG
-                  </a>
+                  <a href="{{ item.generated_image }}" download class="pf-action">Download PNG</a>
                 {% else %}
-                  <button type="button"
-                          class="pf-action pf-view-btn"
+                  <button type="button" class="pf-action pf-view-btn"
                           data-preview-src="/media/generated/{{ item.generated_image }}"
                           data-preview-title="{{ item.service }}"
                           data-preview-meta="{{ item.client_name }} - {{ item.date }}">
                     View full size
                   </button>
-
-                  <a href="/media/generated/{{ item.generated_image }}"
-                     download
-                     class="pf-action">
-                    Download PNG
-                  </a>
+                  <a href="/media/generated/{{ item.generated_image }}" download class="pf-action">Download PNG</a>
                 {% endif %}
               {% else %}
                 {% if 'http' in item.image %}
-                  <button type="button"
-                          class="pf-action pf-view-btn"
+                  <button type="button" class="pf-action pf-view-btn"
                           data-preview-src="{{ item.image }}"
                           data-preview-title="{{ item.service }}"
                           data-preview-meta="{{ item.client_name }} - {{ item.date }}">
                     View full size
                   </button>
                 {% else %}
-                  <button type="button"
-                          class="pf-action pf-view-btn"
+                  <button type="button" class="pf-action pf-view-btn"
                           data-preview-src="/media/uploads/{{ item.image }}"
                           data-preview-title="{{ item.service }}"
                           data-preview-meta="{{ item.client_name }} - {{ item.date }}">
@@ -478,12 +452,10 @@
 
           <div class="pf-meta">
             <p class="pf-service">{{ item.service }}</p>
-
             <div class="pf-subline">
               <span>{{ item.client_name }}</span>
               <span>{{ item.date }}</span>
             </div>
-
             {% if item.template_style %}
               <span class="pf-style">{{ item.template_style }}</span>
             {% endif %}
@@ -492,17 +464,19 @@
           {% if item.generated_image %}
             <div class="pf-mobile-actions">
               {% if 'http' in item.generated_image %}
-                <a href="{{ item.generated_image }}"
-                   download
-                   class="pf-action">
-                  Download PNG
-                </a>
+                <a href="{{ item.generated_image }}" target="_blank" rel="noopener" class="pf-action secondary">View</a>
+                <a href="{{ item.generated_image }}" download class="pf-action">Download PNG</a>
               {% else %}
-                <a href="/media/generated/{{ item.generated_image }}"
-                   download
-                   class="pf-action">
-                  Download PNG
-                </a>
+                <a href="/media/generated/{{ item.generated_image }}" target="_blank" rel="noopener" class="pf-action secondary">View</a>
+                <a href="/media/generated/{{ item.generated_image }}" download class="pf-action">Download PNG</a>
+              {% endif %}
+            </div>
+          {% else %}
+            <div class="pf-mobile-actions single">
+              {% if 'http' in item.image %}
+                <a href="{{ item.image }}" target="_blank" rel="noopener" class="pf-action secondary">View full size</a>
+              {% else %}
+                <a href="/media/uploads/{{ item.image }}" target="_blank" rel="noopener" class="pf-action secondary">View full size</a>
               {% endif %}
             </div>
           {% endif %}
@@ -519,12 +493,10 @@
           <strong id="portfolioModalTitle"></strong>
           <span id="portfolioModalMeta"></span>
         </div>
-
         <button type="button" class="pf-modal-close" onclick="closePortfolioPreview()" aria-label="Close preview">
-          ×
+          &times;
         </button>
       </div>
-
       <div class="pf-modal-body">
         <img src="" alt="" id="portfolioModalImage">
       </div>
@@ -540,15 +512,9 @@
         <path d="M3 17l4-4 3 3 4-5 4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-
     <p class="pf-empty-title">No work uploaded yet</p>
-    <p class="pf-empty-copy">
-      Complete a reservation, upload a photo, and your portfolio builds itself.
-    </p>
-
-    <a href="{% url 'instagram' %}" class="btn-cobalt">
-      + Upload your first work
-    </a>
+    <p class="pf-empty-copy">Complete a reservation, upload a photo, and your portfolio builds itself.</p>
+    <a href="{% url 'instagram' %}" class="btn-cobalt">+ Upload your first work</a>
   </div>
 {% endif %}
 
@@ -557,18 +523,11 @@
 {% block extra_scripts %}
 <script>
 function filterPortfolio(category, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => {
-    b.classList.remove('is-active');
-  });
-
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('is-active'));
   btn.classList.add('is-active');
 
   document.querySelectorAll('.portfolio-item').forEach(item => {
-    if (category === 'all' || item.dataset.category === category) {
-      item.style.display = '';
-    } else {
-      item.style.display = 'none';
-    }
+    item.style.display = category === 'all' || item.dataset.category === category ? '' : 'none';
   });
 }
 
@@ -580,11 +539,12 @@ function openPortfolioPreview(src, title, meta) {
   const titleEl = document.getElementById('portfolioModalTitle');
   const metaEl = document.getElementById('portfolioModalMeta');
 
+  if (!modal || !image || !titleEl || !metaEl) return;
+
   image.src = src;
   image.alt = title || 'Portfolio preview';
   titleEl.textContent = title || 'Portfolio preview';
   metaEl.textContent = meta || '';
-
   modal.classList.add('is-open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
@@ -593,6 +553,8 @@ function openPortfolioPreview(src, title, meta) {
 function closePortfolioPreview() {
   const modal = document.getElementById('portfolioModal');
   const image = document.getElementById('portfolioModalImage');
+
+  if (!modal || !image) return;
 
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
@@ -610,19 +572,15 @@ document.querySelectorAll('.pf-view-btn').forEach(btn => {
   });
 });
 
-const modal = document.getElementById('portfolioModal');
-if (modal) {
-  modal.addEventListener('click', event => {
-    if (event.target === modal) {
-      closePortfolioPreview();
-    }
+const portfolioModal = document.getElementById('portfolioModal');
+if (portfolioModal) {
+  portfolioModal.addEventListener('click', event => {
+    if (event.target === portfolioModal) closePortfolioPreview();
   });
 }
 
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') {
-    closePortfolioPreview();
-  }
+  if (event.key === 'Escape') closePortfolioPreview();
 });
 </script>
 {% endblock %}
