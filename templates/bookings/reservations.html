@@ -1,48 +1,106 @@
 {% extends 'base.html' %}
 
+{% block title %}Reservations - Showpiece{% endblock %}
+{% block page_title %}Reservations{% endblock %}
+{% block page_sub %}Manage appointments, booking requests, and client history{% endblock %}
+
 {% block content %}
-<div class="px-8 py-6">
+<style>
+  .res-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
 
-  <!-- Header -->
-  <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
-    <div>
-      <h1 class="text-2xl font-serif italic text-ink">Reservations</h1>
-      <p class="text-sm text-muted mt-1">
-        Manage your appointments and client bookings.
-      </p>
-    </div>
+  .res-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
 
-    <!-- View toggle -->
-    <div class="inline-flex items-center bg-white border border-cream-border rounded-lg p-1">
-      <a href="?view=list{% if tab != 'upcoming' %}&tab={{ tab }}{% endif %}"
-         class="px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5
-                {% if view_mode == 'list' %}bg-ink text-white{% else %}text-muted hover:text-ink{% endif %}">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <line x1="2" y1="4" x2="14" y2="4" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="2" y1="12" x2="14" y2="12" stroke="currentColor" stroke-width="1.5"/>
-        </svg>
-        List
-      </a>
-      <a href="?view=calendar"
-         class="px-3 py-1.5 text-xs font-medium rounded transition-colors flex items-center gap-1.5
-                {% if view_mode == 'calendar' %}bg-ink text-white{% else %}text-muted hover:text-ink{% endif %}">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-          <rect x="2" y="3" width="12" height="11" rx="1" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="2" y1="6" x2="14" y2="6" stroke="currentColor" stroke-width="1.5"/>
-          <line x1="5" y1="2" x2="5" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          <line x1="11" y1="2" x2="11" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        Calendar
-      </a>
-    </div>
+  .res-sub {
+    margin: 4px 0 0;
+    color: rgba(15,14,13,0.58);
+    font-size: 14px;
+  }
+
+  .res-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+  }
+
+  .res-toggle-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 34px;
+    padding: 7px 12px;
+    border-radius: 9px;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .res-toggle-link:hover {
+    color: #0F0E0D;
+  }
+
+  .res-toggle-link.active {
+    background: #0F0E0D;
+    color: #FFFFFF;
+  }
+
+  @media (max-width: 560px) {
+    .res-head {
+      display: grid;
+    }
+
+    .res-toggle,
+    .res-toggle-link {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .res-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>
+
+<div class="res-head">
+  <div>
+    <h1 class="res-title">Reservations</h1>
+    <p class="res-sub">Manage your appointments and client bookings.</p>
   </div>
 
-  {% if view_mode == 'list' %}
-    {% include 'bookings/_reservations_list.html' %}
-  {% else %}
-    {% include 'bookings/_reservations_calendar.html' %}
-  {% endif %}
-
+  <div class="res-toggle">
+    <a href="?view=list{% if tab != 'upcoming' %}&tab={{ tab }}{% endif %}"
+       class="res-toggle-link {% if view_mode == 'list' %}active{% endif %}">
+      List
+    </a>
+    <a href="?view=calendar"
+       class="res-toggle-link {% if view_mode == 'calendar' %}active{% endif %}">
+      Calendar
+    </a>
+  </div>
 </div>
+
+{% if view_mode == 'list' %}
+  {% include 'bookings/_reservations_list.html' %}
+{% else %}
+  {% include 'bookings/_reservations_calendar.html' %}
+{% endif %}
+
 {% endblock %}

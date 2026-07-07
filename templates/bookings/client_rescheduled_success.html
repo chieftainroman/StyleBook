@@ -3,34 +3,149 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Rescheduled — StyleBook</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rescheduled - Showpiece</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'Inter', sans-serif; background: #FAFAF7; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .card { max-width: 420px; width: 100%; background: #fff; border: 1px solid #E5E3DC; border-radius: 16px; padding: 36px; text-align: center; }
-    .icon { width: 56px; height: 56px; background: #D1FAE5; color: #065F46; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 600; margin-bottom: 14px; }
-    h1 { font-size: 22px; font-weight: 600; margin: 0 0 8px; color: #1C1917; }
-    p { font-size: 14px; color: #555; line-height: 1.55; margin: 10px 0; }
-    .info { background: #FAFAF7; border-radius: 10px; padding: 16px; margin: 16px 0; font-size: 13px; }
-    .info .label { color: #888780; }
-    .info .value { color: #1C1917; font-weight: 500; }
-    .row { display: flex; justify-content: space-between; padding: 4px 0; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(58,58,255,0.12), transparent 30rem),
+        #F5F1E8;
+      color: #0F0E0D;
+      font-family: 'Space Grotesk', sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(440px, 100%);
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+      padding: 34px;
+      text-align: center;
+      box-shadow: 0 22px 80px rgba(15,14,13,0.12);
+    }
+
+    .mark {
+      width: 58px;
+      height: 58px;
+      display: inline-grid;
+      place-items: center;
+      margin-bottom: 16px;
+      border-radius: 12px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: #0F0E0D;
+      font-family: 'Anton', sans-serif;
+      font-size: 42px;
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 10px 0;
+      color: #77736A;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .info {
+      margin: 18px 0;
+      padding: 16px;
+      border: 1px solid #DED8CA;
+      border-radius: 10px;
+      background: #F5F1E8;
+      text-align: left;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(15,14,13,0.07);
+      font-size: 13px;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: #77736A;
+    }
+
+    .value {
+      color: #0F0E0D;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .ref {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .hint {
+      color: #77736A;
+      font-size: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .card {
+        padding: 26px;
+      }
+
+      .row {
+        display: grid;
+      }
+
+      .value {
+        text-align: left;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="icon">✓</div>
+  <main class="card">
+    <div class="mark">&check;</div>
     <h1>Booking rescheduled</h1>
     <p>Your new appointment is confirmed. {{ booking.master.user.username }} has been notified.</p>
 
     <div class="info">
-      <div class="row"><span class="label">When</span><span class="value">{{ booking.start_time|date:"l, F j" }}</span></div>
-      <div class="row"><span class="label">Time</span><span class="value">{{ booking.start_time|time:"g:i A" }}</span></div>
-      <div class="row"><span class="label">Reference</span><span class="value font-mono">{{ booking.reference_code }}</span></div>
+      <div class="row">
+        <span class="label">When</span>
+        <span class="value">{{ booking.start_time|date:"l, F j" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Time</span>
+        <span class="value">{{ booking.start_time|time:"g:i A" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Reference</span>
+        <span class="value ref">{{ booking.reference_code }}</span>
+      </div>
     </div>
 
-    <p style="font-size: 12px; color: #888;">A confirmation email is on the way.</p>
-  </div>
+    <p class="hint">A confirmation email is on the way.</p>
+  </main>
 </body>
 </html>

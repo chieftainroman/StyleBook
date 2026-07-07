@@ -4,408 +4,557 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Book with {{ profile.user.username }} — StyleBook</title>
+  <title>Book with {{ profile.user.username }} - Showpiece</title>
   <meta name="csrf-token" content="{{ csrf_token }}">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            cream:          '#FAFAF7',
-            'cream-border': '#E5E3DC',
-            gold:           '#C9A96E',
-            'gold-light':   '#F5EDD8',
-            'gold-dark':    '#8B6914',
-            ink:            '#1C1917',
-            muted:          '#888780',
-          },
-          fontFamily: {
-            sans:  ['Inter', 'sans-serif'],
-            serif: ['Instrument Serif', 'serif'],
-          },
-        }
-      }
-    }
-  </script>
 
   <style>
-    body { font-family: 'Inter', sans-serif; background: #FAFAF7; color: #1C1917; }
-    .b-shell { max-width: 640px; margin: 0 auto; padding: 24px 16px 80px; }
-    .b-logo  { font-size: 18px; font-weight: 600; }
-    .b-logo span { color: #C9A96E; }
+    * { box-sizing: border-box; }
 
-    /* Master card */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(58,58,255,0.12), transparent 30rem),
+        #F5F1E8;
+      color: #0F0E0D;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .b-shell {
+      width: min(700px, 100%);
+      margin: 0 auto;
+      padding: 24px 16px 80px;
+    }
+
+    .b-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #0F0E0D;
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .b-brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      font-family: 'Anton', sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .b-master,
+    .b-card,
+    .b-svc,
+    .b-summary,
+    .b-otp-card,
+    .b-success-card,
+    .b-empty {
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+    }
+
     .b-master {
-      background: #fff;
-      border: 1px solid #E5E3DC;
-      border-radius: 16px;
-      padding: 20px;
+      padding: 18px;
       display: flex;
       gap: 14px;
       align-items: center;
       margin-bottom: 24px;
+      box-shadow: 0 14px 48px rgba(15,14,13,0.08);
     }
+
     .b-master-avatar {
-      width: 56px; height: 56px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #C9A96E, #8B6914);
+      width: 58px;
+      height: 58px;
+      border-radius: 12px;
+      background: #0F0E0D;
+      color: #FFFFFF;
       flex-shrink: 0;
       overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-weight: 600; font-size: 18px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 18px;
     }
-    .b-master-avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .b-master-name { font-size: 17px; font-weight: 600; }
-    .b-master-meta { font-size: 13px; color: #888780; margin-top: 1px; }
 
-    /* Stepper */
+    .b-master-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .b-master-name {
+      color: #0F0E0D;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .b-master-meta {
+      color: #77736A;
+      font-size: 13px;
+      margin-top: 2px;
+    }
+
+    .b-step {
+      margin-bottom: 28px;
+    }
+
     .b-step-header {
-      display: flex; align-items: center; gap: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       margin-bottom: 14px;
     }
+
     .b-step-num {
-      width: 26px; height: 26px; border-radius: 50%;
-      background: #1C1917; color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 600;
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      display: grid;
+      place-items: center;
+      font-size: 13px;
+      font-weight: 800;
       flex-shrink: 0;
     }
-    .b-step-title { font-size: 17px; font-weight: 600; }
-    .b-step { margin-bottom: 28px; }
 
-    /* Service cards */
+    .b-step-title {
+      color: #0F0E0D;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
     .b-svc {
-      background: #fff;
-      border: 1px solid #E5E3DC;
-      border-radius: 12px;
       padding: 14px;
       margin-bottom: 10px;
       cursor: pointer;
-      transition: border-color 0.15s, transform 0.1s;
       display: flex;
       gap: 14px;
       align-items: center;
+      transition: border-color .15s, transform .15s, background .15s;
     }
-    .b-svc:hover { border-color: #C9A96E; }
+
+    .b-svc:hover {
+      border-color: #3A3AFF;
+      transform: translateY(-1px);
+    }
+
     .b-svc.selected {
-      border-color: #1C1917;
-      background: #FAFAF7;
+      border-color: #3A3AFF;
+      background: rgba(58,58,255,0.04);
     }
+
     .b-svc-photo {
-      width: 60px; height: 60px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #F5EDD8, #C9A96E);
+      width: 62px;
+      height: 62px;
+      border-radius: 10px;
+      background: #0F0E0D;
+      color: #FFFFFF;
       flex-shrink: 0;
       overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 22px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      font-weight: 800;
     }
-    .b-svc-photo img { width: 100%; height: 100%; object-fit: cover; }
-    .b-svc-body { flex: 1; min-width: 0; }
-    .b-svc-name { font-size: 15px; font-weight: 600; }
+
+    .b-svc-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .b-svc-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .b-svc-name {
+      color: #0F0E0D;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
     .b-svc-desc {
-      font-size: 13px; color: #555;
-      margin-top: 2px; line-height: 1.4;
+      color: rgba(15,14,13,0.68);
+      font-size: 13px;
+      line-height: 1.45;
+      margin-top: 3px;
     }
+
     .b-svc-meta {
-      display: flex; gap: 10px; font-size: 13px;
-      color: #888780; margin-top: 5px;
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      color: #77736A;
+      font-size: 13px;
+      margin-top: 6px;
     }
-    .b-svc-meta strong { color: #1C1917; font-weight: 600; }
+
+    .b-svc-meta strong {
+      color: #0F0E0D;
+      font-weight: 800;
+    }
+
     .b-svc-radio {
-      width: 20px; height: 20px;
-      border-radius: 50%; border: 2px solid #E5E3DC;
+      width: 22px;
+      height: 22px;
+      border-radius: 999px;
+      border: 2px solid #DED8CA;
       flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
+      display: grid;
+      place-items: center;
     }
+
     .b-svc.selected .b-svc-radio {
-      border-color: #1C1917;
-      background: #1C1917;
+      border-color: #3A3AFF;
+      background: #3A3AFF;
     }
+
     .b-svc.selected .b-svc-radio::after {
-      content: ''; width: 8px; height: 8px;
-      background: #fff; border-radius: 50%;
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #FFFFFF;
     }
 
-    /* Empty state */
     .b-empty {
-      background: #fff; border: 1px solid #E5E3DC;
-      border-radius: 12px; padding: 32px; text-align: center;
-      color: #888780; font-size: 14px;
+      padding: 34px;
+      text-align: center;
+      color: #77736A;
+      font-size: 14px;
     }
 
-    /* Date strip */
     .b-date-wrap {
       position: relative;
       margin-bottom: 20px;
     }
+
     .b-date-strip {
       display: flex;
       gap: 8px;
       overflow-x: auto;
       scroll-behavior: smooth;
-      padding: 4px 36px;
+      padding: 4px 38px;
       scrollbar-width: none;
     }
+
     .b-date-strip::-webkit-scrollbar { display: none; }
+
     .b-date-nav {
       position: absolute;
       top: 50%;
-      transform: translateY(-50%);
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #fff;
-      border: 1px solid #E5E3DC;
-      cursor: pointer;
-      font-size: 16px;
-      line-height: 1;
-      color: #1C1917;
       z-index: 2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 30px;
+      height: 30px;
+      transform: translateY(-50%);
+      border: 1px solid #DED8CA;
+      border-radius: 999px;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      cursor: pointer;
+      font-size: 18px;
+      display: grid;
+      place-items: center;
     }
+
     .b-date-nav-prev { left: 0; }
     .b-date-nav-next { right: 0; }
-    .b-date-nav:hover { background: #FAFAF7; }
-    .b-date-nav:disabled { opacity: 0.3; cursor: not-allowed; }
 
     .b-date-card {
-      flex-shrink: 0;
-      width: 64px;
-      height: 78px;
-      background: #fff;
-      border: 1px solid #E5E3DC;
+      flex: 0 0 68px;
+      height: 82px;
+      border: 1px solid #DED8CA;
       border-radius: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      background: #FFFFFF;
+      color: #0F0E0D;
       cursor: pointer;
-      transition: all 0.15s;
-      padding: 6px 0;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 2px;
+      transition: border-color .15s, background .15s, color .15s;
     }
-    .b-date-card:hover:not(.disabled) { border-color: #C9A96E; }
+
+    .b-date-card:hover:not(.disabled) { border-color: #3A3AFF; }
+
     .b-date-card.selected {
-      background: #1C1917;
-      border-color: #1C1917;
-      color: #fff;
+      background: #0F0E0D;
+      border-color: #0F0E0D;
+      color: #FFFFFF;
     }
+
     .b-date-card.disabled {
-      opacity: 0.4;
+      opacity: 0.42;
       cursor: not-allowed;
     }
-    .b-date-day {
+
+    .b-date-day,
+    .b-date-month {
+      color: #77736A;
       font-size: 10px;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: #888780;
-      font-weight: 500;
+      letter-spacing: 0.08em;
     }
-    .b-date-card.selected .b-date-day { color: #C9A96E; }
+
+    .b-date-card.selected .b-date-day,
+    .b-date-card.selected .b-date-month {
+      color: rgba(255,255,255,0.7);
+    }
+
     .b-date-num {
       font-size: 22px;
-      font-weight: 600;
-      line-height: 1.1;
-      margin: 2px 0;
+      font-weight: 800;
+      line-height: 1;
     }
-    .b-date-month {
-      font-size: 10px;
-      color: #888780;
-      text-transform: uppercase;
-      font-weight: 500;
-    }
-    .b-date-card.selected .b-date-month { color: #C9A96E; }
+
     .b-date-dot {
-      width: 4px; height: 4px;
-      border-radius: 50%;
-      background: #C9A96E;
+      width: 4px;
+      height: 4px;
+      border-radius: 999px;
+      background: #3A3AFF;
       margin-top: 3px;
     }
+
+    .b-date-card.selected .b-date-dot { background: #FFFFFF; }
     .b-date-card.disabled .b-date-dot { display: none; }
 
     .b-date-loading {
-      color: #888780;
-      font-size: 13px;
+      width: 100%;
       padding: 24px;
       text-align: center;
-      width: 100%;
+      color: #77736A;
+      font-size: 13px;
     }
 
-    /* Slot grid */
     .b-slot-header {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
+      gap: 12px;
       margin-bottom: 10px;
     }
+
     .b-slot-date {
+      color: #0F0E0D;
       font-size: 15px;
-      font-weight: 600;
-      color: #1C1917;
+      font-weight: 800;
     }
+
     .b-slot-tz {
+      color: #77736A;
       font-size: 11px;
-      color: #888780;
     }
+
     .b-slot-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
       gap: 8px;
     }
+
     .b-slot {
-      background: #fff;
-      border: 1px solid #E5E3DC;
+      border: 1px solid #DED8CA;
       border-radius: 8px;
-      padding: 10px 6px;
-      text-align: center;
+      background: #FFFFFF;
+      color: #0F0E0D;
       cursor: pointer;
+      padding: 11px 6px;
+      text-align: center;
       font-size: 13px;
-      font-weight: 500;
-      color: #1C1917;
-      transition: all 0.12s;
+      font-weight: 700;
+      transition: border-color .12s, background .12s, color .12s;
     }
-    .b-slot:hover { border-color: #C9A96E; }
+
+    .b-slot:hover { border-color: #3A3AFF; }
+
     .b-slot.selected {
-      background: #1C1917;
-      border-color: #1C1917;
-      color: #fff;
+      background: #3A3AFF;
+      border-color: #3A3AFF;
+      color: #FFFFFF;
     }
+
     .b-slot-loading,
     .b-slot-empty {
       grid-column: 1 / -1;
-      text-align: center;
       padding: 32px 16px;
-      color: #888780;
+      text-align: center;
+      color: #77736A;
       font-size: 13px;
     }
+
     .b-slot-empty strong {
       display: block;
-      color: #1C1917;
+      color: #0F0E0D;
       font-size: 14px;
       margin-bottom: 4px;
     }
-    /* Booking summary card */
+
     .b-summary {
-      background: #FAFAF7;
-      border: 1px solid #E5E3DC;
-      border-radius: 12px;
       padding: 16px;
+      background: #F5F1E8;
+      margin-bottom: 18px;
     }
+
     .b-summary-row {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
-      padding: 6px 0;
+      gap: 16px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(15,14,13,0.07);
       font-size: 13px;
     }
-    .b-summary-label { color: #888780; }
-    .b-summary-value { color: #1C1917; font-weight: 500; }
-    .b-summary-total {
-      border-top: 1px solid #E5E3DC;
-      margin-top: 6px;
-      padding-top: 12px;
-    }
-    .b-summary-total .b-summary-label { color: #1C1917; font-weight: 600; }
-    .b-summary-total .b-summary-value { font-size: 16px; font-weight: 600; }
 
-    /* Form */
+    .b-summary-row:last-child { border-bottom: 0; }
+
+    .b-summary-label { color: #77736A; }
+
+    .b-summary-value {
+      color: #0F0E0D;
+      font-weight: 800;
+      text-align: right;
+    }
+
+    .b-summary-total {
+      margin-top: 4px;
+      padding-top: 12px;
+      border-top: 1px solid #DED8CA;
+    }
+
+    .b-summary-total .b-summary-label {
+      color: #0F0E0D;
+      font-weight: 800;
+    }
+
+    .b-summary-total .b-summary-value {
+      font-size: 16px;
+    }
+
     .b-flabel {
       display: block;
-      font-size: 12px;
-      font-weight: 500;
-      color: #888780;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
       margin-bottom: 6px;
+      color: #77736A;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
+
     .b-fhint-inline {
+      color: #77736A;
       font-size: 11px;
-      color: #aaa;
       text-transform: none;
-      font-weight: 400;
       letter-spacing: 0;
+      font-weight: 500;
     }
+
     .b-fhint {
-      font-size: 11px;
-      color: #888780;
-      margin-top: 4px;
+      margin-top: 5px;
+      color: #77736A;
+      font-size: 12px;
     }
+
     .b-finput {
       width: 100%;
-      padding: 10px 13px;
-      border: 1px solid #E5E3DC;
+      min-height: 46px;
+      border: 1px solid #DED8CA;
       border-radius: 8px;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      padding: 11px 14px;
+      font: inherit;
       font-size: 14px;
-      font-family: inherit;
-      color: #1C1917;
       outline: none;
-      background: #fff;
-      transition: border-color 0.15s;
       resize: vertical;
     }
-    .b-finput:focus { border-color: #1C1917; }
-    .b-finput::placeholder { color: #aaa; }
 
-    /* Submit button */
+    .b-finput:focus {
+      border-color: #3A3AFF;
+      box-shadow: 0 0 0 3px rgba(58,58,255,0.12);
+    }
+
     .b-submit {
       width: 100%;
+      min-height: 46px;
       margin-top: 8px;
-      padding: 13px;
-      background: #C9A96E;
-      color: #1C1917;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 600;
+      border: 0;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
       cursor: pointer;
-      transition: background 0.15s, color 0.15s;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
     }
-    .b-submit:hover { background: #8B6914; color: #fff; }
-    .b-submit:disabled { background: #ccc; color: #888; cursor: not-allowed; }
 
-    /* OTP step */
-    .b-otp-card {
-      background: #fff;
-      border: 1px solid #E5E3DC;
-      border-radius: 14px;
+    .b-submit:hover:not(:disabled) { background: #2929E8; }
+
+    .b-submit:disabled {
+      background: rgba(15,14,13,0.18);
+      color: #77736A;
+      cursor: not-allowed;
+    }
+
+    .b-otp-card,
+    .b-success-card {
       padding: 28px;
       text-align: center;
     }
-    .b-otp-desc {
+
+    .b-otp-desc,
+    .b-success-sub,
+    .b-success-hint {
+      color: #77736A;
       font-size: 14px;
-      color: #555;
-      margin-bottom: 20px;
-      line-height: 1.5;
+      line-height: 1.55;
     }
-    .b-otp-desc strong { color: #1C1917; }
-    .b-otp-input {
-      width: 100%;
-      max-width: 220px;
-      margin: 0 auto;
-      padding: 14px;
-      text-align: center;
-      font-size: 28px;
-      letter-spacing: 0.4em;
-      font-weight: 600;
-      border: 1px solid #E5E3DC;
-      border-radius: 10px;
-      font-family: 'Inter', monospace;
-      background: #FAFAF7;
-      outline: none;
-    }
-    .b-otp-input:focus { border-color: #1C1917; background: #fff; }
+
+    .b-otp-desc strong { color: #0F0E0D; }
+
     .b-otp-input-wrap {
       margin: 16px 0 20px;
       display: flex;
       justify-content: center;
     }
+
+    .b-otp-input {
+      width: 100%;
+      max-width: 230px;
+      padding: 14px;
+      border: 1px solid #DED8CA;
+      border-radius: 10px;
+      background: #F5F1E8;
+      color: #0F0E0D;
+      text-align: center;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: 0.35em;
+      outline: none;
+    }
+
+    .b-otp-input:focus {
+      border-color: #3A3AFF;
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(58,58,255,0.12);
+    }
+
     .b-otp-actions {
       margin-top: 16px;
       display: flex;
@@ -414,100 +563,107 @@
       gap: 8px;
       font-size: 13px;
     }
+
     .b-link-btn {
+      border: 0;
       background: none;
-      border: none;
-      color: #888780;
+      color: #77736A;
       cursor: pointer;
+      font: inherit;
       font-size: 13px;
+      font-weight: 700;
       padding: 0;
-      font-family: inherit;
     }
-    .b-link-btn:hover { color: #1C1917; text-decoration: underline; }
-    .b-otp-divider { color: #ddd; }
+
+    .b-link-btn:hover {
+      color: #0F0E0D;
+      text-decoration: underline;
+    }
+
+    .b-otp-divider { color: #DED8CA; }
+
     .b-otp-error {
       margin-top: 12px;
       padding: 10px;
-      background: #FEE2E2;
-      color: #991B1B;
       border-radius: 8px;
+      background: #FEF2F2;
+      color: #B91C1C;
       font-size: 13px;
+      font-weight: 700;
     }
 
-    /* Success card */
-    .b-success-card {
-      background: #fff;
-      border: 1px solid #E5E3DC;
-      border-radius: 16px;
-      padding: 40px 32px;
-      text-align: center;
-    }
     .b-success-icon {
-      width: 56px;
-      height: 56px;
-      background: #D1FAE5;
-      color: #065F46;
-      border-radius: 50%;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 28px;
-      font-weight: 600;
+      width: 58px;
+      height: 58px;
+      display: inline-grid;
+      place-items: center;
       margin-bottom: 16px;
+      border-radius: 12px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      font-size: 28px;
+      font-weight: 800;
     }
+
     .b-success-title {
-      font-size: 22px;
-      font-weight: 600;
-      color: #1C1917;
-      margin-bottom: 6px;
+      margin: 0 0 6px;
+      color: #0F0E0D;
+      font-family: 'Anton', sans-serif;
+      font-size: 44px;
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: 0;
     }
-    .b-success-sub {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 20px;
-      line-height: 1.55;
-    }
+
     .b-success-ref {
       display: inline-block;
-      background: #FAFAF7;
-      border: 1px dashed #C9A96E;
-      border-radius: 10px;
+      margin-top: 4px;
       padding: 14px 20px;
+      border: 1px dashed #3A3AFF;
+      border-radius: 10px;
+      background: #F5F1E8;
     }
+
     .b-success-ref-label {
       display: block;
+      color: #77736A;
       font-size: 11px;
-      color: #888780;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 3px;
+      letter-spacing: 0.1em;
+      margin-bottom: 4px;
     }
+
     .b-success-ref-code {
+      color: #0F0E0D;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       font-size: 20px;
-      font-weight: 600;
-      color: #1C1917;
-      font-family: 'Inter', monospace;
+      font-weight: 800;
       letter-spacing: 0.05em;
     }
-    .b-success-hint {
-      font-size: 12px;
-      color: #888780;
-      margin-top: 18px;
-      line-height: 1.55;
+
+    @media (max-width: 560px) {
+      .b-shell { padding: 18px 14px 64px; }
+      .b-master { align-items: flex-start; }
+      .b-svc { align-items: flex-start; }
+      .b-svc-radio { margin-top: 18px; }
+      .b-slot-header { display: grid; }
+      .b-summary-row { display: grid; }
+      .b-summary-value { text-align: left; }
     }
   </style>
 </head>
 
 <body>
-
 <div class="b-shell">
 
-  <!-- Logo -->
   <div class="text-center mb-6">
-    <a href="/" class="b-logo">Style<span>Book</span></a>
+    <a href="/" class="b-brand">
+      <span class="b-brand-mark">S</span>
+      <span>Showpiece</span>
+    </a>
   </div>
 
-  <!-- Master card -->
   <div class="b-master">
     <div class="b-master-avatar">
       {% if profile.avatar_url %}
@@ -520,12 +676,11 @@
       <div class="b-master-name">{{ master.username }}</div>
       <div class="b-master-meta">
         {{ profile.get_specialty_display|default:profile.specialty }}
-        {% if profile.location %} · {{ profile.location }}{% endif %}
+        {% if profile.location %} / {{ profile.location }}{% endif %}
       </div>
     </div>
   </div>
 
-  <!-- Step 1: Pick a service -->
   <div class="b-step">
     <div class="b-step-header">
       <div class="b-step-num">1</div>
@@ -543,7 +698,7 @@
               {% if svc.photo_url %}
                 <img src="{{ svc.photo_url }}" alt="">
               {% else %}
-                ✂️
+                S
               {% endif %}
             </div>
             <div class="b-svc-body">
@@ -553,7 +708,7 @@
               {% endif %}
               <div class="b-svc-meta">
                 <span><strong>{{ svc.duration_display }}</strong></span>
-                <span>·</span>
+                <span>/</span>
                 <span><strong>${{ svc.price }}</strong></span>
               </div>
             </div>
@@ -562,64 +717,57 @@
         {% endfor %}
       </div>
     {% else %}
-      <div class="b-empty">
-        This master hasn't added any services yet.
-      </div>
+      <div class="b-empty">This professional has not added any services yet.</div>
     {% endif %}
   </div>
 
-  <!-- Step 2: Pick date+time -->
   <div class="b-step" id="bStepDate" style="display: none;">
     <div class="b-step-header">
       <div class="b-step-num">2</div>
       <div class="b-step-title">Choose date &amp; time</div>
     </div>
 
-    <!-- Horizontal scrolling date strip -->
     <div class="b-date-wrap">
-      <button type="button" class="b-date-nav b-date-nav-prev" id="bDatePrev" aria-label="Previous">‹</button>
+      <button type="button" class="b-date-nav b-date-nav-prev" id="bDatePrev" aria-label="Previous">&lsaquo;</button>
       <div class="b-date-strip" id="bDateStrip">
-        <div class="b-date-loading">Loading dates…</div>
+        <div class="b-date-loading">Loading dates...</div>
       </div>
-      <button type="button" class="b-date-nav b-date-nav-next" id="bDateNext" aria-label="Next">›</button>
+      <button type="button" class="b-date-nav b-date-nav-next" id="bDateNext" aria-label="Next">&rsaquo;</button>
     </div>
 
-    <!-- Selected date label + time slot grid -->
     <div id="bSlotPanel" style="display: none;">
       <div class="b-slot-header">
-        <span class="b-slot-date" id="bSlotDateLabel">—</span>
+        <span class="b-slot-date" id="bSlotDateLabel">-</span>
         <span class="b-slot-tz" id="bSlotTzLabel"></span>
       </div>
       <div id="bSlotGrid" class="b-slot-grid">
-        <div class="b-slot-loading">Loading time slots…</div>
+        <div class="b-slot-loading">Loading time slots...</div>
       </div>
     </div>
   </div>
 
-<!-- Step 3: Client info -->
   <div class="b-step" id="bStepInfo" style="display: none;">
     <div class="b-step-header">
       <div class="b-step-num">3</div>
       <div class="b-step-title">Your details</div>
     </div>
 
-    <!-- Booking summary -->
     <div class="b-summary">
       <div class="b-summary-row">
         <span class="b-summary-label">Service</span>
-        <span class="b-summary-value" id="bSumService">—</span>
+        <span class="b-summary-value" id="bSumService">-</span>
       </div>
       <div class="b-summary-row">
         <span class="b-summary-label">Date &amp; time</span>
-        <span class="b-summary-value" id="bSumDateTime">—</span>
+        <span class="b-summary-value" id="bSumDateTime">-</span>
       </div>
       <div class="b-summary-row">
         <span class="b-summary-label">Duration</span>
-        <span class="b-summary-value" id="bSumDuration">—</span>
+        <span class="b-summary-value" id="bSumDuration">-</span>
       </div>
       <div class="b-summary-row b-summary-total">
         <span class="b-summary-label">Total</span>
-        <span class="b-summary-value" id="bSumPrice">—</span>
+        <span class="b-summary-value" id="bSumPrice">-</span>
       </div>
     </div>
 
@@ -636,7 +784,7 @@
         <label class="b-flabel" for="bClientEmail">Email</label>
         <input class="b-finput" type="email" id="bClientEmail" name="client_email"
                required maxlength="254" placeholder="you@example.com">
-        <p class="b-fhint">We'll send a 6-digit code to verify this email.</p>
+        <p class="b-fhint">We will send a 6-digit code to verify this email.</p>
       </div>
 
       <div>
@@ -653,12 +801,11 @@
       </div>
 
       <button type="submit" class="b-submit" id="bSubmitBtn">
-        <span id="bSubmitText">Continue to verification →</span>
+        <span id="bSubmitText">Continue to verification &rarr;</span>
       </button>
     </form>
   </div>
 
-  <!-- Step 4: OTP verification -->
   <div class="b-step" id="bStepOtp" style="display: none;">
     <div class="b-step-header">
       <div class="b-step-num">4</div>
@@ -667,7 +814,7 @@
 
     <div class="b-otp-card">
       <p class="b-otp-desc">
-        We sent a 6-digit code to <strong id="bOtpEmail">—</strong>.
+        We sent a 6-digit code to <strong id="bOtpEmail">-</strong>.
         Enter it below to confirm your booking.
       </p>
 
@@ -683,7 +830,7 @@
 
       <div class="b-otp-actions">
         <button type="button" class="b-link-btn" id="bOtpResendBtn">Resend code</button>
-        <span class="b-otp-divider">·</span>
+        <span class="b-otp-divider">/</span>
         <button type="button" class="b-link-btn" id="bOtpBackBtn">Change details</button>
       </div>
 
@@ -691,20 +838,19 @@
     </div>
   </div>
 
-  <!-- Step 5: Success -->
   <div class="b-step" id="bStepSuccess" style="display: none;">
     <div class="b-success-card">
-      <div class="b-success-icon">✓</div>
-      <h2 class="b-success-title">You're booked!</h2>
+      <div class="b-success-icon">&check;</div>
+      <h2 class="b-success-title">You're booked</h2>
       <p class="b-success-sub" id="bSuccessSub">A confirmation email is on the way.</p>
 
       <div class="b-success-ref">
         <span class="b-success-ref-label">Reference</span>
-        <span class="b-success-ref-code" id="bSuccessRef">—</span>
+        <span class="b-success-ref-code" id="bSuccessRef">-</span>
       </div>
 
       <p class="b-success-hint">
-        Save this reference. You'll need it if you want to reschedule or cancel.
+        Save this reference. You will need it if you want to reschedule or cancel.
       </p>
     </div>
   </div>
@@ -713,9 +859,6 @@
 
 <script>
 (function() {
-  // ════════════════════════════════════════════════
-  // Step 1: Service selection
-  // ════════════════════════════════════════════════
   const list = document.getElementById('bServiceList');
   const stepDate = document.getElementById('bStepDate');
   if (!list) return;
@@ -725,14 +868,15 @@
   list.addEventListener('click', e => {
     const card = e.target.closest('.b-svc');
     if (!card) return;
+
     list.querySelectorAll('.b-svc.selected').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
 
     selectedService = {
-      id:       parseInt(card.dataset.serviceId),
-      name:     card.dataset.name,
-      duration: parseInt(card.dataset.duration),
-      price:    card.dataset.price,
+      id: parseInt(card.dataset.serviceId, 10),
+      name: card.dataset.name,
+      duration: parseInt(card.dataset.duration, 10),
+      price: card.dataset.price,
     };
 
     stepDate.style.display = '';
@@ -743,30 +887,25 @@
   });
 })();
 
-
 (function() {
-  // ════════════════════════════════════════════════
-  // Step 2: Date strip + time slot picker
-  // ════════════════════════════════════════════════
   const username = '{{ master.username }}';
 
-  const strip       = document.getElementById('bDateStrip');
-  const prevBtn     = document.getElementById('bDatePrev');
-  const nextBtn     = document.getElementById('bDateNext');
-  const slotPanel   = document.getElementById('bSlotPanel');
-  const slotGrid    = document.getElementById('bSlotGrid');
+  const strip = document.getElementById('bDateStrip');
+  const prevBtn = document.getElementById('bDatePrev');
+  const nextBtn = document.getElementById('bDateNext');
+  const slotPanel = document.getElementById('bSlotPanel');
+  const slotGrid = document.getElementById('bSlotGrid');
   const slotDateLbl = document.getElementById('bSlotDateLabel');
-  const slotTzLbl   = document.getElementById('bSlotTzLabel');
+  const slotTzLbl = document.getElementById('bSlotTzLabel');
 
   let availability = {};
   let selectedDate = null;
-  let selectedSlot = null;
   let currentService = null;
 
   window.addEventListener('b-service-selected', e => {
     currentService = e.detail;
     selectedDate = null;
-    selectedSlot = null;
+    window.bSelectedSlot = null;
     slotPanel.style.display = 'none';
     loadAvailability();
   });
@@ -798,12 +937,13 @@
       if (hasSlots) {
         card.addEventListener('click', () => selectDate(iso, card));
       }
+
       strip.appendChild(card);
     }
   }
 
   function loadAvailability() {
-    strip.innerHTML = '<div class="b-date-loading">Loading dates…</div>';
+    strip.innerHTML = '<div class="b-date-loading">Loading dates...</div>';
     slotPanel.style.display = 'none';
 
     fetch(`/book/${username}/api/summary/?service_id=${currentService.id}`)
@@ -811,6 +951,7 @@
       .then(data => {
         availability = data.availability || {};
         buildDateStrip(14);
+
         const firstAvail = Object.entries(availability).find(([d, has]) => has);
         if (firstAvail) {
           const card = strip.querySelector(`[data-date="${firstAvail[0]}"]`);
@@ -825,8 +966,8 @@
   function selectDate(iso, card) {
     strip.querySelectorAll('.b-date-card.selected').forEach(c => c.classList.remove('selected'));
     card.classList.add('selected');
+
     selectedDate = iso;
-    selectedSlot = null;
     window.bSelectedSlot = null;
 
     slotPanel.style.display = '';
@@ -834,18 +975,21 @@
 
     try {
       slotTzLbl.textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    } catch (e) { slotTzLbl.textContent = ''; }
+    } catch (e) {
+      slotTzLbl.textContent = '';
+    }
 
     loadSlots(iso);
   }
 
   function loadSlots(iso) {
-    slotGrid.innerHTML = '<div class="b-slot-loading">Loading time slots…</div>';
+    slotGrid.innerHTML = '<div class="b-slot-loading">Loading time slots...</div>';
 
     fetch(`/book/${username}/api/availability/?service_id=${currentService.id}&date=${iso}`)
       .then(r => r.json())
       .then(data => {
         const slots = data.slots || [];
+
         if (slots.length === 0) {
           slotGrid.innerHTML = `
             <div class="b-slot-empty">
@@ -855,6 +999,7 @@
           `;
           return;
         }
+
         renderSlots(slots);
       })
       .catch(() => {
@@ -864,6 +1009,7 @@
 
   function renderSlots(slots) {
     slotGrid.innerHTML = '';
+
     slots.forEach(s => {
       const btn = document.createElement('div');
       btn.className = 'b-slot';
@@ -878,7 +1024,7 @@
   function selectSlot(slot, btn) {
     slotGrid.querySelectorAll('.b-slot.selected').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
-    selectedSlot = slot;
+
     window.bSelectedSlot = slot;
 
     const stepInfo = document.getElementById('bStepInfo');
@@ -895,6 +1041,7 @@
   prevBtn.addEventListener('click', () => {
     strip.scrollBy({ left: -250, behavior: 'smooth' });
   });
+
   nextBtn.addEventListener('click', () => {
     strip.scrollBy({ left: 250, behavior: 'smooth' });
   });
@@ -915,74 +1062,79 @@
   }
 })();
 </script>
+
 <script>
 (function() {
-  // ════════════════════════════════════════════════
-  // Step 3 + 4 + 5: Form, OTP, success
-  // ════════════════════════════════════════════════
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content
                     || document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='))?.split('=')[1];
   const username = '{{ master.username }}';
 
-  const stepInfo    = document.getElementById('bStepInfo');
-  const stepOtp     = document.getElementById('bStepOtp');
+  const stepInfo = document.getElementById('bStepInfo');
+  const stepOtp = document.getElementById('bStepOtp');
   const stepSuccess = document.getElementById('bStepSuccess');
 
-  const sumService  = document.getElementById('bSumService');
+  const sumService = document.getElementById('bSumService');
   const sumDateTime = document.getElementById('bSumDateTime');
   const sumDuration = document.getElementById('bSumDuration');
-  const sumPrice    = document.getElementById('bSumPrice');
+  const sumPrice = document.getElementById('bSumPrice');
 
-  const form         = document.getElementById('bBookingForm');
-  const submitBtn    = document.getElementById('bSubmitBtn');
-  const submitText   = document.getElementById('bSubmitText');
+  const form = document.getElementById('bBookingForm');
+  const submitBtn = document.getElementById('bSubmitBtn');
+  const submitText = document.getElementById('bSubmitText');
 
-  const otpEmail     = document.getElementById('bOtpEmail');
-  const otpInput     = document.getElementById('bOtpInput');
+  const otpEmail = document.getElementById('bOtpEmail');
+  const otpInput = document.getElementById('bOtpInput');
   const otpVerifyBtn = document.getElementById('bOtpVerifyBtn');
-  const otpVerifyText= document.getElementById('bOtpVerifyText');
+  const otpVerifyText = document.getElementById('bOtpVerifyText');
   const otpResendBtn = document.getElementById('bOtpResendBtn');
-  const otpBackBtn   = document.getElementById('bOtpBackBtn');
-  const otpError     = document.getElementById('bOtpError');
+  const otpBackBtn = document.getElementById('bOtpBackBtn');
+  const otpError = document.getElementById('bOtpError');
 
-  const successRef   = document.getElementById('bSuccessRef');
-  const successSub   = document.getElementById('bSuccessSub');
+  const successRef = document.getElementById('bSuccessRef');
+  const successSub = document.getElementById('bSuccessSub');
 
   let bookingRef = null;
 
-  // ── Fill the summary when slot is selected ──
   window.addEventListener('b-slot-selected', e => {
     const { date, slot, service } = e.detail;
-    sumService.textContent  = service.name;
+
+    sumService.textContent = service.name;
     sumDuration.textContent = service.duration + ' min';
-    sumPrice.textContent    = '$' + service.price;
+    sumPrice.textContent = '$' + service.price;
 
     const [y, m, d] = date.split('-').map(Number);
     const dt = new Date(y, m - 1, d);
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
     sumDateTime.textContent = `${months[dt.getMonth()]} ${dt.getDate()}, ${slot.display}`;
   });
 
-  // ── Submit booking ──
   form.addEventListener('submit', async e => {
     e.preventDefault();
 
-    if (!window.bSelectedService) { alert('Please pick a service'); return; }
-    if (!window.bSelectedSlot)    { alert('Please pick a time slot'); return; }
+    if (!window.bSelectedService) {
+      alert('Please pick a service');
+      return;
+    }
+
+    if (!window.bSelectedSlot) {
+      alert('Please pick a time slot');
+      return;
+    }
 
     const fd = new FormData(form);
     const payload = {
-      service_id:   window.bSelectedService.id,
-      slot_iso:     window.bSelectedSlot.iso,
-      client_name:  fd.get('client_name').trim(),
+      service_id: window.bSelectedService.id,
+      slot_iso: window.bSelectedSlot.iso,
+      client_name: fd.get('client_name').trim(),
       client_email: fd.get('client_email').trim(),
       client_phone: fd.get('client_phone').trim(),
       client_notes: fd.get('client_notes').trim(),
-      source:       fd.get('source') || 'direct_link',
+      source: fd.get('source') || 'direct_link',
     };
 
     submitBtn.disabled = true;
-    submitText.textContent = 'Sending verification code…';
+    submitText.textContent = 'Sending verification code...';
 
     try {
       const res = await fetch(`/book/${username}/create/`, {
@@ -993,6 +1145,7 @@
         },
         body: JSON.stringify(payload),
       });
+
       const data = await res.json();
 
       if (!res.ok) {
@@ -1004,6 +1157,7 @@
 
       bookingRef = data.reference_code;
       otpEmail.textContent = payload.client_email;
+
       stepInfo.style.display = 'none';
       stepOtp.style.display = '';
       stepOtp.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1015,9 +1169,9 @@
     }
   });
 
-  // ── Verify OTP ──
   otpVerifyBtn.addEventListener('click', async () => {
     const code = otpInput.value.trim();
+
     if (code.length !== 6 || !/^\d{6}$/.test(code)) {
       showOtpError('Enter the 6-digit code from your email.');
       return;
@@ -1025,7 +1179,7 @@
 
     otpError.style.display = 'none';
     otpVerifyBtn.disabled = true;
-    otpVerifyText.textContent = 'Verifying…';
+    otpVerifyText.textContent = 'Verifying...';
 
     try {
       const res = await fetch(`/book/${username}/verify-otp/`, {
@@ -1039,6 +1193,7 @@
           code: code,
         }),
       });
+
       const data = await res.json();
 
       if (!res.ok) {
@@ -1048,9 +1203,9 @@
         return;
       }
 
-      // Success — show step 5
       successRef.textContent = bookingRef;
       successSub.textContent = `A confirmation email is on the way to ${data.client_email}.`;
+
       stepOtp.style.display = 'none';
       stepSuccess.style.display = '';
       stepSuccess.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -1061,10 +1216,9 @@
     }
   });
 
-  // ── Resend OTP ──
   otpResendBtn.addEventListener('click', async () => {
     otpResendBtn.disabled = true;
-    otpResendBtn.textContent = 'Sending…';
+    otpResendBtn.textContent = 'Sending...';
 
     try {
       const res = await fetch(`/book/${username}/resend-otp/`, {
@@ -1075,9 +1229,11 @@
         },
         body: JSON.stringify({ reference_code: bookingRef }),
       });
+
       const data = await res.json();
+
       if (res.ok) {
-        otpResendBtn.textContent = '✓ Code resent';
+        otpResendBtn.textContent = 'Code resent';
         setTimeout(() => {
           otpResendBtn.disabled = false;
           otpResendBtn.textContent = 'Resend code';
@@ -1094,7 +1250,6 @@
     }
   });
 
-  // ── Go back to details ──
   otpBackBtn.addEventListener('click', () => {
     stepOtp.style.display = 'none';
     stepInfo.style.display = '';
@@ -1108,7 +1263,6 @@
     otpError.style.display = '';
   }
 
-  // OTP input: digits only, auto-verify when 6 digits entered
   otpInput.addEventListener('input', e => {
     e.target.value = e.target.value.replace(/\D/g, '');
     if (e.target.value.length === 6) {

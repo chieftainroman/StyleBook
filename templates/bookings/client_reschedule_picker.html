@@ -4,193 +4,449 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reschedule booking — StyleBook</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <title>Reschedule booking - Showpiece</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    body { font-family: 'Inter', sans-serif; background: #FAFAF7; color: #1C1917; }
-    .shell { max-width: 640px; margin: 0 auto; padding: 30px 16px 60px; }
-    .logo { font-size: 18px; font-weight: 600; text-align: center; margin-bottom: 24px; }
-    .logo span { color: #C9A96E; }
-    .card { background: #fff; border: 1px solid #E5E3DC; border-radius: 16px; padding: 24px; margin-bottom: 16px; }
-    .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; }
-    .row .label { color: #888780; }
-    .row .value { color: #1C1917; font-weight: 500; }
+    * {
+      box-sizing: border-box;
+    }
 
-    .b-date-wrap { position: relative; margin-bottom: 16px; }
-    .b-date-strip { display: flex; gap: 8px; overflow-x: auto; padding: 4px 36px; scrollbar-width: none; }
-    .b-date-strip::-webkit-scrollbar { display: none; }
-    .b-date-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 1px solid #E5E3DC; cursor: pointer; font-size: 16px; z-index: 2; display: flex; align-items: center; justify-content: center; }
-    .b-date-nav-prev { left: 0; }
-    .b-date-nav-next { right: 0; }
-    .b-date-card { flex-shrink: 0; width: 64px; height: 78px; background: #fff; border: 1px solid #E5E3DC; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; padding: 6px 0; transition: all 0.15s; }
-    .b-date-card:hover:not(.disabled) { border-color: #C9A96E; }
-    .b-date-card.selected { background: #1C1917; border-color: #1C1917; color: #fff; }
-    .b-date-card.disabled { opacity: 0.4; cursor: not-allowed; }
-    .b-date-day { font-size: 10px; text-transform: uppercase; color: #888780; font-weight: 500; }
-    .b-date-num { font-size: 22px; font-weight: 600; margin: 2px 0; }
-    .b-date-month { font-size: 10px; color: #888780; text-transform: uppercase; }
-    .b-date-card.selected .b-date-day, .b-date-card.selected .b-date-month { color: #C9A96E; }
-    .b-date-dot { width: 4px; height: 4px; border-radius: 50%; background: #C9A96E; margin-top: 3px; }
-    .b-date-card.disabled .b-date-dot { display: none; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(58,58,255,0.12), transparent 30rem),
+        #F5F1E8;
+      color: #0F0E0D;
+      font-family: 'Space Grotesk', sans-serif;
+    }
 
-    .slot-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
-    .slot { background: #fff; border: 1px solid #E5E3DC; border-radius: 8px; padding: 10px 6px; text-align: center; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.12s; }
-    .slot:hover { border-color: #C9A96E; }
-    .slot.selected { background: #1C1917; border-color: #1C1917; color: #fff; }
-    .empty { text-align: center; padding: 30px; color: #888780; font-size: 13px; }
+    .shell {
+      width: min(680px, 100%);
+      margin: 0 auto;
+      padding: 28px 16px 60px;
+    }
 
-    .confirm-btn { width: 100%; padding: 13px; background: #C9A96E; color: #1C1917; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; }
-    .confirm-btn:disabled { background: #ccc; cursor: not-allowed; }
-    .confirm-btn:hover:not(:disabled) { background: #8B6914; color: #fff; }
+    .brand {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+      color: #0F0E0D;
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
 
-    .current-booking { background: #FFF8E6; border-color: #FBBF24; }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      font-family: 'Anton', sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .card {
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 14px 48px rgba(15,14,13,0.08);
+    }
+
+    .current-booking {
+      border-color: rgba(58,58,255,0.18);
+      background: rgba(58,58,255,0.035);
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      color: #0F0E0D;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+
+    .kicker {
+      margin: 0 0 10px;
+      color: #77736A;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(15,14,13,0.07);
+      font-size: 14px;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: #77736A;
+    }
+
+    .value {
+      color: #0F0E0D;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .b-date-wrap {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .b-date-strip {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 4px 38px;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+
+    .b-date-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .b-date-nav {
+      position: absolute;
+      top: 50%;
+      z-index: 2;
+      width: 30px;
+      height: 30px;
+      transform: translateY(-50%);
+      border: 1px solid #DED8CA;
+      border-radius: 999px;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      cursor: pointer;
+      font-size: 18px;
+      display: grid;
+      place-items: center;
+    }
+
+    .b-date-nav-prev {
+      left: 0;
+    }
+
+    .b-date-nav-next {
+      right: 0;
+    }
+
+    .b-date-card {
+      flex: 0 0 68px;
+      height: 82px;
+      border: 1px solid #DED8CA;
+      border-radius: 10px;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 2px;
+      transition: border-color .15s, background .15s, color .15s;
+    }
+
+    .b-date-card:hover:not(.disabled) {
+      border-color: #3A3AFF;
+    }
+
+    .b-date-card.selected {
+      background: #0F0E0D;
+      border-color: #0F0E0D;
+      color: #FFFFFF;
+    }
+
+    .b-date-card.disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    .b-date-day,
+    .b-date-month {
+      color: #77736A;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .b-date-card.selected .b-date-day,
+    .b-date-card.selected .b-date-month {
+      color: rgba(255,255,255,0.7);
+    }
+
+    .b-date-num {
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .b-date-dot {
+      width: 4px;
+      height: 4px;
+      margin-top: 3px;
+      border-radius: 999px;
+      background: #3A3AFF;
+    }
+
+    .b-date-card.selected .b-date-dot {
+      background: #FFFFFF;
+    }
+
+    .b-date-card.disabled .b-date-dot {
+      display: none;
+    }
+
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+      gap: 8px;
+    }
+
+    .slot {
+      border: 1px solid #DED8CA;
+      border-radius: 8px;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      cursor: pointer;
+      padding: 11px 6px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .slot:hover {
+      border-color: #3A3AFF;
+    }
+
+    .slot.selected {
+      background: #3A3AFF;
+      border-color: #3A3AFF;
+      color: #FFFFFF;
+    }
+
+    .empty {
+      padding: 30px 16px;
+      text-align: center;
+      color: #77736A;
+      font-size: 13px;
+      grid-column: 1 / -1;
+    }
+
+    .confirm-btn {
+      width: 100%;
+      min-height: 46px;
+      border: 0;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      cursor: pointer;
+      font: inherit;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .confirm-btn:hover:not(:disabled) {
+      background: #2929E8;
+    }
+
+    .confirm-btn:disabled {
+      background: rgba(15,14,13,0.18);
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 520px) {
+      .row {
+        display: grid;
+      }
+
+      .value {
+        text-align: left;
+      }
+
+      .card {
+        padding: 16px;
+      }
+    }
   </style>
 </head>
 <body>
+  <main class="shell">
+    <a href="/" class="brand">
+      <span class="brand-mark">S</span>
+      <span>Showpiece</span>
+    </a>
 
-<div class="shell">
-  <div class="logo">Style<span>Book</span></div>
+    {% if messages %}
+      {% for m in messages %}
+        <div class="card" style="background:#FEF2F2;color:#B91C1C;border-color:#FECACA;">{{ m }}</div>
+      {% endfor %}
+    {% endif %}
 
-  {% if messages %}
-    {% for m in messages %}
-      <div class="card" style="background: #FEE2E2; color: #991B1B; padding: 12px;">{{ m }}</div>
-    {% endfor %}
-  {% endif %}
-
-  <!-- Current booking -->
-  <div class="card current-booking">
-    <p class="text-xs uppercase tracking-wider text-muted mb-2 font-medium">Current booking</p>
-    <div class="row"><span class="label">Reference</span><span class="value font-mono">{{ booking.reference_code }}</span></div>
-    <div class="row"><span class="label">Service</span><span class="value">{{ booking.service.name }} · {{ booking.service.duration_minutes }} min</span></div>
-    <div class="row"><span class="label">Currently scheduled</span><span class="value">{{ booking.start_time|date:"M j" }} at {{ booking.start_time|time:"g:i A" }}</span></div>
-  </div>
-
-  <!-- Picker -->
-  <div class="card">
-    <h2 class="text-lg font-semibold text-ink mb-3">Pick a new time</h2>
-
-    <div class="b-date-wrap">
-      <button type="button" class="b-date-nav b-date-nav-prev" id="dPrev">‹</button>
-      <div class="b-date-strip" id="dStrip">
-        <div class="empty">Loading…</div>
+    <section class="card current-booking">
+      <p class="kicker">Current booking</p>
+      <div class="row">
+        <span class="label">Reference</span>
+        <span class="value font-mono">{{ booking.reference_code }}</span>
       </div>
-      <button type="button" class="b-date-nav b-date-nav-next" id="dNext">›</button>
-    </div>
-
-    <div id="slotsWrap" style="display: none;">
-      <p class="text-sm font-semibold text-ink mb-2" id="slotsDate">—</p>
-      <div class="slot-grid" id="slotGrid">
-        <div class="empty">Loading slots…</div>
+      <div class="row">
+        <span class="label">Service</span>
+        <span class="value">{{ booking.service.name }} / {{ booking.service.duration_minutes }} min</span>
       </div>
-    </div>
+      <div class="row">
+        <span class="label">Currently scheduled</span>
+        <span class="value">{{ booking.start_time|date:"M j" }} at {{ booking.start_time|time:"g:i A" }}</span>
+      </div>
+    </section>
 
-    <form method="POST" id="rescheduleForm" style="display: none; margin-top: 18px;">
-      {% csrf_token %}
-      <input type="hidden" name="slot_iso" id="slotIso">
-      <button type="submit" class="confirm-btn" id="confirmBtn">
-        Confirm new time
-      </button>
-    </form>
-  </div>
-</div>
+    <section class="card">
+      <h2>Pick a new time</h2>
 
-<script>
-(function() {
-  const token = '{{ token }}';
-  const strip = document.getElementById('dStrip');
-  const prevBtn = document.getElementById('dPrev');
-  const nextBtn = document.getElementById('dNext');
-  const slotsWrap = document.getElementById('slotsWrap');
-  const slotsDate = document.getElementById('slotsDate');
-  const slotGrid = document.getElementById('slotGrid');
-  const form = document.getElementById('rescheduleForm');
-  const slotIso = document.getElementById('slotIso');
-  const confirmBtn = document.getElementById('confirmBtn');
+      <div class="b-date-wrap">
+        <button type="button" class="b-date-nav b-date-nav-prev" id="dPrev">&lsaquo;</button>
+        <div class="b-date-strip" id="dStrip">
+          <div class="empty">Loading...</div>
+        </div>
+        <button type="button" class="b-date-nav b-date-nav-next" id="dNext">&rsaquo;</button>
+      </div>
 
-  let availability = {};
-  let selectedSlot = null;
+      <div id="slotsWrap" style="display:none;">
+        <p class="text-sm font-semibold text-ink mb-2" id="slotsDate">-</p>
+        <div class="slot-grid" id="slotGrid">
+          <div class="empty">Loading slots...</div>
+        </div>
+      </div>
 
-  function isoDate(d) {
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  }
+      <form method="POST" id="rescheduleForm" style="display:none;margin-top:18px;">
+        {% csrf_token %}
+        <input type="hidden" name="slot_iso" id="slotIso">
+        <button type="submit" class="confirm-btn" id="confirmBtn">Confirm new time</button>
+      </form>
+    </section>
+  </main>
 
-  function buildDateStrip() {
-    strip.innerHTML = '';
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  <script>
+  (function() {
+    const token = '{{ token }}';
+    const strip = document.getElementById('dStrip');
+    const prevBtn = document.getElementById('dPrev');
+    const nextBtn = document.getElementById('dNext');
+    const slotsWrap = document.getElementById('slotsWrap');
+    const slotsDate = document.getElementById('slotsDate');
+    const slotGrid = document.getElementById('slotGrid');
+    const form = document.getElementById('rescheduleForm');
+    const slotIso = document.getElementById('slotIso');
 
-    for (let i = 0; i < 14; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const iso = isoDate(d);
-      const has = availability[iso];
+    let availability = {};
 
-      const card = document.createElement('div');
-      card.className = 'b-date-card' + (has ? '' : ' disabled');
-      card.innerHTML = `
-        <div class="b-date-day">${i === 0 ? 'Today' : days[d.getDay()]}</div>
-        <div class="b-date-num">${d.getDate()}</div>
-        <div class="b-date-month">${months[d.getMonth()]}</div>
-        <div class="b-date-dot"></div>
-      `;
-      if (has) card.addEventListener('click', () => selectDate(iso, card, d));
-      strip.appendChild(card);
+    function isoDate(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     }
-  }
 
-  function selectDate(iso, card, dateObj) {
-    strip.querySelectorAll('.b-date-card.selected').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    slotsWrap.style.display = '';
-    form.style.display = 'none';
-    selectedSlot = null;
+    function buildDateStrip() {
+      strip.innerHTML = '';
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    slotsDate.textContent = `${days[dateObj.getDay()]}, ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        const iso = isoDate(d);
+        const has = availability[iso];
 
-    slotGrid.innerHTML = '<div class="empty">Loading slots…</div>';
+        const card = document.createElement('div');
+        card.className = 'b-date-card' + (has ? '' : ' disabled');
+        card.innerHTML = `
+          <div class="b-date-day">${i === 0 ? 'Today' : days[d.getDay()]}</div>
+          <div class="b-date-num">${d.getDate()}</div>
+          <div class="b-date-month">${months[d.getMonth()]}</div>
+          <div class="b-date-dot"></div>
+        `;
 
-    fetch(`/manage/reschedule/${token}/api/slots/?date=${iso}`)
+        if (has) card.addEventListener('click', () => selectDate(iso, card, d));
+        strip.appendChild(card);
+      }
+    }
+
+    function selectDate(iso, card, dateObj) {
+      strip.querySelectorAll('.b-date-card.selected').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      slotsWrap.style.display = '';
+      form.style.display = 'none';
+
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      slotsDate.textContent = `${days[dateObj.getDay()]}, ${months[dateObj.getMonth()]} ${dateObj.getDate()}`;
+
+      slotGrid.innerHTML = '<div class="empty">Loading slots...</div>';
+
+      fetch(`/manage/reschedule/${token}/api/slots/?date=${iso}`)
+        .then(r => r.json())
+        .then(data => {
+          const slots = data.slots || [];
+          if (slots.length === 0) {
+            slotGrid.innerHTML = '<div class="empty">No times available. Try another day.</div>';
+            return;
+          }
+
+          slotGrid.innerHTML = '';
+
+          slots.forEach(s => {
+            const b = document.createElement('div');
+            b.className = 'slot';
+            b.textContent = s.display;
+            b.addEventListener('click', () => {
+              slotGrid.querySelectorAll('.slot.selected').forEach(x => x.classList.remove('selected'));
+              b.classList.add('selected');
+              slotIso.value = s.iso;
+              form.style.display = '';
+            });
+            slotGrid.appendChild(b);
+          });
+        });
+    }
+
+    fetch(`/manage/reschedule/${token}/api/summary/`)
       .then(r => r.json())
       .then(data => {
-        const slots = data.slots || [];
-        if (slots.length === 0) {
-          slotGrid.innerHTML = '<div class="empty">No times available — try another day.</div>';
-          return;
-        }
-        slotGrid.innerHTML = '';
-        slots.forEach(s => {
-          const b = document.createElement('div');
-          b.className = 'slot';
-          b.textContent = s.display;
-          b.addEventListener('click', () => {
-            slotGrid.querySelectorAll('.slot.selected').forEach(x => x.classList.remove('selected'));
-            b.classList.add('selected');
-            selectedSlot = s;
-            slotIso.value = s.iso;
-            form.style.display = '';
-          });
-          slotGrid.appendChild(b);
-        });
+        availability = data.availability || {};
+        buildDateStrip();
       });
-  }
 
-  fetch(`/manage/reschedule/${token}/api/summary/`)
-    .then(r => r.json())
-    .then(data => {
-      availability = data.availability || {};
-      buildDateStrip();
-    });
-
-  prevBtn.addEventListener('click', () => strip.scrollBy({left: -200, behavior: 'smooth'}));
-  nextBtn.addEventListener('click', () => strip.scrollBy({left: 200, behavior: 'smooth'}));
-})();
-</script>
-
+    prevBtn.addEventListener('click', () => strip.scrollBy({left: -220, behavior: 'smooth'}));
+    nextBtn.addEventListener('click', () => strip.scrollBy({left: 220, behavior: 'smooth'}));
+  })();
+  </script>
 </body>
 </html>

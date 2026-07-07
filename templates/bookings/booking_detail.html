@@ -1,259 +1,504 @@
 {% extends 'base.html' %}
 
-{% block content %}
-<div class="px-8 py-6 max-w-5xl">
+{% block title %}Booking details - Showpiece{% endblock %}
+{% block page_title %}Booking details{% endblock %}
+{% block page_sub %}Review the appointment, client info, private notes, and status{% endblock %}
 
-  <!-- Back link + reference -->
-  <div class="flex items-center justify-between mb-6 flex-wrap gap-2">
-    <a href="{% url 'reservations' %}"
-       class="text-sm text-muted hover:text-ink transition-colors flex items-center gap-1">
-      ← Back to reservations
-    </a>
-    <div class="text-xs text-muted">
-      Reference:
-      <span class="font-mono font-semibold text-ink ml-1">{{ booking.reference_code }}</span>
-    </div>
+{% block content %}
+<style>
+  .bd-shell {
+    max-width: 1120px;
+  }
+
+  .bd-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+  }
+
+  .bd-back {
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .bd-back:hover {
+    color: #0F0E0D;
+  }
+
+  .bd-ref {
+    color: rgba(15,14,13,0.58);
+    font-size: 12px;
+  }
+
+  .bd-ref span {
+    color: #0F0E0D;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700;
+  }
+
+  .bd-message {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .bd-message.error {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border: 1px solid #FECACA;
+  }
+
+  .bd-message.ok {
+    background: #ECFDF5;
+    color: #047857;
+    border: 1px solid #A7F3D0;
+  }
+
+  .bd-status {
+    margin-bottom: 18px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(15,14,13,0.08);
+    background: #FFFFFF;
+  }
+
+  .bd-status-label {
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .bd-status.confirmed .bd-status-label { color: #047857; }
+  .bd-status.pending .bd-status-label { color: #92400E; }
+  .bd-status.completed .bd-status-label { color: #374151; }
+  .bd-status.no-show .bd-status-label { color: #C2410C; }
+  .bd-status.cancelled .bd-status-label { color: #B91C1C; }
+
+  .bd-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .bd-stack {
+    display: grid;
+    gap: 18px;
+  }
+
+  .bd-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  .bd-card-title {
+    margin: 0 0 14px;
+    color: #0F0E0D;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .bd-rows {
+    display: grid;
+  }
+
+  .bd-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(15,14,13,0.07);
+    font-size: 14px;
+  }
+
+  .bd-row:last-child {
+    border-bottom: 0;
+  }
+
+  .bd-label {
+    color: rgba(15,14,13,0.58);
+  }
+
+  .bd-value {
+    color: #0F0E0D;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .bd-text {
+    color: #0F0E0D;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-line;
+  }
+
+  .bd-help {
+    margin: -6px 0 12px;
+    color: rgba(15,14,13,0.58);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .bd-input {
+    width: 100%;
+    min-height: 112px;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: #0F0E0D;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+  }
+
+  .bd-input:focus {
+    border-color: #3A3AFF;
+    box-shadow: 0 0 0 3px rgba(58,58,255,0.1);
+  }
+
+  .bd-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .bd-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 40px;
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .bd-btn.primary {
+    background: #3A3AFF;
+    color: #FFFFFF;
+  }
+
+  .bd-btn.primary:hover {
+    background: #2929E8;
+  }
+
+  .bd-btn.ghost {
+    background: #FFFFFF;
+    color: #0F0E0D;
+    border-color: rgba(15,14,13,0.08);
+  }
+
+  .bd-btn.ghost:hover {
+    border-color: rgba(15,14,13,0.22);
+  }
+
+  .bd-btn.success {
+    background: #047857;
+    color: #FFFFFF;
+  }
+
+  .bd-btn.warning {
+    background: #FFEDD5;
+    color: #9A3412;
+  }
+
+  .bd-btn.danger {
+    background: #FEF2F2;
+    color: #B91C1C;
+    border-color: #FECACA;
+  }
+
+  .bd-client-head {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .bd-avatar {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: #0F0E0D;
+    color: #FFFFFF;
+    font-weight: 800;
+    flex: 0 0 auto;
+  }
+
+  .bd-client-name {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .bd-link {
+    color: #2929E8;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+  }
+
+  .bd-chip {
+    display: inline-flex;
+    margin-left: 6px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(58,58,255,0.1);
+    color: #2929E8;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .bd-history-link {
+    display: block;
+    margin: 0 -8px;
+    padding: 9px 8px;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+
+  .bd-history-link:hover {
+    background: #F5F1E8;
+  }
+
+  .bd-meta {
+    color: rgba(15,14,13,0.55);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 0 4px;
+  }
+
+  @media (max-width: 900px) {
+    .bd-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .bd-card {
+      padding: 16px;
+    }
+
+    .bd-row {
+      display: grid;
+      gap: 4px;
+    }
+
+    .bd-value {
+      text-align: left;
+    }
+
+    .bd-actions,
+    .bd-actions form,
+    .bd-btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<div class="bd-shell">
+  <div class="bd-topbar">
+    <a href="{% url 'reservations' %}" class="bd-back">&larr; Back to reservations</a>
+    <div class="bd-ref">Reference: <span>{{ booking.reference_code }}</span></div>
   </div>
 
-  <!-- Flash messages -->
   {% if messages %}
     {% for message in messages %}
-      <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
-                  {% if message.tags == 'error' %}bg-red-50 text-red-700
-                  {% else %}bg-emerald-50 text-emerald-700{% endif %}">
+      <div class="bd-message {% if message.tags == 'error' %}error{% else %}ok{% endif %}">
         {{ message }}
       </div>
     {% endfor %}
   {% endif %}
 
-  <!-- Status banner -->
-  <div class="mb-6 p-4 rounded-xl border
-              {% if booking.status == 'confirmed' %}bg-emerald-50 border-emerald-200
-              {% elif booking.status == 'pending_otp' %}bg-yellow-50 border-yellow-200
-              {% elif booking.status == 'completed' %}bg-gray-50 border-gray-200
-              {% elif booking.status == 'no_show' %}bg-orange-50 border-orange-200
-              {% elif booking.status == 'cancelled' or booking.status == 'refused' %}bg-red-50 border-red-200
+  <div class="bd-status
+              {% if booking.status == 'confirmed' %}confirmed
+              {% elif booking.status == 'pending_otp' %}pending
+              {% elif booking.status == 'completed' %}completed
+              {% elif booking.status == 'no_show' %}no-show
+              {% elif booking.status == 'cancelled' or booking.status == 'refused' %}cancelled
               {% endif %}">
-
-    <div class="flex items-center gap-2 text-sm font-semibold
-                {% if booking.status == 'confirmed' %}text-emerald-800
-                {% elif booking.status == 'pending_otp' %}text-yellow-800
-                {% elif booking.status == 'completed' %}text-gray-700
-                {% elif booking.status == 'no_show' %}text-orange-800
-                {% elif booking.status == 'cancelled' or booking.status == 'refused' %}text-red-700
-                {% endif %}">
-      {% if booking.status == 'confirmed' %}✓ Confirmed
-      {% elif booking.status == 'pending_otp' %}⏳ Waiting for client to verify email
-      {% elif booking.status == 'completed' %}✓ Completed
-      {% elif booking.status == 'no_show' %}⚠ Marked as no-show
-      {% elif booking.status == 'cancelled' %}✕ Cancelled
-      {% elif booking.status == 'refused' %}✕ Refused
+    <div class="bd-status-label">
+      {% if booking.status == 'confirmed' %}Confirmed
+      {% elif booking.status == 'pending_otp' %}Waiting for client email verification
+      {% elif booking.status == 'completed' %}Completed
+      {% elif booking.status == 'no_show' %}Marked as no-show
+      {% elif booking.status == 'cancelled' %}Cancelled
+      {% elif booking.status == 'refused' %}Refused
       {% endif %}
     </div>
     {% if booking.cancelled_at %}
-      <p class="text-xs text-muted mt-1">Cancelled on {{ booking.cancelled_at|date:"M j, Y \a\t g:i A" }}</p>
+      <p class="bd-help" style="margin: 6px 0 0;">Cancelled on {{ booking.cancelled_at|date:"M j, Y \a\t g:i A" }}</p>
     {% endif %}
   </div>
 
+  <div class="bd-grid">
+    <div class="bd-stack">
+      <section class="bd-card">
+        <h2 class="bd-card-title">Appointment</h2>
 
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-    <!-- ───── LEFT: 2 cols ───── -->
-    <div class="lg:col-span-2 space-y-6">
-
-      <!-- Booking details card -->
-      <div class="bg-white border border-cream-border rounded-xl p-6">
-        <h2 class="text-lg font-semibold text-ink mb-4">Appointment</h2>
-
-        <div class="space-y-3 text-sm">
-          <div class="flex justify-between py-2 border-b border-cream-border">
-            <span class="text-muted">Service</span>
-            <span class="font-medium text-ink">{{ booking.service.name }}</span>
+        <div class="bd-rows">
+          <div class="bd-row">
+            <span class="bd-label">Service</span>
+            <span class="bd-value">{{ booking.service.name }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b border-cream-border">
-            <span class="text-muted">Duration</span>
-            <span class="font-medium text-ink">{{ booking.service.duration_minutes }} min</span>
+          <div class="bd-row">
+            <span class="bd-label">Duration</span>
+            <span class="bd-value">{{ booking.service.duration_minutes }} min</span>
           </div>
-          <div class="flex justify-between py-2 border-b border-cream-border">
-            <span class="text-muted">Date</span>
-            <span class="font-medium text-ink">{{ booking.start_time|date:"l, F j, Y" }}</span>
+          <div class="bd-row">
+            <span class="bd-label">Date</span>
+            <span class="bd-value">{{ booking.start_time|date:"l, F j, Y" }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b border-cream-border">
-            <span class="text-muted">Time</span>
-            <span class="font-medium text-ink">{{ booking.start_time|time:"g:i A" }} – {{ booking.end_time|time:"g:i A" }}</span>
+          <div class="bd-row">
+            <span class="bd-label">Time</span>
+            <span class="bd-value">{{ booking.start_time|time:"g:i A" }} - {{ booking.end_time|time:"g:i A" }}</span>
           </div>
-          <div class="flex justify-between py-2 border-b border-cream-border">
-            <span class="text-muted">Price</span>
-            <span class="font-semibold text-ink">${{ booking.service.price }}</span>
+          <div class="bd-row">
+            <span class="bd-label">Price</span>
+            <span class="bd-value">${{ booking.service.price }}</span>
           </div>
-          <div class="flex justify-between py-2">
-            <span class="text-muted">Source</span>
-            <span class="font-medium text-ink">{{ booking.get_source_display }}</span>
+          <div class="bd-row">
+            <span class="bd-label">Source</span>
+            <span class="bd-value">{{ booking.get_source_display }}</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Client notes -->
       {% if booking.client_notes %}
-        <div class="bg-white border border-cream-border rounded-xl p-6">
-          <h3 class="text-sm font-semibold text-ink mb-2">Client notes</h3>
-          <p class="text-sm text-ink whitespace-pre-line leading-relaxed">{{ booking.client_notes }}</p>
-        </div>
+        <section class="bd-card">
+          <h3 class="bd-card-title">Client notes</h3>
+          <p class="bd-text">{{ booking.client_notes }}</p>
+        </section>
       {% endif %}
 
-      <!-- Master's private notes -->
-      <div class="bg-white border border-cream-border rounded-xl p-6">
-        <h3 class="text-sm font-semibold text-ink mb-1">Your notes <span class="text-xs text-muted font-normal">(private)</span></h3>
-        <p class="text-xs text-muted mb-3">Only you can see these. Use for client preferences, history, reminders.</p>
+      <section class="bd-card">
+        <h3 class="bd-card-title">Your notes <span style="color:rgba(15,14,13,0.55);font-weight:600;">private</span></h3>
+        <p class="bd-help">Only you can see these. Use this for client preferences, history, or reminders.</p>
 
         <form method="POST" action="{% url 'booking_save_notes' ref=booking.reference_code %}">
           {% csrf_token %}
           <textarea name="master_notes" rows="4" maxlength="2000"
-                    placeholder="e.g. Prefers cooler temperatures · pays in cash · brings own products"
-                    class="w-full px-3 py-2.5 border border-cream-border rounded-lg text-sm
-                           focus:outline-none focus:border-ink bg-white resize-none">{{ booking.master_notes }}</textarea>
-          <button type="submit"
-                  class="mt-3 px-4 py-2 bg-ink text-white text-sm font-medium rounded-lg hover:bg-gray-800">
-            Save notes
-          </button>
+                    placeholder="e.g. Prefers cooler temperatures, pays in cash, brings own products"
+                    class="bd-input">{{ booking.master_notes }}</textarea>
+          <button type="submit" class="bd-btn primary" style="margin-top:12px;">Save notes</button>
         </form>
-      </div>
+      </section>
 
-      <!-- Status actions (only for upcoming/confirmed bookings) -->
       {% if booking.status == 'confirmed' or booking.status == 'completed' or booking.status == 'no_show' %}
-        <div class="bg-white border border-cream-border rounded-xl p-6">
-          <h3 class="text-sm font-semibold text-ink mb-1">Mark appointment</h3>
-          <p class="text-xs text-muted mb-3">Update after the appointment has happened.</p>
+        <section class="bd-card">
+          <h3 class="bd-card-title">Mark appointment</h3>
+          <p class="bd-help">Update this after the appointment has happened.</p>
 
-          <div class="flex flex-wrap gap-2">
+          <div class="bd-actions">
             {% if booking.status != 'completed' %}
-              <form method="POST" action="{% url 'booking_change_status' ref=booking.reference_code %}" class="inline">
+              <form method="POST" action="{% url 'booking_change_status' ref=booking.reference_code %}">
                 {% csrf_token %}
                 <input type="hidden" name="status" value="completed">
-                <button type="submit"
-                        class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium
-                               rounded-lg hover:bg-emerald-700">
-                  ✓ Mark completed
-                </button>
+                <button type="submit" class="bd-btn success">Mark completed</button>
               </form>
             {% endif %}
 
             {% if booking.status != 'no_show' %}
-              <form method="POST" action="{% url 'booking_change_status' ref=booking.reference_code %}" class="inline">
+              <form method="POST" action="{% url 'booking_change_status' ref=booking.reference_code %}">
                 {% csrf_token %}
                 <input type="hidden" name="status" value="no_show">
-                <button type="submit"
-                        class="px-4 py-2 bg-orange-100 text-orange-800 text-sm font-medium
-                               rounded-lg hover:bg-orange-200">
-                  ⚠ Mark as no-show
-                </button>
+                <button type="submit" class="bd-btn warning">Mark as no-show</button>
               </form>
             {% endif %}
 
             {% if booking.status != 'confirmed' %}
-              <form method="POST" action="{% url 'booking_change_status' ref=booking.reference_code %}" class="inline">
+              <form method="POST" action="{% url 'booking_change_status' ref=booking.reference_code %}">
                 {% csrf_token %}
                 <input type="hidden" name="status" value="confirmed">
-                <button type="submit"
-                        class="px-4 py-2 bg-cream border border-cream-border text-ink
-                               text-sm font-medium rounded-lg hover:bg-white">
-                  Undo (mark confirmed)
-                </button>
+                <button type="submit" class="bd-btn ghost">Undo to confirmed</button>
               </form>
             {% endif %}
           </div>
-        </div>
+        </section>
       {% endif %}
-
     </div>
 
-    <!-- ───── RIGHT: 1 col ───── -->
-    <div class="space-y-6">
+    <aside class="bd-stack">
+      <section class="bd-card">
+        <h3 class="bd-card-title">Client</h3>
 
-      <!-- Client card -->
-      <div class="bg-white border border-cream-border rounded-xl p-6">
-        <h3 class="text-sm font-semibold text-ink mb-3">Client</h3>
-
-        <div class="flex items-start gap-3 mb-3">
-          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gold to-gold-dark
-                      flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
-            {{ booking.client_name|slice:":2"|upper }}
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap">
-              <p class="text-sm font-semibold text-ink">{{ booking.client_name }}</p>
+        <div class="bd-client-head">
+          <div class="bd-avatar">{{ booking.client_name|slice:":2"|upper }}</div>
+          <div>
+            <p class="bd-client-name">
+              {{ booking.client_name }}
               {% if booking.first_time_client %}
-                <span class="px-1.5 py-0.5 bg-gold-light text-gold-dark text-[10px]
-                             font-semibold rounded uppercase">New</span>
+                <span class="bd-chip">New</span>
               {% endif %}
-            </div>
-            <a href="mailto:{{ booking.client_email }}"
-               class="text-xs text-gold-dark hover:underline break-all">{{ booking.client_email }}</a>
+            </p>
+            <a href="mailto:{{ booking.client_email }}" class="bd-link">{{ booking.client_email }}</a>
           </div>
         </div>
 
         {% if booking.client_phone %}
-          <div class="pt-3 border-t border-cream-border">
-            <p class="text-[10px] text-muted uppercase tracking-wide mb-0.5">Phone</p>
-            <a href="tel:{{ booking.client_phone }}"
-               class="text-sm text-ink font-medium hover:text-gold-dark">{{ booking.client_phone }}</a>
+          <div class="bd-row">
+            <span class="bd-label">Phone</span>
+            <a href="tel:{{ booking.client_phone }}" class="bd-value" style="text-decoration:none;">{{ booking.client_phone }}</a>
           </div>
         {% endif %}
-      </div>
+      </section>
 
-      <!-- Client history -->
       {% if client_history %}
-        <div class="bg-white border border-cream-border rounded-xl p-6">
-          <h3 class="text-sm font-semibold text-ink mb-3">
-            Previous visits <span class="text-xs font-normal text-muted">({{ client_history|length }})</span>
-          </h3>
-          <div class="space-y-2">
-            {% for h in client_history %}
-              <a href="{% url 'booking_detail' ref=h.reference_code %}"
-                 class="block p-2 -mx-2 hover:bg-cream rounded-lg transition-colors">
-                <p class="text-xs font-medium text-ink">{{ h.start_time|date:"M j, Y" }}</p>
-                <p class="text-xs text-muted">{{ h.service.name }} · {{ h.get_status_display }}</p>
-              </a>
-            {% endfor %}
-          </div>
-        </div>
+        <section class="bd-card">
+          <h3 class="bd-card-title">Previous visits <span style="color:rgba(15,14,13,0.55);font-weight:600;">({{ client_history|length }})</span></h3>
+
+          {% for h in client_history %}
+            <a href="{% url 'booking_detail' ref=h.reference_code %}" class="bd-history-link">
+              <p style="margin:0;color:#0F0E0D;font-size:13px;font-weight:700;">{{ h.start_time|date:"M j, Y" }}</p>
+              <p style="margin:2px 0 0;color:rgba(15,14,13,0.58);font-size:12px;">{{ h.service.name }} / {{ h.get_status_display }}</p>
+            </a>
+          {% endfor %}
+        </section>
       {% endif %}
 
-      <!-- Cancel booking -->
       {% if booking.status == 'confirmed' or booking.status == 'pending_otp' %}
-        <div class="bg-white border border-red-100 rounded-xl p-6">
-          <h3 class="text-sm font-semibold text-red-700 mb-1">Cancel booking</h3>
-          <p class="text-xs text-muted mb-3">
-            The client will be notified by email.
-          </p>
+        <section class="bd-card" style="border-color:#FECACA;">
+          <h3 class="bd-card-title" style="color:#B91C1C;">Cancel booking</h3>
+          <p class="bd-help">The client will be notified by email.</p>
 
           <form method="POST" action="{% url 'booking_cancel' ref=booking.reference_code %}"
                 onsubmit="return confirm('Cancel this booking? The client will be notified.');">
             {% csrf_token %}
             <textarea name="reason" rows="2" maxlength="300"
                       placeholder="Reason for client (optional)"
-                      class="w-full px-3 py-2 border border-cream-border rounded-lg text-xs
-                             focus:outline-none focus:border-ink bg-white resize-none mb-2"></textarea>
-            <button type="submit"
-                    class="w-full px-4 py-2 bg-red-50 text-red-700 text-sm font-medium
-                           rounded-lg hover:bg-red-100 border border-red-200">
-              Cancel this booking
-            </button>
+                      class="bd-input" style="min-height:78px;"></textarea>
+            <button type="submit" class="bd-btn danger" style="width:100%;margin-top:10px;">Cancel this booking</button>
           </form>
-        </div>
+        </section>
       {% endif %}
 
-      <!-- Created/updated info -->
-      <div class="text-xs text-muted px-2">
+      <div class="bd-meta">
         <p>Booked {{ booking.created_at|date:"M j, Y \a\t g:i A" }}</p>
         {% if booking.updated_at and booking.updated_at != booking.created_at %}
-          <p class="mt-0.5">Updated {{ booking.updated_at|date:"M j, Y \a\t g:i A" }}</p>
+          <p>Updated {{ booking.updated_at|date:"M j, Y \a\t g:i A" }}</p>
         {% endif %}
       </div>
-
-    </div>
-
+    </aside>
   </div>
-
 </div>
 {% endblock %}

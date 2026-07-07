@@ -1,112 +1,333 @@
-<!-- Tabs -->
-<div class="border-b border-cream-border mb-6">
-  <div class="flex gap-1">
-    <a href="?view=list&tab=upcoming"
-       class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-              {% if tab == 'upcoming' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-      Upcoming
-      {% if counts.upcoming %}<span class="ml-1 px-1.5 py-0.5 bg-gold-light text-gold-dark text-xs font-semibold rounded">{{ counts.upcoming }}</span>{% endif %}
-    </a>
-    <a href="?view=list&tab=past"
-       class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-              {% if tab == 'past' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-      Past
-      {% if counts.past %}<span class="ml-1 px-1.5 py-0.5 bg-cream text-muted text-xs font-semibold rounded">{{ counts.past }}</span>{% endif %}
-    </a>
-    <a href="?view=list&tab=cancelled"
-       class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-              {% if tab == 'cancelled' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-      Cancelled
-      {% if counts.cancelled %}<span class="ml-1 px-1.5 py-0.5 bg-cream text-muted text-xs font-semibold rounded">{{ counts.cancelled }}</span>{% endif %}
-    </a>
-    <a href="?view=list&tab=all"
-       class="px-4 py-2.5 text-sm font-medium border-b-2 transition-colors
-              {% if tab == 'all' %}border-ink text-ink{% else %}border-transparent text-muted hover:text-ink{% endif %}">
-      All
-      {% if counts.all %}<span class="ml-1 px-1.5 py-0.5 bg-cream text-muted text-xs font-semibold rounded">{{ counts.all }}</span>{% endif %}
-    </a>
-  </div>
+<style>
+  .res-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid rgba(15,14,13,0.08);
+  }
+
+  .res-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 13px;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 10px;
+    background: #FFFFFF;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .res-tab:hover {
+    color: #0F0E0D;
+    border-color: rgba(15,14,13,0.2);
+  }
+
+  .res-tab.active {
+    background: #0F0E0D;
+    color: #FFFFFF;
+    border-color: #0F0E0D;
+  }
+
+  .res-count {
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(58,58,255,0.1);
+    color: #2929E8;
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .res-tab.active .res-count {
+    background: rgba(255,255,255,0.16);
+    color: #FFFFFF;
+  }
+
+  .res-list {
+    display: grid;
+    gap: 10px;
+  }
+
+  .res-card {
+    display: block;
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    padding: 15px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color .15s, transform .15s;
+  }
+
+  .res-card:hover {
+    border-color: rgba(58,58,255,0.35);
+    transform: translateY(-1px);
+  }
+
+  .res-card-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .res-date {
+    width: 62px;
+    flex: 0 0 62px;
+    padding: 10px 8px;
+    border-radius: 10px;
+    background: #F5F1E8;
+    border: 1px solid #DED8CA;
+    text-align: center;
+  }
+
+  .res-month,
+  .res-dayname {
+    color: rgba(15,14,13,0.55);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .res-day {
+    margin-top: 3px;
+    color: #0F0E0D;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .res-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .res-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 3px;
+  }
+
+  .res-name {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .res-service {
+    color: #0F0E0D;
+    font-size: 14px;
+  }
+
+  .res-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 7px;
+    color: rgba(15,14,13,0.58);
+    font-size: 12px;
+  }
+
+  .res-badge {
+    display: inline-flex;
+    padding: 3px 7px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .res-badge.new {
+    background: rgba(58,58,255,0.1);
+    color: #2929E8;
+  }
+
+  .res-badge.pending {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+
+  .res-badge.confirmed {
+    background: #D1FAE5;
+    color: #065F46;
+  }
+
+  .res-badge.completed {
+    background: #F3F4F6;
+    color: #374151;
+  }
+
+  .res-badge.no-show {
+    background: #FFEDD5;
+    color: #9A3412;
+  }
+
+  .res-badge.cancelled {
+    background: #FEF2F2;
+    color: #B91C1C;
+  }
+
+  .res-ref {
+    text-align: right;
+    flex: 0 0 auto;
+  }
+
+  .res-ref-label {
+    color: rgba(15,14,13,0.45);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .res-ref-code {
+    color: #0F0E0D;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .res-empty {
+    background: #FFFFFF;
+    border: 1px dashed rgba(15,14,13,0.16);
+    border-radius: 12px;
+    padding: 48px 20px;
+    text-align: center;
+  }
+
+  .res-empty-title {
+    margin: 0 0 6px;
+    color: #0F0E0D;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .res-empty-copy {
+    max-width: 420px;
+    margin: 0 auto;
+    color: rgba(15,14,13,0.58);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .res-empty-copy a {
+    color: #2929E8;
+    font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .res-card-inner {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr);
+    }
+
+    .res-ref {
+      grid-column: 1 / -1;
+      text-align: left;
+      padding-top: 8px;
+      border-top: 1px solid rgba(15,14,13,0.07);
+    }
+  }
+</style>
+
+<div class="res-tabs">
+  <a href="?view=list&tab=upcoming" class="res-tab {% if tab == 'upcoming' %}active{% endif %}">
+    Upcoming
+    {% if counts.upcoming %}<span class="res-count">{{ counts.upcoming }}</span>{% endif %}
+  </a>
+  <a href="?view=list&tab=past" class="res-tab {% if tab == 'past' %}active{% endif %}">
+    Past
+    {% if counts.past %}<span class="res-count">{{ counts.past }}</span>{% endif %}
+  </a>
+  <a href="?view=list&tab=cancelled" class="res-tab {% if tab == 'cancelled' %}active{% endif %}">
+    Cancelled
+    {% if counts.cancelled %}<span class="res-count">{{ counts.cancelled }}</span>{% endif %}
+  </a>
+  <a href="?view=list&tab=all" class="res-tab {% if tab == 'all' %}active{% endif %}">
+    All
+    {% if counts.all %}<span class="res-count">{{ counts.all }}</span>{% endif %}
+  </a>
 </div>
 
-<!-- Bookings list -->
 {% if bookings %}
-  <div class="space-y-2">
+  <div class="res-list">
     {% for b in bookings %}
-
-      <a href="{% url 'booking_detail' ref=b.reference_code %}"
-         class="block bg-white border border-cream-border rounded-xl p-4
-                hover:border-gold transition-colors">
-
-        <div class="flex items-start gap-4">
-
-          <!-- Date block -->
-          <div class="text-center flex-shrink-0 px-3 py-2 bg-cream rounded-lg border border-cream-border min-w-[60px]">
-            <div class="text-[10px] text-muted uppercase tracking-wider font-medium">{{ b.start_time|date:"M" }}</div>
-            <div class="text-2xl font-semibold text-ink leading-none mt-1">{{ b.start_time|date:"j" }}</div>
-            <div class="text-[10px] text-muted mt-1">{{ b.start_time|date:"D" }}</div>
+      <a href="{% url 'booking_detail' ref=b.reference_code %}" class="res-card">
+        <div class="res-card-inner">
+          <div class="res-date">
+            <div class="res-month">{{ b.start_time|date:"M" }}</div>
+            <div class="res-day">{{ b.start_time|date:"j" }}</div>
+            <div class="res-dayname">{{ b.start_time|date:"D" }}</div>
           </div>
 
-          <!-- Main info -->
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center gap-2 flex-wrap mb-0.5">
-              <span class="font-semibold text-ink text-sm">{{ b.client_name }}</span>
+          <div class="res-body">
+            <div class="res-line">
+              <span class="res-name">{{ b.client_name }}</span>
 
               {% if b.first_time_client %}
-                <span class="px-1.5 py-0.5 bg-gold-light text-gold-dark text-[10px] font-semibold rounded uppercase tracking-wide">New</span>
+                <span class="res-badge new">New</span>
               {% endif %}
 
               {% if b.status == 'pending_otp' %}
-                <span class="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-semibold rounded uppercase tracking-wide">Pending OTP</span>
+                <span class="res-badge pending">Pending OTP</span>
               {% elif b.status == 'confirmed' %}
-                <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-semibold rounded uppercase tracking-wide">Confirmed</span>
+                <span class="res-badge confirmed">Confirmed</span>
               {% elif b.status == 'completed' %}
-                <span class="px-1.5 py-0.5 bg-gray-100 text-gray-700 text-[10px] font-semibold rounded uppercase tracking-wide">Completed</span>
+                <span class="res-badge completed">Completed</span>
               {% elif b.status == 'no_show' %}
-                <span class="px-1.5 py-0.5 bg-orange-100 text-orange-800 text-[10px] font-semibold rounded uppercase tracking-wide">No-show</span>
+                <span class="res-badge no-show">No-show</span>
               {% elif b.status == 'cancelled' %}
-                <span class="px-1.5 py-0.5 bg-red-50 text-red-700 text-[10px] font-semibold rounded uppercase tracking-wide">Cancelled</span>
+                <span class="res-badge cancelled">Cancelled</span>
               {% elif b.status == 'refused' %}
-                <span class="px-1.5 py-0.5 bg-red-50 text-red-700 text-[10px] font-semibold rounded uppercase tracking-wide">Refused</span>
+                <span class="res-badge cancelled">Refused</span>
               {% endif %}
             </div>
 
-            <p class="text-sm text-ink">{{ b.service.name }}</p>
+            <p class="res-service">{{ b.service.name }}</p>
 
-            <div class="flex items-center gap-3 text-xs text-muted mt-1.5">
-              <span>🕒 {{ b.start_time|time:"g:i A" }} · {{ b.service.duration_minutes }} min</span>
-              <span>·</span>
+            <div class="res-meta">
+              <span>{{ b.start_time|time:"g:i A" }}</span>
+              <span>/</span>
+              <span>{{ b.service.duration_minutes }} min</span>
+              <span>/</span>
               <span>${{ b.service.price }}</span>
               {% if b.client_phone %}
-                <span>·</span>
+                <span>/</span>
                 <span>{{ b.client_phone }}</span>
               {% endif %}
             </div>
           </div>
 
-          <!-- Reference -->
-          <div class="text-right flex-shrink-0">
-            <div class="text-[10px] text-muted uppercase tracking-wide">Ref</div>
-            <div class="text-xs font-mono font-semibold text-ink">{{ b.reference_code }}</div>
+          <div class="res-ref">
+            <div class="res-ref-label">Ref</div>
+            <div class="res-ref-code">{{ b.reference_code }}</div>
           </div>
         </div>
       </a>
-
     {% endfor %}
   </div>
 {% else %}
-  <div class="bg-white border border-cream-border rounded-xl py-16 text-center">
-    <div class="text-4xl mb-3">📅</div>
-    <p class="text-sm font-medium text-ink mb-1">
+  <div class="res-empty">
+    <p class="res-empty-title">
       {% if tab == 'upcoming' %}No upcoming bookings
       {% elif tab == 'past' %}No past bookings
       {% elif tab == 'cancelled' %}No cancelled bookings
       {% else %}No bookings yet{% endif %}
     </p>
-    <p class="text-sm text-muted max-w-sm mx-auto">
+    <p class="res-empty-copy">
       {% if tab == 'upcoming' %}
-        When clients book with you, they'll appear here.
+        When clients book with you, they will appear here.
         Share your booking link:
-        <a href="/book/{{ request.user.username }}/" class="text-gold-dark underline">/book/{{ request.user.username }}/</a>
+        <a href="/book/{{ request.user.username }}/">/book/{{ request.user.username }}/</a>
       {% else %}
         Nothing to show in this tab.
       {% endif %}

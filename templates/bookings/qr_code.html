@@ -1,102 +1,206 @@
 {% extends 'base.html' %}
 
+{% block title %}QR code - Showpiece{% endblock %}
+{% block page_title %}Your QR code{% endblock %}
+{% block page_sub %}Share your booking page from your station, profile, cards, or messages{% endblock %}
+
 {% block content %}
-<div class="px-8 py-6 max-w-3xl">
+<style>
+  .qr-shell {
+    max-width: 980px;
+  }
 
-  <h1 class="text-2xl font-serif italic text-ink mb-1">Your QR code</h1>
-  <p class="text-sm text-muted mb-6">
-    Print it. Tape it to your station. Share it on Instagram. When clients scan it,
-    they land on your booking page.
-  </p>
+  .qr-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.85fr) minmax(0, 1.4fr);
+    gap: 18px;
+    align-items: start;
+  }
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+  .qr-card {
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    padding: 18px;
+  }
 
-    <!-- QR card -->
-    <div class="md:col-span-1">
-      <div class="bg-white border border-cream-border rounded-2xl p-6 text-center">
-        <img src="{% url 'qr_code_image' username=username %}?size=400"
-             alt="QR code"
-             class="w-full h-auto max-w-[280px] mx-auto rounded-lg"
-             id="qrImage">
-        <p class="text-xs font-mono text-muted mt-4 break-all">
-          stylebook.com/profile/{{ username }}
-        </p>
-      </div>
-    </div>
+  .qr-main {
+    text-align: center;
+  }
 
-    <!-- Right column: actions -->
-    <div class="md:col-span-2 space-y-4">
+  .qr-img {
+    width: 100%;
+    max-width: 290px;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 10px;
+  }
 
-      <div class="bg-white border border-cream-border rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-ink mb-3">Download</h3>
-        <p class="text-xs text-muted mb-4">
-          High resolution. Best for printing on cards, posters, station signs.
-        </p>
-        <div class="flex flex-wrap gap-2">
+  .qr-code-url {
+    margin-top: 14px;
+    color: rgba(15,14,13,0.55);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .qr-title {
+    margin: 0 0 8px;
+    color: #0F0E0D;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .qr-copy {
+    margin: 0 0 14px;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .qr-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .qr-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 8px 13px;
+    border-radius: 10px;
+    border: 1px solid rgba(15,14,13,0.08);
+    background: #FFFFFF;
+    color: #0F0E0D;
+    text-decoration: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .qr-btn.primary {
+    background: #3A3AFF;
+    border-color: #3A3AFF;
+    color: #FFFFFF;
+  }
+
+  .qr-btn.primary:hover {
+    background: #2929E8;
+  }
+
+  .qr-share-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 10px;
+    background: #F5F1E8;
+  }
+
+  .qr-share-box code {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #0F0E0D;
+    font-size: 12px;
+  }
+
+  .qr-tips {
+    background: #F5F1E8;
+  }
+
+  .qr-tips ul {
+    margin: 0;
+    padding-left: 18px;
+    color: rgba(15,14,13,0.62);
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .qr-tips strong {
+    color: #0F0E0D;
+  }
+
+  @media (max-width: 780px) {
+    .qr-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .qr-actions,
+    .qr-btn {
+      width: 100%;
+    }
+
+    .qr-share-box {
+      display: grid;
+    }
+  }
+</style>
+
+<div class="qr-shell">
+  <div class="qr-grid">
+    <section class="qr-card qr-main">
+      <img src="{% url 'qr_code_image' username=username %}?size=400"
+           alt="QR code"
+           class="qr-img"
+           id="qrImage">
+      <p class="qr-code-url">showpiece.com/profile/{{ username }}</p>
+    </section>
+
+    <div class="space-y-4">
+      <section class="qr-card">
+        <h3 class="qr-title">Download</h3>
+        <p class="qr-copy">High resolution files for cards, posters, station signs, and printed handouts.</p>
+
+        <div class="qr-actions">
           <a href="{% url 'qr_code_image' username=username %}?size=600&download=1"
-             class="px-4 py-2 bg-ink text-white text-sm font-medium rounded-lg hover:bg-gray-800">
-            Download 600px
-          </a>
+             class="qr-btn primary">Download 600px</a>
           <a href="{% url 'qr_code_image' username=username %}?size=1000&download=1"
-             class="px-4 py-2 bg-cream border border-cream-border text-ink text-sm font-medium rounded-lg hover:bg-white">
-            Download 1000px
-          </a>
+             class="qr-btn">Download 1000px</a>
           <a href="{% url 'qr_code_image' username=username %}?size=1200&download=1"
-             class="px-4 py-2 bg-cream border border-cream-border text-ink text-sm font-medium rounded-lg hover:bg-white">
-            Download 1200px (print)
-          </a>
+             class="qr-btn">Download 1200px</a>
         </div>
-      </div>
+      </section>
 
-      <div class="bg-white border border-cream-border rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-ink mb-2">Share your profile</h3>
-        <p class="text-xs text-muted mb-3">
-          Your profile shows your work, experience, and a Book button. Paste it in your Instagram bio,
-          WhatsApp signature, or text it to clients directly.
-        </p>
+      <section class="qr-card">
+        <h3 class="qr-title">Share your profile</h3>
+        <p class="qr-copy">Paste this in your Instagram bio, WhatsApp signature, or send it to clients directly.</p>
 
-        <div class="flex items-center gap-2 bg-cream rounded-lg p-3 mb-3">
-          <code class="flex-1 text-xs font-mono text-ink truncate select-all" id="bookingUrl">{{ profile_url }}</code>
-          <button type="button" onclick="copyUrl()"
-                  class="px-3 py-1.5 bg-white border border-cream-border rounded text-xs font-medium text-ink hover:bg-cream-border"
-                  id="copyBtn">
-            Copy
-          </button>
+        <div class="qr-share-box">
+          <code id="bookingUrl">{{ profile_url }}</code>
+          <button type="button" onclick="copyUrl()" class="qr-btn" id="copyBtn">Copy</button>
         </div>
 
-        <div class="flex flex-wrap gap-2">
+        <div class="qr-actions">
           <a href="https://wa.me/?text={{ booking_url|urlencode }}"
              target="_blank" rel="noopener"
-             class="px-3 py-2 bg-emerald-50 text-emerald-700 text-xs font-medium rounded-lg hover:bg-emerald-100">
-            Share on WhatsApp
-          </a>
+             class="qr-btn">WhatsApp</a>
           <a href="https://t.me/share/url?url={{ booking_url|urlencode }}"
              target="_blank" rel="noopener"
-             class="px-3 py-2 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg hover:bg-blue-100">
-            Share on Telegram
-          </a>
-          <a href="mailto:?subject=Book%20with%20me%20on%20StyleBook&body={{ booking_url|urlencode }}"
-             class="px-3 py-2 bg-cream border border-cream-border text-ink text-xs font-medium rounded-lg hover:bg-white">
-            Share via email
-          </a>
+             class="qr-btn">Telegram</a>
+          <a href="mailto:?subject=Book%20with%20me%20on%20Showpiece&body={{ booking_url|urlencode }}"
+             class="qr-btn">Email</a>
         </div>
-      </div>
+      </section>
 
-      <div class="bg-cream rounded-xl p-5">
-        <h3 class="text-sm font-semibold text-ink mb-2">Pro tips</h3>
-        <ul class="text-xs text-muted space-y-1.5 leading-relaxed">
-          <li>📱 Add your profile link to your <strong>Instagram bio</strong> — new visitors see your portfolio + experience before booking</li>
-          <li>💼 Put the QR on your <strong>business cards</strong> — scanners see your work first, then book</li>
-          <li>🪑 Print it large and tape it to your <strong>station mirror</strong> — clients can browse your portfolio while you work</li>
-          <li>📧 Add it to your <strong>email signature</strong></li>
-          <li>📊 Visitors who land via QR/link show up as "Source: QR code" on bookings — so you can track what's working</li>
+      <section class="qr-card qr-tips">
+        <h3 class="qr-title">Use it where clients already look</h3>
+        <ul>
+          <li>Add your profile link to your <strong>Instagram bio</strong>.</li>
+          <li>Put the QR on your <strong>business cards</strong>.</li>
+          <li>Print it and place it near your <strong>station mirror</strong>.</li>
+          <li>Add it to your <strong>email signature</strong>.</li>
+          <li>Bookings from this link show the source, so you can track what works.</li>
         </ul>
-      </div>
-
+      </section>
     </div>
-
   </div>
-
 </div>
 
 <script>
@@ -105,7 +209,7 @@ function copyUrl() {
   navigator.clipboard.writeText(text).then(() => {
     const btn = document.getElementById('copyBtn');
     const original = btn.textContent;
-    btn.textContent = '✓ Copied';
+    btn.textContent = 'Copied';
     setTimeout(() => { btn.textContent = original; }, 2000);
   });
 }

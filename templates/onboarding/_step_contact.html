@@ -15,13 +15,16 @@
 
   .contact-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
   }
 
   .contact-field {
     display: grid;
     gap: 7px;
+    min-width: 0;
+    align-content: start;
   }
 
   .contact-label {
@@ -34,6 +37,7 @@
 
   .contact-input {
     width: 100%;
+    min-width: 0;
     min-height: 46px;
     border: 1px solid #DED8CA;
     border-radius: 8px;
@@ -57,6 +61,14 @@
 
   .required-mark {
     color: #DC2626;
+  }
+
+  .phone-help {
+    margin: 0;
+    min-height: 34px;
+    color: #77736A;
+    font-size: 12px;
+    line-height: 1.45;
   }
 
   .hours-panel {
@@ -94,15 +106,24 @@
 
   .hours-row {
     display: grid;
-    grid-template-columns: minmax(78px, 1fr) minmax(92px, 118px) 22px minmax(92px, 118px) 62px;
-    gap: 10px;
+    grid-template-columns:
+      minmax(92px, 1fr)
+      minmax(112px, 148px)
+      24px
+      minmax(112px, 148px)
+      72px;
+    gap: 12px;
     align-items: center;
-    padding: 12px 16px;
+    padding: 14px 18px;
     border-bottom: 1px solid #ECE6D8;
   }
 
   .hours-row:last-child {
     border-bottom: 0;
+  }
+
+  .hours-row > * {
+    min-width: 0;
   }
 
   .day-name {
@@ -113,12 +134,13 @@
 
   .time-input {
     width: 100%;
-    min-height: 38px;
+    min-width: 0;
+    min-height: 40px;
     border: 1px solid #DED8CA;
     border-radius: 8px;
     background: #FFFFFF;
     color: #0F0E0D;
-    padding: 8px 9px;
+    padding: 8px 10px;
     font: inherit;
     font-size: 13px;
     outline: none;
@@ -150,33 +172,44 @@
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
+    white-space: nowrap;
   }
 
   .closed-toggle {
     width: 16px;
     height: 16px;
+    flex: 0 0 auto;
     accent-color: #3A3AFF;
   }
 
-  .phone-help {
-    color: #77736A;
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  @media (max-width: 640px) {
+  @media (max-width: 700px) {
     .contact-grid {
       grid-template-columns: 1fr;
     }
 
+    .phone-help {
+      min-height: 0;
+    }
+  }
+
+  @media (max-width: 640px) {
     .hours-row {
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
       padding: 14px;
     }
 
     .day-name {
       grid-column: 1 / -1;
+      margin-bottom: 2px;
+    }
+
+    .time-input {
+      width: 100%;
+      min-width: 0;
+      font-size: 13px;
+      padding-left: 10px;
+      padding-right: 10px;
     }
 
     .time-divider {
