@@ -4,11 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Set up your StyleBook profile</title>
+  <title>Set up your Showpiece profile</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -16,261 +16,568 @@
       theme: {
         extend: {
           colors: {
-            cream:          '#FAFAF7',
-            'cream-border': '#E5E3DC',
-            gold:           '#C9A96E',
-            'gold-light':   '#F5EDD8',
-            'gold-dark':    '#8B6914',
-            ink:            '#1C1917',
-            muted:          '#888780',
+            ink: '#0F0E0D',
+            paper: '#F5F1E8',
+            card: '#FFFFFF',
+            line: '#DED8CA',
+            cobalt: '#3A3AFF',
+            cobaltDark: '#2929E8',
+            muted: '#77736A',
+            soft: '#ECE6D8'
           },
           fontFamily: {
-            sans:  ['Inter', 'sans-serif'],
-            serif: ['Instrument Serif', 'serif'],
-          },
+            sans: ['Space Grotesk', 'sans-serif'],
+            display: ['Anton', 'sans-serif']
+          }
         }
       }
     }
   </script>
 
   <style>
-    body { font-family: 'Inter', sans-serif; background: #FAFAF7; color: #1C1917; }
-
-    .ob-shell {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: 32px 24px 64px;
+    * {
+      box-sizing: border-box;
     }
 
-    .ob-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-    .ob-logo {
-      font-size: 20px;
-      font-weight: 600;
-      letter-spacing: -0.4px;
-    }
-    .ob-logo span { color: #C9A96E; }
-    .ob-tagline {
-      font-size: 12px;
-      color: #888780;
-      margin-top: 2px;
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Space Grotesk', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(58, 58, 255, 0.12), transparent 30rem),
+        #F5F1E8;
+      color: #0F0E0D;
     }
 
-    /* Progress bar */
-    .ob-progress-wrap {
-      background: #E5E3DC;
-      height: 4px;
-      border-radius: 999px;
-      overflow: hidden;
-      margin-bottom: 16px;
-    }
-    .ob-progress-fill {
-      height: 100%;
-      background: linear-gradient(to right, #C9A96E, #8B6914);
-      transition: width 0.3s ease;
-    }
-    .ob-progress-label {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      color: #888780;
-      margin-bottom: 24px;
+    .ob-page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 0.82fr 1.18fr;
     }
 
-    /* Step circles */
-    .ob-steps {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 480px;
-      margin: 0 auto 32px;
-      position: relative;
-    }
-    .ob-steps::before {
-      content: '';
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      right: 14px;
-      height: 1px;
-      background: #E5E3DC;
-      z-index: 0;
-    }
-    .ob-step {
-      position: relative;
-      z-index: 1;
+    .ob-side {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 4px;
+      justify-content: space-between;
+      background: #0F0E0D;
+      color: #FFFFFF;
+      padding: 40px 48px;
+      min-height: 100vh;
     }
-    .ob-step-circle {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      background: #fff;
-      border: 1px solid #E5E3DC;
+
+    .ob-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #FFFFFF;
+      text-decoration: none;
+    }
+
+    .ob-brand-icon {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      font-family: 'Anton', sans-serif;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .ob-brand-text {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
+    }
+
+    .ob-side-kicker {
+      margin: 0 0 18px;
+      color: rgba(255,255,255,0.48);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+    }
+
+    .ob-side-title {
+      margin: 0;
+      max-width: 440px;
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(44px, 5vw, 74px);
+      line-height: 0.92;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .ob-side-copy {
+      max-width: 390px;
+      margin: 20px 0 0;
+      color: rgba(255,255,255,0.58);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .ob-main {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: #888780;
-    }
-    .ob-step.completed .ob-step-circle {
-      background: #C9A96E;
-      border-color: #C9A96E;
-      color: #fff;
-    }
-    .ob-step.current .ob-step-circle {
-      background: #1C1917;
-      border-color: #1C1917;
-      color: #fff;
-    }
-    .ob-step-label {
-      font-size: 10px;
-      color: #888780;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      white-space: nowrap;
-    }
-    .ob-step.current .ob-step-label {
-      color: #1C1917;
-      font-weight: 600;
+      padding: 36px 24px;
     }
 
-    /* Step card */
-    .ob-card {
-      background: #fff;
-      border: 1px solid #E5E3DC;
-      border-radius: 16px;
-      padding: 32px;
+    .ob-shell {
+      width: 100%;
+      max-width: 680px;
     }
-    .ob-step-title {
+
+    .ob-header {
+      display: none;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .ob-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       font-size: 24px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: -0.4px;
-      margin-bottom: 6px;
-    }
-    .ob-step-sub {
-      font-size: 14px;
-      color: #888780;
-      margin-bottom: 24px;
     }
 
-    /* Buttons */
+    .ob-logo::before {
+      content: 'S';
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      font-family: 'Anton', sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .ob-tagline {
+      font-size: 13px;
+      color: #77736A;
+      margin-top: 8px;
+    }
+
+    .ob-panel {
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+      box-shadow: 0 22px 80px rgba(15, 14, 13, 0.12);
+      padding: 24px;
+    }
+
+    .ob-steps {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      position: relative;
+      margin: 0 0 24px;
+      padding: 0 4px;
+    }
+
+    .ob-steps::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 24px;
+      right: 24px;
+      height: 1px;
+      background: #DED8CA;
+      z-index: 0;
+    }
+
+    .ob-step {
+      position: relative;
+      z-index: 1;
+      min-width: 0;
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      align-items: center;
+      gap: 7px;
+      text-align: center;
+    }
+
+    .ob-step-circle {
+      width: 31px;
+      height: 31px;
+      border-radius: 999px;
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #77736A;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all .18s ease;
+    }
+
+    .ob-step.completed .ob-step-circle {
+      background: #3A3AFF;
+      border-color: #3A3AFF;
+      color: #FFFFFF;
+    }
+
+    .ob-step.current .ob-step-circle {
+      background: #0F0E0D;
+      border-color: #0F0E0D;
+      color: #FFFFFF;
+      box-shadow: 0 0 0 4px rgba(58, 58, 255, 0.10);
+    }
+
+    .ob-step-label {
+      max-width: 92px;
+      color: #77736A;
+      font-size: 10px;
+      line-height: 1.25;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      overflow-wrap: anywhere;
+    }
+
+    .ob-step.current .ob-step-label {
+      color: #0F0E0D;
+      font-weight: 700;
+    }
+
+    .ob-progress-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      color: #77736A;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .ob-progress-wrap {
+      height: 7px;
+      background: #ECE6D8;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .ob-progress-fill {
+      height: 100%;
+      background: #3A3AFF;
+      border-radius: inherit;
+      transition: width 0.3s ease;
+    }
+
+    .ob-message {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .ob-message-error {
+      background: #FEF2F2;
+      color: #B91C1C;
+      border: 1px solid #FECACA;
+    }
+
+    .ob-message-success {
+      background: #ECFDF5;
+      color: #047857;
+      border: 1px solid #A7F3D0;
+    }
+
+    .ob-card {
+      border-top: 1px solid #DED8CA;
+      padding-top: 24px;
+    }
+
+    .ob-step-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 0 0 20px;
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(34px, 6vw, 52px);
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .ob-mandatory-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      background: rgba(58, 58, 255, 0.10);
+      color: #2929E8;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .ob-card label {
+      display: block;
+      margin-bottom: 6px;
+      color: #77736A;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .ob-card input[type="text"],
+    .ob-card input[type="email"],
+    .ob-card input[type="number"],
+    .ob-card input[type="tel"],
+    .ob-card input[type="url"],
+    .ob-card input[type="password"],
+    .ob-card select,
+    .ob-card textarea {
+      width: 100%;
+      min-height: 46px;
+      border: 1px solid #DED8CA;
+      border-radius: 8px;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      padding: 11px 14px;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .ob-card textarea {
+      min-height: 118px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .ob-card input:focus,
+    .ob-card select:focus,
+    .ob-card textarea:focus {
+      border-color: #3A3AFF;
+      box-shadow: 0 0 0 3px rgba(58, 58, 255, 0.12);
+    }
+
+    .ob-card input::placeholder,
+    .ob-card textarea::placeholder {
+      color: #77736A;
+    }
+
     .ob-actions {
       display: flex;
       gap: 12px;
       margin-top: 28px;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
     }
+
     .ob-btn {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 10px 20px;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 11px 18px;
       border-radius: 8px;
       font-size: 14px;
-      font-weight: 500;
-      border: none;
+      font-weight: 700;
+      border: 1px solid transparent;
       cursor: pointer;
       text-decoration: none;
       font-family: inherit;
+      transition: background .15s, color .15s, border-color .15s, transform .15s;
     }
+
+    .ob-btn:hover {
+      transform: translateY(-1px);
+    }
+
     .ob-btn-primary {
-      background: #C9A96E;
-      color: #1C1917;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      border-color: #3A3AFF;
     }
-    .ob-btn-primary:hover { background: #8B6914; color: #fff; }
+
+    .ob-btn-primary:hover {
+      background: #2929E8;
+      border-color: #2929E8;
+      color: #FFFFFF;
+    }
+
     .ob-btn-ghost {
-      background: transparent;
-      color: #1C1917;
-      border: 1px solid #E5E3DC;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      border-color: #DED8CA;
     }
-    .ob-btn-ghost:hover { background: #FAFAF7; }
+
+    .ob-btn-ghost:hover {
+      background: #ECE6D8;
+      color: #0F0E0D;
+    }
+
     .ob-btn-link {
       background: transparent;
-      color: #888780;
-      padding: 10px 8px;
+      color: #77736A;
+      padding-left: 8px;
+      padding-right: 8px;
+      border-color: transparent;
+      min-height: 38px;
       font-size: 13px;
     }
-    .ob-btn-link:hover { color: #1C1917; }
 
-    .ob-mandatory-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      background: rgba(185, 28, 28, 0.08);
-      color: #B91C1C;
-      font-size: 10px;
-      font-weight: 600;
-      border-radius: 999px;
-      margin-left: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+    .ob-btn-link:hover {
+      color: #0F0E0D;
+      background: transparent;
+    }
+
+    @media (max-width: 900px) {
+      .ob-page {
+        display: block;
+      }
+
+      .ob-side {
+        display: none;
+      }
+
+      .ob-main {
+        min-height: 100vh;
+        align-items: flex-start;
+        padding: 28px 16px 40px;
+      }
+
+      .ob-header {
+        display: block;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .ob-panel {
+        padding: 18px;
+      }
+
+      .ob-steps {
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 4px;
+      }
+
+      .ob-steps::before {
+        display: none;
+      }
+
+      .ob-step {
+        flex: 0 0 82px;
+      }
+
+      .ob-step-label {
+        max-width: 78px;
+        font-size: 9px;
+      }
+
+      .ob-progress-label {
+        font-size: 11px;
+      }
+
+      .ob-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .ob-btn {
+        width: 100%;
+      }
     }
   </style>
 </head>
 
 <body>
+  <div class="ob-page">
+    <aside class="ob-side">
+      <a href="/" class="ob-brand">
+        <span class="ob-brand-icon">S</span>
+        <span class="ob-brand-text">Showpiece</span>
+      </a>
 
-<div class="ob-shell">
+      <div>
+        <p class="ob-side-kicker">Profile setup</p>
+        <h1 class="ob-side-title">Build a profile that books.</h1>
+        <p class="ob-side-copy">
+          Add your services, style, location, and details so clients understand your work before they reach out.
+        </p>
+      </div>
 
-  <!-- Logo -->
-  <div class="ob-header">
-    <div class="ob-logo">Style<span>Book</span></div>
-    <div class="ob-tagline">Let's set up your professional profile</div>
-  </div>
+      <p class="ob-side-copy">
+        Step {{ step }} of {{ total_steps }} is currently active. You are {{ progress_pct }}% complete.
+      </p>
+    </aside>
 
-  <!-- Step circles -->
-  <div class="ob-steps">
-    {% for s_num, s_name, s_mand, s_partial in steps %}
-      <div class="ob-step
-                  {% if s_num < step %}completed{% endif %}
-                  {% if s_num == step %}current{% endif %}">
-        <div class="ob-step-circle">
-          {% if s_num < step %}✓{% else %}{{ s_num }}{% endif %}
+    <main class="ob-main">
+      <div class="ob-shell">
+
+        <div class="ob-header">
+          <div class="ob-logo">Showpiece</div>
+          <div class="ob-tagline">Let's set up your professional profile</div>
         </div>
-        <div class="ob-step-label">{{ s_name }}</div>
+
+        <section class="ob-panel">
+          <div class="ob-steps">
+            {% for s_num, s_name, s_mand, s_partial in steps %}
+              <div class="ob-step
+                          {% if s_num < step %}completed{% endif %}
+                          {% if s_num == step %}current{% endif %}">
+                <div class="ob-step-circle">
+                  {% if s_num < step %}&check;{% else %}{{ s_num }}{% endif %}
+                </div>
+                <div class="ob-step-label">{{ s_name }}</div>
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="ob-progress-label">
+            <span>Step {{ step }} of {{ total_steps }}</span>
+            <span>{{ progress_pct }}% complete</span>
+          </div>
+
+          <div class="ob-progress-wrap">
+            <div class="ob-progress-fill" style="width: {{ progress_pct }}%;"></div>
+          </div>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="ob-message {% if message.tags == 'error' %}ob-message-error{% else %}ob-message-success{% endif %}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          <div class="ob-card">
+            <h1 class="ob-step-title">
+              {{ step_name }}
+              {% if step_mandatory %}
+                <span class="ob-mandatory-badge">Required</span>
+              {% endif %}
+            </h1>
+
+            {% include partial %}
+          </div>
+        </section>
+
       </div>
-    {% endfor %}
+    </main>
   </div>
-
-  <!-- Progress bar -->
-  <div class="ob-progress-label">
-    <span>Step {{ step }} of {{ total_steps }}</span>
-    <span>{{ progress_pct }}% complete</span>
-  </div>
-  <div class="ob-progress-wrap">
-    <div class="ob-progress-fill" style="width: {{ progress_pct }}%;"></div>
-  </div>
-
-  <!-- Flash messages -->
-  {% if messages %}
-    {% for message in messages %}
-      <div class="mb-4 p-3 rounded-lg text-sm
-                  {% if message.tags == 'error' %}bg-red-50 text-red-700{% else %}bg-green-50 text-green-700{% endif %}">
-        {{ message }}
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  <!-- Step content card -->
-  <div class="ob-card">
-    <h1 class="ob-step-title">
-      {{ step_name }}
-      {% if step_mandatory %}
-        <span class="ob-mandatory-badge">Required</span>
-      {% endif %}
-    </h1>
-
-    {% include partial %}
-  </div>
-
-</div>
-
 </body>
 </html>
