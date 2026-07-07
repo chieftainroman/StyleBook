@@ -28,7 +28,10 @@ def dashboard_view(request):
     """Master dashboard with calculated booking stats."""
     profile, _ = MasterProfile.objects.get_or_create(user=request.user)
 
-    now = timezone.localtime(timezone.now())
+    now = timezone.now()
+    if timezone.is_aware(now):
+        now = timezone.localtime(now)
+        
     today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     tomorrow_start = today_start + timedelta(days=1)
     month_start = today_start.replace(day=1)
