@@ -1,446 +1,1001 @@
+{% extends "base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create account — StyleBook</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+{% block title %}Instagram Post - Showpiece{% endblock %}
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            sidebar:        '#1C1917',
-            'sidebar-active':'#333330',
-            cream:          '#FAFAF7',
-            'cream-card':   '#FFFFFF',
-            'cream-border': '#E5E3DC',
-            gold:           '#C9A96E',
-            'gold-light':   '#F5EDD8',
-            'gold-dark':    '#8B6914',
-            ink:            '#1C1917',
-            muted:          '#888780',
-          },
-          fontFamily: {
-            sans:  ['Inter', 'sans-serif'],
-            serif: ['Instrument Serif', 'serif'],
-          },
-        }
-      }
-    }
-  </script>
-
-  <style>
-    .form-input {
-      display: block; width: 100%;
-      background: #fff; border: 1px solid #E5E3DC;
-      border-radius: 8px; padding: 10px 14px;
-      font-size: 14px; color: #1C1917;
-      outline: none; transition: border-color .15s;
-      font-family: inherit;
-    }
-    .form-input:focus { border-color: #1C1917; }
-    .form-input::placeholder { color: #888780; }
-    .step { display: none; }
-    .step.active { display: block; }
-    .specialty-card input[type="radio"] { display: none; }
-    .specialty-card input[type="radio"]:checked + .specialty-inner {
-      border-color: #1C1917;
-      background: #1C1917;
-      color: #fff;
-    }
-    .specialty-inner {
-      border: 1px solid #E5E3DC;
-      border-radius: 10px;
-      padding: 14px 10px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .15s;
-      background: #fff;
-    }
-    .specialty-inner:hover { border-color: #888780; }
-  </style>
-</head>
-
-<body class="bg-cream font-sans antialiased min-h-screen">
-<div class="min-h-screen grid grid-cols-1 lg:grid-cols-2">
-
-  <!-- ── Left panel ───────────────────────────────── -->
-  <div class="hidden lg:flex flex-col justify-between
-              bg-sidebar px-12 py-10">
-
-    <!-- Brand -->
-    <a href="/" class="text-2xl font-semibold tracking-tight">
-      <span class="text-white">Style</span><span class="text-gold">Book</span>
-    </a>
-
-    <!-- Steps indicator -->
-    <div>
-      <p class="text-xs text-muted uppercase tracking-widest mb-6">
-        Getting started
-      </p>
-      <div class="space-y-4" id="stepsList">
-        <div class="step-indicator flex items-center gap-3" data-step="1">
-          <div class="step-dot w-6 h-6 rounded-full border border-muted
-                      flex items-center justify-center text-xs text-muted
-                      transition-all">
-            1
-          </div>
-          <span class="text-sm text-muted">Your account</span>
-        </div>
-        <div class="step-indicator flex items-center gap-3" data-step="2">
-          <div class="step-dot w-6 h-6 rounded-full border border-muted
-                      flex items-center justify-center text-xs text-muted
-                      transition-all">
-            2
-          </div>
-          <span class="text-sm text-muted">Your specialty</span>
-        </div>
-        <div class="step-indicator flex items-center gap-3" data-step="3">
-          <div class="step-dot w-6 h-6 rounded-full border border-muted
-                      flex items-center justify-center text-xs text-muted
-                      transition-all">
-            3
-          </div>
-          <span class="text-sm text-muted">Your profile</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Testimonial -->
-    <div class="border-t border-sidebar-active pt-6">
-      <p class="font-serif italic text-white text-sm leading-relaxed mb-4">
-        "StyleBook changed how I run my shop. Everything in one place — bookings, posts, portfolio."
-      </p>
-      <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-gold flex items-center
-                    justify-center text-xs font-semibold text-sidebar">
-          SR
-        </div>
-        <div>
-          <p class="text-white text-sm font-medium">Sofia Reyes</p>
-          <p class="text-muted text-xs">Hair Stylist, Miami</p>
-        </div>
-      </div>
-    </div>
-
+{% block page_eyebrow %}
+  <div class="sp-eyebrow">
+    <span class="sp-eyebrow-dot"></span>
+    Template studio
   </div>
+{% endblock %}
 
-  <!-- ── Right panel ──────────────────────────────── -->
-  <div class="flex items-center justify-center px-6 py-12">
-    <div class="w-full max-w-sm">
+{% block page_title %}Instagram post generator{% endblock %}
 
-      <!-- Mobile logo -->
-      <div class="lg:hidden mb-8 text-center">
-        <span class="text-2xl font-semibold">
-          <span class="text-ink">Style</span><span class="text-gold">Book</span>
-        </span>
-      </div>
+{% block page_sub %}
+  <p class="sp-page-sub">Upload a photo, choose a layout, and export a ready-to-post image.</p>
+{% endblock %}
 
-      <!-- Progress bar -->
-      <div class="mb-8">
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-xs text-muted" id="stepLabel">Step 1 of 3</p>
-          <p class="text-xs text-muted" id="stepName">Your account</p>
+{% block extra_head %}
+<style>
+  .ig-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.75fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .ig-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ig-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+
+  .ig-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(15,14,13,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .ig-card {
+    padding: 18px;
+  }
+
+  .ig-upload {
+    position: relative;
+    min-height: 220px;
+    border: 1px dashed rgba(15,14,13,0.18);
+    border-radius: 12px;
+    background: rgba(15,14,13,0.02);
+    overflow: hidden;
+    transition: all 0.15s;
+  }
+
+  .ig-upload:hover {
+    border-color: #3A3AFF;
+    background: rgba(58,58,255,0.04);
+  }
+
+  .ig-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .ig-upload-inner {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .ig-upload-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(15,14,13,0.04);
+    color: rgba(15,14,13,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
+  .ig-upload-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-upload-copy {
+    font-size: 12px;
+    color: rgba(15,14,13,0.55);
+  }
+
+  .ig-preview-thumb {
+    position: relative;
+    display: none;
+    background: #FFFFFF;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .ig-preview-thumb img {
+    display: block;
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  .ig-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(15,14,13,0.88);
+    color: #F5F1E8;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .ig-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .ig-template-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .tpl-card {
+    position: relative;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.16s;
+    cursor: pointer;
+    background: #FFFFFF;
+  }
+
+  .tpl-card:hover {
+    border-color: rgba(15,14,13,0.22);
+    transform: translateY(-1px);
+  }
+
+  .tpl-card.is-selected {
+    border-color: #3A3AFF;
+    box-shadow: 0 0 0 3px rgba(58,58,255,0.12);
+  }
+
+  .tpl-thumb-wrap {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    background: #F5F1E8;
+    overflow: hidden;
+  }
+
+  .tpl-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .tpl-thumb.loaded {
+    opacity: 1;
+  }
+
+  .tpl-thumb-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tpl-spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 2px solid rgba(15,14,13,0.10);
+    border-top-color: rgba(15,14,13,0.45);
+    animation: ig-spin 0.8s linear infinite;
+  }
+
+  .tpl-meta {
+    padding: 10px 11px 11px;
+  }
+
+  .tpl-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F0E0D;
+    line-height: 1.25;
+  }
+
+  .tpl-style {
+    font-size: 11px;
+    color: rgba(15,14,13,0.52);
+    margin-top: 3px;
+    line-height: 1.35;
+  }
+
+  .tpl-check {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 23px;
+    height: 23px;
+    border-radius: 999px;
+    background: #3A3AFF;
+    color: #F5F1E8;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    z-index: 2;
+  }
+
+  .tpl-card.is-selected .tpl-check {
+    display: flex;
+  }
+
+  .ig-submit {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+  }
+
+  .ig-error {
+    display: none;
+    margin-top: 12px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: rgba(220,38,38,0.08);
+    color: #991B1B;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .ig-error.is-visible {
+    display: block;
+  }
+
+  .ig-preview-col {
+    position: sticky;
+    top: 96px;
+  }
+
+  .ig-phone {
+    max-width: 390px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ig-empty,
+  .ig-error-state {
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .ig-empty-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background: rgba(15,14,13,0.04);
+    color: rgba(15,14,13,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ig-empty-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-empty-copy {
+    font-size: 13px;
+    color: rgba(15,14,13,0.55);
+    max-width: 280px;
+    line-height: 1.55;
+  }
+
+  .ig-skeleton-card,
+  .ig-result-card {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .ig-post-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    border-bottom: 1px solid rgba(15,14,13,0.08);
+    background: #FFFFFF;
+  }
+
+  .ig-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #3A3AFF;
+    color: #F5F1E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .ig-handle {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-skeleton-box {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    background: linear-gradient(135deg, #F5F1E8, rgba(15,14,13,0.08));
+    overflow: hidden;
+  }
+
+  .ig-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ig-loader-ring {
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    border: 4px solid rgba(15,14,13,0.12);
+    border-top-color: #0F0E0D;
+    animation: ig-spin 0.8s linear infinite;
+    margin-bottom: 14px;
+  }
+
+  .ig-loader-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-loader-copy {
+    font-size: 12px;
+    color: rgba(15,14,13,0.55);
+    margin-top: 3px;
+  }
+
+  .ig-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.55) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: ig-shimmer 1.7s infinite;
+  }
+
+  .ig-result-img-wrap {
+    background: #F5F1E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ig-result-img-wrap img {
+    width: 100%;
+    height: auto;
+    max-height: 78vh;
+    object-fit: contain;
+    display: block;
+  }
+
+  .ig-result-caption {
+    display: none;
+    padding: 13px 14px;
+    border-top: 1px solid rgba(15,14,13,0.08);
+    background: #FFFFFF;
+  }
+
+  .ig-result-caption.is-visible {
+    display: block;
+  }
+
+  .ig-result-caption p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .ig-result-caption .tags {
+    color: #2929E8;
+    margin-top: 3px;
+  }
+
+  .ig-warning {
+    display: none;
+    margin-top: 12px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: rgba(245,158,11,0.10);
+    color: #92400E;
+    border: 1px solid rgba(245,158,11,0.20);
+    font-size: 13px;
+  }
+
+  .ig-warning.is-visible {
+    display: block;
+  }
+
+  .ig-result-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  @keyframes ig-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes ig-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @media (max-width: 1024px) {
+    .ig-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .ig-preview-col {
+      position: static;
+    }
+
+    .ig-phone {
+      max-width: 460px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ig-card {
+      padding: 15px;
+    }
+
+    .ig-detail-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ig-template-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tpl-meta {
+      padding: 9px;
+    }
+
+    .tpl-name {
+      font-size: 12px;
+    }
+
+    .tpl-style {
+      font-size: 10px;
+    }
+
+    .ig-upload,
+    .ig-upload-inner {
+      min-height: 180px;
+    }
+
+    .ig-empty,
+    .ig-error-state {
+      min-height: 360px;
+    }
+
+    .ig-result-actions .btn-ghost,
+    .ig-result-actions .btn-cobalt {
+      min-height: 44px;
+      justify-content: center;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="ig-shell">
+
+  <div>
+    <form id="igForm" enctype="multipart/form-data" class="ig-stack">
+      {% csrf_token %}
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Upload photo</span>
         </div>
-        <div class="h-1 bg-cream-border rounded-full overflow-hidden">
-          <div id="progressBar"
-               class="h-full bg-gold rounded-full transition-all duration-300"
-               style="width: 33%"></div>
-        </div>
-      </div>
 
-      <!-- Flash messages -->
-      {% if messages %}
-        {% for message in messages %}
-          <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
-                      {% if message.tags == 'error' %}bg-red-50 text-red-700
-                      {% else %}bg-emerald-50 text-emerald-700{% endif %}">
-            {{ message }}
+        <div class="card ig-card">
+          <div id="uploadZone" class="ig-upload">
+            <input type="file" name="photo" id="photoInput" accept="image/*" required>
+
+            <div class="ig-upload-inner">
+              <div class="ig-upload-icon">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v10M8 8.5L12 5l4 3.5" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <p class="ig-upload-title">Choose a finished-work photo</p>
+              <p class="ig-upload-copy">JPG or PNG, max 5MB</p>
+            </div>
           </div>
-        {% endfor %}
+
+          <div id="previewThumb" class="ig-preview-thumb">
+            <img id="thumbImg" src="" alt="">
+            <button type="button" onclick="removePhoto()" class="ig-remove" aria-label="Remove photo">
+              &times;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Details</span>
+        </div>
+
+        <div class="card ig-card">
+          <div class="mb-3">
+            <label class="form-label" for="service">Service performed</label>
+            <input class="form-input" type="text" id="service" name="service"
+                   placeholder="e.g. Skin fade + beard line"
+                   value="{{ prefill_service|default:'' }}" required>
+          </div>
+
+          <div class="ig-detail-grid">
+            <div>
+              <label class="form-label" for="client_name">Client name (optional)</label>
+              <input class="form-input" type="text" id="client_name" name="client_name"
+                     placeholder="e.g. Marcus T."
+                     value="{{ prefill_client|default:'' }}">
+            </div>
+
+            <div>
+              <label class="form-label" for="ig_handle">Your IG handle</label>
+              <input class="form-input" type="text" id="ig_handle" name="ig_handle"
+                     placeholder="@alex.cuts"
+                     value="{{ profile.ig_handle|default:'' }}">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Choose template</span>
+        </div>
+
+        <div class="card ig-card">
+          <div id="templateGrid" class="ig-template-grid"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Caption</span>
+        </div>
+
+        <div class="card ig-card">
+          <div class="mb-3">
+            <label class="form-label" for="caption">Caption (optional)</label>
+            <textarea class="form-input" id="caption" name="caption" rows="3"
+                      placeholder="Fresh fade done today. Drop a comment if you want one..."></textarea>
+          </div>
+
+          <div>
+            <label class="form-label" for="hashtags">Hashtags</label>
+            <input class="form-input" type="text" id="hashtags" name="hashtags"
+                   placeholder="#barbershop #fade #skinfade"
+                   value="#barbershop #showpiece">
+          </div>
+        </div>
+      </section>
+
+      {% if reservation_id %}
+        <input type="hidden" name="reservation_id" value="{{ reservation_id }}">
       {% endif %}
 
-      <form method="POST" action="{% url 'register' %}" id="registerForm">
-        {% csrf_token %}
+      <input type="hidden" name="template" id="templateInput" value="">
 
-        <!-- ── Step 1: Account ───────────────────── -->
-        <div class="step active" id="step-1">
-          <h1 class="text-2xl font-semibold text-ink mb-1">Create your account</h1>
-          <p class="text-sm text-muted mb-6">Start with the basics</p>
+      <button type="submit" id="submitBtn" class="btn-cobalt ig-submit">
+        Generate post
+      </button>
 
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Username
-              </label>
-              <input class="form-input" type="text" name="username"
-                     placeholder="e.g. alex.cuts" required>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Email address
-              </label>
-              <input class="form-input" type="email" name="email"
-                     placeholder="you@email.com" required>
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Password
-              </label>
-              <input class="form-input" type="password" name="password"
-                     placeholder="Min. 6 characters" required minlength="6">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Confirm password
-              </label>
-              <input class="form-input" type="password" id="confirmPassword"
-                     placeholder="Repeat your password" required>
-              <p id="passwordError"
-                 class="hidden text-xs text-red-500 mt-1">
-                Passwords do not match
-              </p>
-            </div>
-          </div>
-
-          <button type="button" onclick="goToStep(2)"
-                  class="w-full bg-ink text-white text-sm font-medium
-                         py-3 rounded-lg hover:bg-sidebar-active
-                         transition-colors mt-6">
-            Continue →
-          </button>
-        </div>
-
-        <!-- ── Step 2: Specialty ─────────────────── -->
-        <div class="step" id="step-2">
-          <h1 class="text-2xl font-semibold text-ink mb-1">Your specialty</h1>
-          <p class="text-sm text-muted mb-6">What kind of work do you do?</p>
-
-          <div class="grid grid-cols-2 gap-3 mb-6">
-
-            <label class="specialty-card">
-              <input type="radio" name="specialty" value="Barber">
-              <div class="specialty-inner">
-                <div class="text-2xl mb-2">✂️</div>
-                <p class="text-sm font-medium">Barber</p>
-                <p class="text-xs text-muted mt-0.5">Cuts & fades</p>
-              </div>
-            </label>
-
-            <label class="specialty-card">
-              <input type="radio" name="specialty" value="Hair Stylist">
-              <div class="specialty-inner">
-                <div class="text-2xl mb-2">💇</div>
-                <p class="text-sm font-medium">Hair Stylist</p>
-                <p class="text-xs text-muted mt-0.5">Color & styling</p>
-              </div>
-            </label>
-
-            <label class="specialty-card">
-              <input type="radio" name="specialty" value="Nail Master">
-              <div class="specialty-inner">
-                <div class="text-2xl mb-2">💅</div>
-                <p class="text-sm font-medium">Nail Master</p>
-                <p class="text-xs text-muted mt-0.5">Gel & nail art</p>
-              </div>
-            </label>
-
-            <label class="specialty-card">
-              <input type="radio" name="specialty" value="Makeup Artist">
-              <div class="specialty-inner">
-                <div class="text-2xl mb-2">💄</div>
-                <p class="text-sm font-medium">Makeup Artist</p>
-                <p class="text-xs text-muted mt-0.5">Beauty & looks</p>
-              </div>
-            </label>
-
-            <label class="specialty-card col-span-2">
-              <input type="radio" name="specialty" value="Tattoo Artist">
-              <div class="specialty-inner">
-                <div class="text-2xl mb-2">🎨</div>
-                <p class="text-sm font-medium">Tattoo Artist</p>
-                <p class="text-xs text-muted mt-0.5">Ink & body art</p>
-              </div>
-            </label>
-
-          </div>
-
-          <div class="flex gap-3">
-            <button type="button" onclick="goToStep(1)"
-                    class="flex-1 border border-cream-border text-ink text-sm
-                           font-medium py-3 rounded-lg hover:bg-cream-card
-                           transition-colors">
-              ← Back
-            </button>
-            <button type="button" onclick="goToStep(3)"
-                    class="flex-1 bg-ink text-white text-sm font-medium
-                           py-3 rounded-lg hover:bg-sidebar-active
-                           transition-colors">
-              Continue →
-            </button>
-          </div>
-        </div>
-
-        <!-- ── Step 3: Profile ───────────────────── -->
-        <div class="step" id="step-3">
-          <h1 class="text-2xl font-semibold text-ink mb-1">Your profile</h1>
-          <p class="text-sm text-muted mb-6">
-            Help clients find and trust you — you can always edit this later
-          </p>
-
-          <div class="space-y-4 mb-6">
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Location
-              </label>
-              <input class="form-input" type="text" name="location"
-                     placeholder="e.g. Brooklyn, NY">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Years of experience
-              </label>
-              <input class="form-input" type="number" name="years_exp"
-                     placeholder="e.g. 5" min="0" max="50">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Instagram handle (optional)
-              </label>
-              <input class="form-input" type="text" name="ig_handle"
-                     placeholder="@alex.cuts">
-            </div>
-            <div>
-              <label class="block text-xs font-medium text-muted uppercase
-                            tracking-wide mb-1.5">
-                Short bio (optional)
-              </label>
-              <textarea class="form-input" name="bio" rows="3"
-                        maxlength="200"
-                        placeholder="e.g. 7 years in Brooklyn. Specializing in skin fades and beard work."></textarea>
-              <p class="text-xs text-muted mt-1">Max 200 characters</p>
-            </div>
-          </div>
-
-          <div class="flex gap-3">
-            <button type="button" onclick="goToStep(2)"
-                    class="flex-1 border border-cream-border text-ink text-sm
-                           font-medium py-3 rounded-lg hover:bg-cream-card
-                           transition-colors">
-              ← Back
-            </button>
-            <button type="submit"
-                    class="flex-1 bg-gold text-sidebar text-sm font-medium
-                           py-3 rounded-lg hover:bg-gold-dark hover:text-white
-                           transition-colors">
-              Create account
-            </button>
-          </div>
-        </div>
-
-      </form>
-      <!-- Divider -->
-    <div class="flex items-center gap-3 my-4">
-      <div class="flex-1 h-px bg-cream-border"></div>
-      <span class="text-xs text-muted">or</span>
-      <div class="flex-1 h-px bg-cream-border"></div>
-    </div>
-
-    <!-- Google button -->
-    <a href="/accounts/google/login/?process=signup"
-      class="w-full flex items-center justify-center gap-3
-              border border-cream-border bg-white text-ink text-sm
-              font-medium py-3 rounded-lg hover:bg-cream
-              transition-colors">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-        <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
-        <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
-        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
-      </svg>
-      Sign up with Google
-    </a>
-      <p class="text-sm text-muted text-center mt-6">
-        Already have an account?
-        <a href="{% url 'login' %}"
-           class="text-ink font-medium hover:text-gold transition-colors">
-          Sign in →
-        </a>
-      </p>
-
-    </div>
+      <p id="formError" class="ig-error"></p>
+    </form>
   </div>
+
+  <aside class="ig-preview-col">
+    <div class="ig-section-head">
+      <span class="ig-section-title" id="resultTitle">Preview</span>
+    </div>
+
+    <div class="ig-phone">
+
+      <div id="emptyState" class="card ig-empty">
+        <div class="ig-empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="2" width="20" height="20" rx="4"
+                  stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="17" cy="7" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <p class="ig-empty-title">Your post preview will appear here</p>
+        <p class="ig-empty-copy">Fill in the details, pick a template, and generate your post.</p>
+      </div>
+
+      <div id="skeletonState" class="hidden">
+        <div class="card ig-skeleton-card">
+          <div class="ig-post-head">
+            <div class="ig-avatar">{{ user.username|slice:":2"|upper }}</div>
+            <span class="ig-handle">{{ profile.ig_handle|default:user.username }}</span>
+          </div>
+
+          <div class="ig-skeleton-box">
+            <div class="ig-shimmer"></div>
+            <div class="ig-loader">
+              <div class="ig-loader-ring"></div>
+              <p class="ig-loader-title" id="loaderMsg">Generating your post...</p>
+              <p class="ig-loader-copy">Usually takes 5-10 seconds</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultState" class="hidden">
+        <div class="card ig-result-card">
+          <div class="ig-post-head">
+            <div class="ig-avatar">{{ user.username|slice:":2"|upper }}</div>
+            <span class="ig-handle">{{ profile.ig_handle|default:user.username }}</span>
+          </div>
+
+          <div class="ig-result-img-wrap">
+            <img id="resultImg" src="" alt="Generated post">
+          </div>
+
+          <div id="resultCaption" class="ig-result-caption">
+            <p id="captionText"></p>
+            <p class="tags" id="hashtagsText"></p>
+          </div>
+        </div>
+
+        <div id="fallbackWarning" class="ig-warning"></div>
+
+        <div class="ig-result-actions">
+          <a id="downloadLink" href="#" download class="btn-cobalt">
+            Download PNG
+          </a>
+
+          <button type="button" onclick="regenerate()" class="btn-ghost">
+            Try a different template
+          </button>
+
+          <a href="{% url 'portfolio' %}" class="btn-ghost">
+            View in portfolio
+          </a>
+        </div>
+      </div>
+
+      <div id="errorState" class="hidden card ig-error-state">
+        <div class="ig-empty-icon" style="background: rgba(220,38,38,0.08); color: #991B1B;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <p class="ig-empty-title" style="color: #991B1B;">Generation failed</p>
+        <p class="ig-empty-copy" id="errorMsg">Something went wrong.</p>
+
+        <button type="button" onclick="resetForm()" class="btn-ghost">
+          Try again
+        </button>
+      </div>
+
+    </div>
+  </aside>
 
 </div>
 
-{% block extra_scripts %}{% endblock %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script id="templatesData" type="application/json">{{ templates_json|safe }}</script>
 
 <script>
-const stepMeta = {
-  1: { label: 'Step 1 of 3', name: 'Your account',   progress: '33%'  },
-  2: { label: 'Step 2 of 3', name: 'Your specialty', progress: '66%'  },
-  3: { label: 'Step 3 of 3', name: 'Your profile',   progress: '100%' },
-};
+const TEMPLATES = JSON.parse(document.getElementById('templatesData').textContent);
+const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-function goToStep(n) {
-  if (n === 2) {
-    const pw  = document.querySelector('input[name="password"]').value;
-    const cpw = document.getElementById('confirmPassword').value;
-    const err = document.getElementById('passwordError');
-    if (cpw && pw !== cpw) {
-      err.classList.remove('hidden');
-      return;
-    }
-    err.classList.add('hidden');
+const templateGrid = document.getElementById('templateGrid');
+const templateInput = document.getElementById('templateInput');
+
+function buildTemplatePicker() {
+  const list = TEMPLATES['story'] || [];
+  templateGrid.innerHTML = '';
+
+  if (list.length === 0) {
+    templateGrid.innerHTML = '<p class="text-sm text-muted col-span-2">No templates available.</p>';
+    templateInput.value = '';
+    return;
   }
 
-  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-  document.getElementById('step-' + n).classList.add('active');
+  list.forEach((tpl, idx) => {
+    const isFirst = idx === 0;
+    const card = document.createElement('div');
+    card.className = 'tpl-card' + (isFirst ? ' is-selected' : '');
+    card.dataset.tplId = tpl.id;
+    card.innerHTML = `
+      <div class="tpl-check">✓</div>
+      <div class="tpl-thumb-wrap">
+        <img class="tpl-thumb"
+             src="/instagram/thumbnail/${tpl.id}/"
+             alt="${tpl.name}"
+             loading="lazy"
+             onload="this.classList.add('loaded'); this.nextElementSibling.style.display='none';"
+             onerror="this.style.display='none';">
+        <div class="tpl-thumb-loader">
+          <div class="tpl-spinner"></div>
+        </div>
+      </div>
+      <div class="tpl-meta">
+        <div class="tpl-name">${tpl.name}</div>
+        <div class="tpl-style">${tpl.style}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => selectTemplate(tpl.id));
+    templateGrid.appendChild(card);
+  });
 
-  document.getElementById('stepLabel').textContent    = stepMeta[n].label;
-  document.getElementById('stepName').textContent     = stepMeta[n].name;
-  document.getElementById('progressBar').style.width  = stepMeta[n].progress;
+  templateInput.value = list[0].id;
+}
 
-  document.querySelectorAll('.step-indicator').forEach(el => {
-    const num  = parseInt(el.dataset.step);
-    const dot  = el.querySelector('.step-dot');
-    const text = el.querySelector('span');
-    if (num < n) {
-      dot.classList.remove('border-muted', 'text-muted');
-      dot.classList.add('bg-gold', 'border-gold', 'text-sidebar');
-      dot.innerHTML = '✓';
-      text.classList.remove('text-muted');
-      text.classList.add('text-white');
-    } else if (num === n) {
-      dot.classList.remove('border-muted', 'text-muted', 'bg-gold', 'border-gold');
-      dot.classList.add('border-white', 'text-white');
-      text.classList.remove('text-muted');
-      text.classList.add('text-white');
-    } else {
-      dot.classList.remove('bg-gold', 'border-gold', 'text-sidebar',
-                           'border-white', 'text-white');
-      dot.classList.add('border-muted', 'text-muted');
-      text.classList.remove('text-white');
-      text.classList.add('text-muted');
-    }
+function selectTemplate(id) {
+  templateInput.value = id;
+  document.querySelectorAll('.tpl-card').forEach(card => {
+    card.classList.toggle('is-selected', card.dataset.tplId === id);
   });
 }
 
-goToStep(1);
+buildTemplatePicker();
+
+(function() {
+  const input = document.getElementById('photoInput');
+  const zone = document.getElementById('uploadZone');
+  const preview = document.getElementById('previewThumb');
+  const thumb = document.getElementById('thumbImg');
+
+  input.addEventListener('change', function() {
+    const file = this.files && this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      thumb.src = event.target.result;
+      zone.style.display = 'none';
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  window.removePhoto = function() {
+    input.value = '';
+    thumb.src = '';
+    zone.style.display = 'block';
+    preview.style.display = 'none';
+  };
+})();
+
+const $ = id => document.getElementById(id);
+
+function showState(name) {
+  ['emptyState', 'skeletonState', 'resultState', 'errorState'].forEach(state => {
+    $(state).classList.toggle('hidden', state !== name);
+  });
+
+  $('resultTitle').textContent = {
+    emptyState: 'Preview',
+    skeletonState: 'Generating...',
+    resultState: 'Your post is ready',
+    errorState: 'Something went wrong',
+  }[name];
+}
+
+const LOADER_MSGS = [
+  'Generating your post...',
+  'Composing the layout...',
+  'Rendering pixels...',
+  'Almost ready...',
+];
+
+let msgInterval = null;
+
+function startLoaderMessages() {
+  let index = 0;
+  $('loaderMsg').textContent = LOADER_MSGS[0];
+
+  msgInterval = setInterval(() => {
+    index = (index + 1) % LOADER_MSGS.length;
+    $('loaderMsg').textContent = LOADER_MSGS[index];
+  }, 2200);
+}
+
+function stopLoaderMessages() {
+  if (msgInterval) clearInterval(msgInterval);
+  msgInterval = null;
+}
+
+const form = document.getElementById('igForm');
+const submit = document.getElementById('submitBtn');
+const formErr = document.getElementById('formError');
+
+let pollTimer = null;
+
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  formErr.classList.remove('is-visible');
+
+  if (!templateInput.value) {
+    formErr.textContent = 'Please choose a template.';
+    formErr.classList.add('is-visible');
+    return;
+  }
+
+  const formData = new FormData(form);
+  submitGeneration(formData);
+});
+
+function submitGeneration(formData) {
+  showState('skeletonState');
+  submit.disabled = true;
+  submit.textContent = 'Generating...';
+  startLoaderMessages();
+
+  fetch('{% url "instagram_generate" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+    body: formData,
+  })
+  .then(async response => {
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Generation failed.');
+    return data;
+  })
+  .then(data => {
+    if (data.status === 'finished') {
+      showResult(data);
+    } else {
+      startPolling(data.job_id);
+    }
+  })
+  .catch(error => {
+    showError(error.message);
+  });
+}
+
+function startPolling(jobId) {
+  let attempts = 0;
+  const maxAttempts = 60;
+
+  pollTimer = setInterval(() => {
+    attempts += 1;
+
+    if (attempts > maxAttempts) {
+      clearInterval(pollTimer);
+      showError('Timed out waiting for render. Please try again.');
+      return;
+    }
+
+    fetch(`/instagram/status/${jobId}/`)
+      .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok && data.status !== 'error') {
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+        return data;
+      })
+      .then(data => {
+        if (data.status === 'finished') {
+          clearInterval(pollTimer);
+          showResult(data);
+        } else if (data.status === 'error') {
+          clearInterval(pollTimer);
+          showError(data.error || 'Render failed.');
+        }
+      })
+      .catch(error => {
+        clearInterval(pollTimer);
+        showError(error.message);
+      });
+  }, 2000);
+}
+
+function showResult(data) {
+  stopLoaderMessages();
+
+  submit.disabled = false;
+  submit.textContent = 'Generate post';
+
+  $('resultImg').src = data.image_url;
+  $('downloadLink').href = data.image_url;
+
+  if (data.caption || data.hashtags) {
+    $('captionText').textContent = data.caption || '';
+    $('hashtagsText').textContent = data.hashtags || '';
+    $('resultCaption').classList.add('is-visible');
+  } else {
+    $('resultCaption').classList.remove('is-visible');
+  }
+
+  const warning = $('fallbackWarning');
+  if (data.fallback && data.warning) {
+    warning.textContent = data.warning;
+    warning.classList.add('is-visible');
+  } else {
+    warning.classList.remove('is-visible');
+  }
+
+  showState('resultState');
+}
+
+function showError(message) {
+  stopLoaderMessages();
+  if (pollTimer) clearInterval(pollTimer);
+
+  submit.disabled = false;
+  submit.textContent = 'Generate post';
+  $('errorMsg').textContent = message;
+
+  showState('errorState');
+}
+
+window.resetForm = function() {
+  showState('emptyState');
+};
+
+window.regenerate = function() {
+  showState('emptyState');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 </script>
-</body>
-</html>
+{% endblock %}
