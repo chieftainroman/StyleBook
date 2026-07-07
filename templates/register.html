@@ -1,1001 +1,803 @@
-{% extends "base.html" %}
 {% load static %}
-
-{% block title %}Instagram Post - Showpiece{% endblock %}
-
-{% block page_eyebrow %}
-  <div class="sp-eyebrow">
-    <span class="sp-eyebrow-dot"></span>
-    Template studio
-  </div>
-{% endblock %}
-
-{% block page_title %}Instagram post generator{% endblock %}
-
-{% block page_sub %}
-  <p class="sp-page-sub">Upload a photo, choose a layout, and export a ready-to-post image.</p>
-{% endblock %}
-
-{% block extra_head %}
-<style>
-  .ig-shell {
-    display: grid;
-    grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.75fr);
-    gap: 24px;
-    align-items: start;
-  }
-
-  .ig-stack {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .ig-section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    margin-bottom: 10px;
-  }
-
-  .ig-section-title {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    font-weight: 500;
-    color: rgba(15,14,13,0.45);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .ig-card {
-    padding: 18px;
-  }
-
-  .ig-upload {
-    position: relative;
-    min-height: 220px;
-    border: 1px dashed rgba(15,14,13,0.18);
-    border-radius: 12px;
-    background: rgba(15,14,13,0.02);
-    overflow: hidden;
-    transition: all 0.15s;
-  }
-
-  .ig-upload:hover {
-    border-color: #3A3AFF;
-    background: rgba(58,58,255,0.04);
-  }
-
-  .ig-upload input[type="file"] {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 10;
-  }
-
-  .ig-upload-inner {
-    min-height: 220px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 24px;
-    text-align: center;
-    pointer-events: none;
-  }
-
-  .ig-upload-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    background: rgba(15,14,13,0.04);
-    color: rgba(15,14,13,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 4px;
-  }
-
-  .ig-upload-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0F0E0D;
-  }
-
-  .ig-upload-copy {
-    font-size: 12px;
-    color: rgba(15,14,13,0.55);
-  }
-
-  .ig-preview-thumb {
-    position: relative;
-    display: none;
-    background: #FFFFFF;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .ig-preview-thumb img {
-    display: block;
-    width: 100%;
-    max-height: 360px;
-    object-fit: contain;
-    margin: 0 auto;
-  }
-
-  .ig-remove {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    width: 34px;
-    height: 34px;
-    border: 0;
-    border-radius: 10px;
-    background: rgba(15,14,13,0.88);
-    color: #F5F1E8;
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-  }
-
-  .ig-detail-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .ig-template-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-
-  .tpl-card {
-    position: relative;
-    border: 1px solid rgba(15,14,13,0.08);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.16s;
-    cursor: pointer;
-    background: #FFFFFF;
-  }
-
-  .tpl-card:hover {
-    border-color: rgba(15,14,13,0.22);
-    transform: translateY(-1px);
-  }
-
-  .tpl-card.is-selected {
-    border-color: #3A3AFF;
-    box-shadow: 0 0 0 3px rgba(58,58,255,0.12);
-  }
-
-  .tpl-thumb-wrap {
-    position: relative;
-    aspect-ratio: 9 / 16;
-    background: #F5F1E8;
-    overflow: hidden;
-  }
-
-  .tpl-thumb {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-
-  .tpl-thumb.loaded {
-    opacity: 1;
-  }
-
-  .tpl-thumb-loader {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .tpl-spinner {
-    width: 28px;
-    height: 28px;
-    border-radius: 999px;
-    border: 2px solid rgba(15,14,13,0.10);
-    border-top-color: rgba(15,14,13,0.45);
-    animation: ig-spin 0.8s linear infinite;
-  }
-
-  .tpl-meta {
-    padding: 10px 11px 11px;
-  }
-
-  .tpl-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #0F0E0D;
-    line-height: 1.25;
-  }
-
-  .tpl-style {
-    font-size: 11px;
-    color: rgba(15,14,13,0.52);
-    margin-top: 3px;
-    line-height: 1.35;
-  }
-
-  .tpl-check {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    width: 23px;
-    height: 23px;
-    border-radius: 999px;
-    background: #3A3AFF;
-    color: #F5F1E8;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 700;
-    z-index: 2;
-  }
-
-  .tpl-card.is-selected .tpl-check {
-    display: flex;
-  }
-
-  .ig-submit {
-    width: 100%;
-    min-height: 46px;
-    justify-content: center;
-  }
-
-  .ig-error {
-    display: none;
-    margin-top: 12px;
-    padding: 11px 13px;
-    border-radius: 10px;
-    background: rgba(220,38,38,0.08);
-    color: #991B1B;
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .ig-error.is-visible {
-    display: block;
-  }
-
-  .ig-preview-col {
-    position: sticky;
-    top: 96px;
-  }
-
-  .ig-phone {
-    max-width: 390px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-
-  .ig-empty,
-  .ig-error-state {
-    min-height: 520px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    text-align: center;
-  }
-
-  .ig-empty-icon {
-    width: 58px;
-    height: 58px;
-    border-radius: 16px;
-    background: rgba(15,14,13,0.04);
-    color: rgba(15,14,13,0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .ig-empty-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0F0E0D;
-  }
-
-  .ig-empty-copy {
-    font-size: 13px;
-    color: rgba(15,14,13,0.55);
-    max-width: 280px;
-    line-height: 1.55;
-  }
-
-  .ig-skeleton-card,
-  .ig-result-card {
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .ig-post-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 13px 14px;
-    border-bottom: 1px solid rgba(15,14,13,0.08);
-    background: #FFFFFF;
-  }
-
-  .ig-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 10px;
-    background: #3A3AFF;
-    color: #F5F1E8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  .ig-handle {
-    font-size: 13px;
-    font-weight: 600;
-    color: #0F0E0D;
-  }
-
-  .ig-skeleton-box {
-    position: relative;
-    aspect-ratio: 9 / 16;
-    background: linear-gradient(135deg, #F5F1E8, rgba(15,14,13,0.08));
-    overflow: hidden;
-  }
-
-  .ig-loader {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .ig-loader-ring {
-    width: 48px;
-    height: 48px;
-    border-radius: 999px;
-    border: 4px solid rgba(15,14,13,0.12);
-    border-top-color: #0F0E0D;
-    animation: ig-spin 0.8s linear infinite;
-    margin-bottom: 14px;
-  }
-
-  .ig-loader-title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0F0E0D;
-  }
-
-  .ig-loader-copy {
-    font-size: 12px;
-    color: rgba(15,14,13,0.55);
-    margin-top: 3px;
-  }
-
-  .ig-shimmer {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255,255,255,0.55) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: ig-shimmer 1.7s infinite;
-  }
-
-  .ig-result-img-wrap {
-    background: #F5F1E8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .ig-result-img-wrap img {
-    width: 100%;
-    height: auto;
-    max-height: 78vh;
-    object-fit: contain;
-    display: block;
-  }
-
-  .ig-result-caption {
-    display: none;
-    padding: 13px 14px;
-    border-top: 1px solid rgba(15,14,13,0.08);
-    background: #FFFFFF;
-  }
-
-  .ig-result-caption.is-visible {
-    display: block;
-  }
-
-  .ig-result-caption p {
-    font-size: 13px;
-    line-height: 1.55;
-  }
-
-  .ig-result-caption .tags {
-    color: #2929E8;
-    margin-top: 3px;
-  }
-
-  .ig-warning {
-    display: none;
-    margin-top: 12px;
-    padding: 11px 13px;
-    border-radius: 10px;
-    background: rgba(245,158,11,0.10);
-    color: #92400E;
-    border: 1px solid rgba(245,158,11,0.20);
-    font-size: 13px;
-  }
-
-  .ig-warning.is-visible {
-    display: block;
-  }
-
-  .ig-result-actions {
-    display: grid;
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  @keyframes ig-spin {
-    to { transform: rotate(360deg); }
-  }
-
-  @keyframes ig-shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-  }
-
-  @media (max-width: 1024px) {
-    .ig-shell {
-      grid-template-columns: 1fr;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Create account - Showpiece</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#F5F1E8',
+            'cream-card': '#FFFFFF',
+            'cream-border': 'rgba(15,14,13,0.08)',
+            ink: '#0F0E0D',
+            muted: 'rgba(15,14,13,0.55)',
+            cobalt: '#3A3AFF',
+            'cobalt-hover': '#2929E8',
+            'cobalt-soft': 'rgba(58,58,255,0.08)',
+          },
+          fontFamily: {
+            sans: ['Space Grotesk', 'Inter', 'sans-serif'],
+            display: ['Anton', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    * { box-sizing: border-box; }
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body { font-feature-settings: 'ss01', 'ss02'; }
+
+    .rg-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      background: #F5F1E8;
+      color: #0F0E0D;
     }
 
-    .ig-preview-col {
-      position: static;
+    .rg-brand-panel {
+      position: relative;
+      overflow: hidden;
+      background: #0F0E0D;
+      color: #F5F1E8;
+      padding: 40px 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
 
-    .ig-phone {
-      max-width: 460px;
+    .rg-brand-panel::before {
+      content: '';
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      border-radius: 50%;
+      right: -180px;
+      top: -140px;
+      background: radial-gradient(circle at 30% 30%, rgba(58,58,255,0.36), rgba(58,58,255,0.08) 58%, transparent 72%);
+      filter: blur(18px);
+      pointer-events: none;
     }
-  }
 
-  @media (max-width: 640px) {
-    .ig-card {
-      padding: 15px;
+    .rg-brand-panel::after {
+      content: '';
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      left: -120px;
+      bottom: -110px;
+      border: 1px solid rgba(245,241,232,0.12);
+      pointer-events: none;
     }
 
-    .ig-detail-grid {
-      grid-template-columns: 1fr;
+    .rg-brand-content {
+      position: relative;
+      z-index: 1;
     }
 
-    .ig-template-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .rg-logo {
+      font-family: 'Anton', sans-serif;
+      font-size: 24px;
+      line-height: 1;
+      color: inherit;
+      text-decoration: none;
+      letter-spacing: 0;
+    }
+
+    .rg-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: rgba(245,241,232,0.55);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .rg-headline {
+      font-family: 'Anton', sans-serif;
+      font-size: clamp(48px, 7vw, 86px);
+      line-height: 0.9;
+      letter-spacing: 0;
+      max-width: 520px;
+      margin-bottom: 22px;
+    }
+
+    .rg-outline {
+      color: transparent;
+      -webkit-text-stroke: 1.5px #F5F1E8;
+    }
+
+    .rg-copy {
+      max-width: 380px;
+      color: rgba(245,241,232,0.58);
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .rg-steps {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 12px;
+      margin-top: 40px;
+      max-width: 340px;
+    }
+
+    .rg-step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: rgba(245,241,232,0.42);
+      transition: color 0.15s;
+    }
+
+    .rg-step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 9px;
+      border: 1px solid rgba(245,241,232,0.18);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+
+    .rg-step-indicator.is-active,
+    .rg-step-indicator.is-complete {
+      color: #F5F1E8;
+    }
+
+    .rg-step-indicator.is-active .rg-step-dot {
+      border-color: #F5F1E8;
+      color: #F5F1E8;
+    }
+
+    .rg-step-indicator.is-complete .rg-step-dot {
+      background: #3A3AFF;
+      border-color: #3A3AFF;
+      color: #F5F1E8;
+    }
+
+    .rg-quote {
+      position: relative;
+      z-index: 1;
+      padding-top: 22px;
+      border-top: 1px solid rgba(245,241,232,0.14);
+      max-width: 420px;
+    }
+
+    .rg-quote p {
+      color: rgba(245,241,232,0.72);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+
+    .rg-author {
+      display: flex;
+      align-items: center;
       gap: 10px;
     }
 
-    .tpl-meta {
-      padding: 9px;
+    .rg-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #3A3AFF;
+      color: #F5F1E8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .tpl-name {
+    .rg-form-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .rg-form-wrap {
+      width: 100%;
+      max-width: 430px;
+    }
+
+    .rg-mobile-logo {
+      display: none;
+      text-align: center;
+      margin-bottom: 26px;
+    }
+
+    .rg-progress {
+      margin-bottom: 28px;
+    }
+
+    .rg-progress-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: rgba(15,14,13,0.55);
+    }
+
+    .rg-progress-track {
+      height: 5px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(15,14,13,0.08);
+    }
+
+    .rg-progress-fill {
+      height: 100%;
+      width: 33%;
+      border-radius: inherit;
+      background: #3A3AFF;
+      transition: width 0.25s ease;
+    }
+
+    .rg-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(15,14,13,0.08);
+      border-radius: 14px;
+      padding: 24px;
+    }
+
+    .rg-title {
+      font-family: 'Anton', sans-serif;
+      font-size: 36px;
+      line-height: 0.95;
+      color: #0F0E0D;
+      letter-spacing: 0;
+      margin-bottom: 8px;
+    }
+
+    .rg-subtitle {
+      font-size: 14px;
+      color: rgba(15,14,13,0.55);
+      line-height: 1.55;
+      margin-bottom: 22px;
+    }
+
+    .form-input {
+      display: block;
+      width: 100%;
+      background: #FFFFFF;
+      border: 1px solid rgba(15,14,13,0.10);
+      border-radius: 10px;
+      padding: 11px 14px;
+      font-size: 14px;
+      color: #0F0E0D;
+      outline: none;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+
+    .form-input:focus {
+      border-color: #3A3AFF;
+      box-shadow: 0 0 0 3px rgba(58,58,255,0.10);
+    }
+
+    .form-input::placeholder { color: rgba(15,14,13,0.38); }
+
+    .rg-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(15,14,13,0.58);
+      margin-bottom: 6px;
+    }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .rg-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 10px;
+      border: 0;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .rg-btn-primary {
+      background: #0F0E0D;
+      color: #F5F1E8;
+    }
+
+    .rg-btn-primary:hover { background: #3A3AFF; }
+
+    .rg-btn-cobalt {
+      background: #3A3AFF;
+      color: #F5F1E8;
+    }
+
+    .rg-btn-cobalt:hover { background: #2929E8; }
+
+    .rg-btn-ghost {
+      background: #FFFFFF;
+      color: #0F0E0D;
+      border: 1px solid rgba(15,14,13,0.10);
+    }
+
+    .rg-btn-ghost:hover {
+      border-color: rgba(15,14,13,0.24);
+      background: rgba(15,14,13,0.02);
+    }
+
+    .specialty-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .specialty-card input[type="radio"] {
+      display: none;
+    }
+
+    .specialty-inner {
+      min-height: 104px;
+      border: 1px solid rgba(15,14,13,0.10);
+      border-radius: 12px;
+      padding: 14px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      background: #FFFFFF;
+    }
+
+    .specialty-inner:hover {
+      border-color: rgba(15,14,13,0.22);
+      transform: translateY(-1px);
+    }
+
+    .specialty-card input[type="radio"]:checked + .specialty-inner {
+      border-color: #3A3AFF;
+      box-shadow: 0 0 0 3px rgba(58,58,255,0.12);
+      background: rgba(58,58,255,0.04);
+    }
+
+    .specialty-mark {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: rgba(15,14,13,0.04);
+      color: #0F0E0D;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Anton', sans-serif;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+
+    .specialty-card input[type="radio"]:checked + .specialty-inner .specialty-mark {
+      background: #3A3AFF;
+      color: #F5F1E8;
+    }
+
+    .rg-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      color: rgba(15,14,13,0.45);
       font-size: 12px;
     }
 
-    .tpl-style {
-      font-size: 10px;
+    .rg-divider::before,
+    .rg-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(15,14,13,0.08);
     }
 
-    .ig-upload,
-    .ig-upload-inner {
-      min-height: 180px;
+    .rg-google {
+      width: 100%;
+      background: #FFFFFF;
+      color: #0F0E0D;
+      border: 1px solid rgba(15,14,13,0.10);
     }
 
-    .ig-empty,
-    .ig-error-state {
-      min-height: 360px;
+    .rg-google:hover {
+      border-color: rgba(15,14,13,0.22);
+      background: rgba(15,14,13,0.02);
     }
 
-    .ig-result-actions .btn-ghost,
-    .ig-result-actions .btn-cobalt {
-      min-height: 44px;
-      justify-content: center;
+    .rg-switch {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 14px;
+      color: rgba(15,14,13,0.55);
     }
-  }
-</style>
-{% endblock %}
 
-{% block content %}
+    .rg-switch a {
+      color: #3A3AFF;
+      font-weight: 600;
+      text-decoration: none;
+    }
 
-<div class="ig-shell">
+    .rg-switch a:hover {
+      text-decoration: underline;
+    }
 
-  <div>
-    <form id="igForm" enctype="multipart/form-data" class="ig-stack">
-      {% csrf_token %}
+    @media (max-width: 960px) {
+      .rg-shell {
+        grid-template-columns: 1fr;
+      }
 
-      <section>
-        <div class="ig-section-head">
-          <span class="ig-section-title">Upload photo</span>
-        </div>
+      .rg-brand-panel {
+        display: none;
+      }
 
-        <div class="card ig-card">
-          <div id="uploadZone" class="ig-upload">
-            <input type="file" name="photo" id="photoInput" accept="image/*" required>
+      .rg-mobile-logo {
+        display: block;
+      }
 
-            <div class="ig-upload-inner">
-              <div class="ig-upload-icon">
-                <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v10M8 8.5L12 5l4 3.5" stroke="currentColor"
-                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
-                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </div>
+      .rg-form-panel {
+        align-items: flex-start;
+        padding: 28px 18px 44px;
+      }
+    }
 
-              <p class="ig-upload-title">Choose a finished-work photo</p>
-              <p class="ig-upload-copy">JPG or PNG, max 5MB</p>
-            </div>
-          </div>
+    @media (max-width: 520px) {
+      .rg-card {
+        padding: 20px;
+      }
 
-          <div id="previewThumb" class="ig-preview-thumb">
-            <img id="thumbImg" src="" alt="">
-            <button type="button" onclick="removePhoto()" class="ig-remove" aria-label="Remove photo">
-              &times;
-            </button>
-          </div>
-        </div>
-      </section>
+      .rg-title {
+        font-size: 32px;
+      }
 
-      <section>
-        <div class="ig-section-head">
-          <span class="ig-section-title">Details</span>
-        </div>
+      .specialty-grid {
+        grid-template-columns: 1fr;
+      }
 
-        <div class="card ig-card">
-          <div class="mb-3">
-            <label class="form-label" for="service">Service performed</label>
-            <input class="form-input" type="text" id="service" name="service"
-                   placeholder="e.g. Skin fade + beard line"
-                   value="{{ prefill_service|default:'' }}" required>
-          </div>
+      .rg-actions {
+        flex-direction: column;
+      }
 
-          <div class="ig-detail-grid">
-            <div>
-              <label class="form-label" for="client_name">Client name (optional)</label>
-              <input class="form-input" type="text" id="client_name" name="client_name"
-                     placeholder="e.g. Marcus T."
-                     value="{{ prefill_client|default:'' }}">
-            </div>
+      .rg-actions .rg-btn {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
 
-            <div>
-              <label class="form-label" for="ig_handle">Your IG handle</label>
-              <input class="form-input" type="text" id="ig_handle" name="ig_handle"
-                     placeholder="@alex.cuts"
-                     value="{{ profile.ig_handle|default:'' }}">
-            </div>
-          </div>
-        </div>
-      </section>
+<body class="font-sans">
 
-      <section>
-        <div class="ig-section-head">
-          <span class="ig-section-title">Choose template</span>
-        </div>
+<div class="rg-shell">
 
-        <div class="card ig-card">
-          <div id="templateGrid" class="ig-template-grid"></div>
-        </div>
-      </section>
-
-      <section>
-        <div class="ig-section-head">
-          <span class="ig-section-title">Caption</span>
-        </div>
-
-        <div class="card ig-card">
-          <div class="mb-3">
-            <label class="form-label" for="caption">Caption (optional)</label>
-            <textarea class="form-input" id="caption" name="caption" rows="3"
-                      placeholder="Fresh fade done today. Drop a comment if you want one..."></textarea>
-          </div>
-
-          <div>
-            <label class="form-label" for="hashtags">Hashtags</label>
-            <input class="form-input" type="text" id="hashtags" name="hashtags"
-                   placeholder="#barbershop #fade #skinfade"
-                   value="#barbershop #showpiece">
-          </div>
-        </div>
-      </section>
-
-      {% if reservation_id %}
-        <input type="hidden" name="reservation_id" value="{{ reservation_id }}">
-      {% endif %}
-
-      <input type="hidden" name="template" id="templateInput" value="">
-
-      <button type="submit" id="submitBtn" class="btn-cobalt ig-submit">
-        Generate post
-      </button>
-
-      <p id="formError" class="ig-error"></p>
-    </form>
-  </div>
-
-  <aside class="ig-preview-col">
-    <div class="ig-section-head">
-      <span class="ig-section-title" id="resultTitle">Preview</span>
+  <aside class="rg-brand-panel">
+    <div class="rg-brand-content">
+      <a href="/" class="rg-logo">SHOWPIECE</a>
     </div>
 
-    <div class="ig-phone">
+    <div class="rg-brand-content">
+      <div class="rg-kicker">Early access - Free tier live</div>
+      <h1 class="rg-headline">
+        BUILD YOUR<br>
+        <span class="rg-outline">CLIENT-FACING</span><br>
+        PROFILE.
+      </h1>
+      <p class="rg-copy">
+        Create a polished portfolio, share your booking link, and turn finished work into posts from one place.
+      </p>
 
-      <div id="emptyState" class="card ig-empty">
-        <div class="ig-empty-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-            <rect x="2" y="2" width="20" height="20" rx="4"
-                  stroke="currentColor" stroke-width="1.2"/>
-            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.2"/>
-            <circle cx="17" cy="7" r="1" fill="currentColor"/>
-          </svg>
+      <div class="rg-steps" id="stepsList">
+        <div class="rg-step-indicator is-active" data-step="1">
+          <div class="rg-step-dot">1</div>
+          <span>Your account</span>
         </div>
 
-        <p class="ig-empty-title">Your post preview will appear here</p>
-        <p class="ig-empty-copy">Fill in the details, pick a template, and generate your post.</p>
-      </div>
+        <div class="rg-step-indicator" data-step="2">
+          <div class="rg-step-dot">2</div>
+          <span>Your specialty</span>
+        </div>
 
-      <div id="skeletonState" class="hidden">
-        <div class="card ig-skeleton-card">
-          <div class="ig-post-head">
-            <div class="ig-avatar">{{ user.username|slice:":2"|upper }}</div>
-            <span class="ig-handle">{{ profile.ig_handle|default:user.username }}</span>
-          </div>
-
-          <div class="ig-skeleton-box">
-            <div class="ig-shimmer"></div>
-            <div class="ig-loader">
-              <div class="ig-loader-ring"></div>
-              <p class="ig-loader-title" id="loaderMsg">Generating your post...</p>
-              <p class="ig-loader-copy">Usually takes 5-10 seconds</p>
-            </div>
-          </div>
+        <div class="rg-step-indicator" data-step="3">
+          <div class="rg-step-dot">3</div>
+          <span>Your profile</span>
         </div>
       </div>
+    </div>
 
-      <div id="resultState" class="hidden">
-        <div class="card ig-result-card">
-          <div class="ig-post-head">
-            <div class="ig-avatar">{{ user.username|slice:":2"|upper }}</div>
-            <span class="ig-handle">{{ profile.ig_handle|default:user.username }}</span>
-          </div>
-
-          <div class="ig-result-img-wrap">
-            <img id="resultImg" src="" alt="Generated post">
-          </div>
-
-          <div id="resultCaption" class="ig-result-caption">
-            <p id="captionText"></p>
-            <p class="tags" id="hashtagsText"></p>
-          </div>
-        </div>
-
-        <div id="fallbackWarning" class="ig-warning"></div>
-
-        <div class="ig-result-actions">
-          <a id="downloadLink" href="#" download class="btn-cobalt">
-            Download PNG
-          </a>
-
-          <button type="button" onclick="regenerate()" class="btn-ghost">
-            Try a different template
-          </button>
-
-          <a href="{% url 'portfolio' %}" class="btn-ghost">
-            View in portfolio
-          </a>
+    <div class="rg-quote">
+      <p>
+        "Showpiece keeps bookings, portfolio, and client-facing posts in one clean workspace."
+      </p>
+      <div class="rg-author">
+        <div class="rg-avatar">SR</div>
+        <div>
+          <p style="margin:0; color:#F5F1E8; font-size:13px; font-weight:600;">Sofia Reyes</p>
+          <p style="margin:2px 0 0; color:rgba(245,241,232,0.48); font-size:12px;">Hair Stylist, Miami</p>
         </div>
       </div>
-
-      <div id="errorState" class="hidden card ig-error-state">
-        <div class="ig-empty-icon" style="background: rgba(220,38,38,0.08); color: #991B1B;">
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          </svg>
-        </div>
-
-        <p class="ig-empty-title" style="color: #991B1B;">Generation failed</p>
-        <p class="ig-empty-copy" id="errorMsg">Something went wrong.</p>
-
-        <button type="button" onclick="resetForm()" class="btn-ghost">
-          Try again
-        </button>
-      </div>
-
     </div>
   </aside>
 
-</div>
+  <main class="rg-form-panel">
+    <div class="rg-form-wrap">
 
-{% endblock %}
+      <div class="rg-mobile-logo">
+        <a href="/" class="rg-logo" style="color:#0F0E0D;">SHOWPIECE</a>
+      </div>
 
-{% block extra_scripts %}
-<script id="templatesData" type="application/json">{{ templates_json|safe }}</script>
-
-<script>
-const TEMPLATES = JSON.parse(document.getElementById('templatesData').textContent);
-const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-const templateGrid = document.getElementById('templateGrid');
-const templateInput = document.getElementById('templateInput');
-
-function buildTemplatePicker() {
-  const list = TEMPLATES['story'] || [];
-  templateGrid.innerHTML = '';
-
-  if (list.length === 0) {
-    templateGrid.innerHTML = '<p class="text-sm text-muted col-span-2">No templates available.</p>';
-    templateInput.value = '';
-    return;
-  }
-
-  list.forEach((tpl, idx) => {
-    const isFirst = idx === 0;
-    const card = document.createElement('div');
-    card.className = 'tpl-card' + (isFirst ? ' is-selected' : '');
-    card.dataset.tplId = tpl.id;
-    card.innerHTML = `
-      <div class="tpl-check">✓</div>
-      <div class="tpl-thumb-wrap">
-        <img class="tpl-thumb"
-             src="/instagram/thumbnail/${tpl.id}/"
-             alt="${tpl.name}"
-             loading="lazy"
-             onload="this.classList.add('loaded'); this.nextElementSibling.style.display='none';"
-             onerror="this.style.display='none';">
-        <div class="tpl-thumb-loader">
-          <div class="tpl-spinner"></div>
+      <div class="rg-progress">
+        <div class="rg-progress-row">
+          <span id="stepLabel">Step 1 of 3</span>
+          <span id="stepName">Your account</span>
+        </div>
+        <div class="rg-progress-track">
+          <div id="progressBar" class="rg-progress-fill"></div>
         </div>
       </div>
-      <div class="tpl-meta">
-        <div class="tpl-name">${tpl.name}</div>
-        <div class="tpl-style">${tpl.style}</div>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="mb-4 px-4 py-3 rounded-lg text-sm font-medium
+                      {% if message.tags == 'error' %}bg-red-50 text-red-700
+                      {% else %}bg-emerald-50 text-emerald-700{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <div class="rg-card">
+        <form method="POST" action="{% url 'register' %}" id="registerForm">
+          {% csrf_token %}
+
+          <div class="step active" id="step-1">
+            <h1 class="rg-title">Create your account</h1>
+            <p class="rg-subtitle">Start with the login details you will use for your dashboard.</p>
+
+            <div class="space-y-4">
+              <div>
+                <label class="rg-label">Username</label>
+                <input class="form-input" type="text" name="username"
+                       placeholder="e.g. alex.cuts" required>
+              </div>
+
+              <div>
+                <label class="rg-label">Email address</label>
+                <input class="form-input" type="email" name="email"
+                       placeholder="you@email.com" required>
+              </div>
+
+              <div>
+                <label class="rg-label">Password</label>
+                <input class="form-input" type="password" name="password"
+                       placeholder="Min. 6 characters" required minlength="6">
+              </div>
+
+              <div>
+                <label class="rg-label">Confirm password</label>
+                <input class="form-input" type="password" id="confirmPassword"
+                       placeholder="Repeat your password" required>
+                <p id="passwordError" class="hidden text-xs text-red-500 mt-1">
+                  Passwords do not match.
+                </p>
+              </div>
+            </div>
+
+            <button type="button" onclick="goToStep(2)"
+                    class="rg-btn rg-btn-primary w-full mt-6">
+              Continue
+            </button>
+          </div>
+
+          <div class="step" id="step-2">
+            <h1 class="rg-title">Your specialty</h1>
+            <p class="rg-subtitle">Choose the closest match. You can adjust this later.</p>
+
+            <div class="specialty-grid">
+              <label class="specialty-card">
+                <input type="radio" name="specialty" value="Barber">
+                <div class="specialty-inner">
+                  <div class="specialty-mark">B</div>
+                  <p class="text-sm font-semibold text-ink">Barber</p>
+                  <p class="text-xs text-muted mt-1">Cuts & fades</p>
+                </div>
+              </label>
+
+              <label class="specialty-card">
+                <input type="radio" name="specialty" value="Hair Stylist">
+                <div class="specialty-inner">
+                  <div class="specialty-mark">H</div>
+                  <p class="text-sm font-semibold text-ink">Hair Stylist</p>
+                  <p class="text-xs text-muted mt-1">Color & styling</p>
+                </div>
+              </label>
+
+              <label class="specialty-card">
+                <input type="radio" name="specialty" value="Nail Master">
+                <div class="specialty-inner">
+                  <div class="specialty-mark">N</div>
+                  <p class="text-sm font-semibold text-ink">Nail Master</p>
+                  <p class="text-xs text-muted mt-1">Gel & nail art</p>
+                </div>
+              </label>
+
+              <label class="specialty-card">
+                <input type="radio" name="specialty" value="Makeup Artist">
+                <div class="specialty-inner">
+                  <div class="specialty-mark">M</div>
+                  <p class="text-sm font-semibold text-ink">Makeup Artist</p>
+                  <p class="text-xs text-muted mt-1">Beauty & looks</p>
+                </div>
+              </label>
+
+              <label class="specialty-card" style="grid-column: 1 / -1;">
+                <input type="radio" name="specialty" value="Tattoo Artist">
+                <div class="specialty-inner">
+                  <div class="specialty-mark">T</div>
+                  <p class="text-sm font-semibold text-ink">Tattoo Artist</p>
+                  <p class="text-xs text-muted mt-1">Ink & body art</p>
+                </div>
+              </label>
+            </div>
+
+            <div class="rg-actions flex gap-3">
+              <button type="button" onclick="goToStep(1)"
+                      class="rg-btn rg-btn-ghost flex-1">
+                Back
+              </button>
+
+              <button type="button" onclick="goToStep(3)"
+                      class="rg-btn rg-btn-primary flex-1">
+                Continue
+              </button>
+            </div>
+          </div>
+
+          <div class="step" id="step-3">
+            <h1 class="rg-title">Your profile</h1>
+            <p class="rg-subtitle">Add a few details so clients can find and trust your work.</p>
+
+            <div class="space-y-4">
+              <div>
+                <label class="rg-label">Location</label>
+                <input class="form-input" type="text" name="location"
+                       placeholder="e.g. Brooklyn, NY">
+              </div>
+
+              <div>
+                <label class="rg-label">Years of experience</label>
+                <input class="form-input" type="number" name="years_exp"
+                       placeholder="e.g. 5" min="0" max="50">
+              </div>
+
+              <div>
+                <label class="rg-label">Instagram handle (optional)</label>
+                <input class="form-input" type="text" name="ig_handle"
+                       placeholder="@alex.cuts">
+              </div>
+
+              <div>
+                <label class="rg-label">Short bio (optional)</label>
+                <textarea class="form-input" name="bio" rows="3"
+                          maxlength="200"
+                          placeholder="e.g. 7 years in Brooklyn. Specializing in skin fades and beard work."></textarea>
+                <p class="text-xs text-muted mt-1">Max 200 characters</p>
+              </div>
+            </div>
+
+            <div class="rg-actions flex gap-3 mt-6">
+              <button type="button" onclick="goToStep(2)"
+                      class="rg-btn rg-btn-ghost flex-1">
+                Back
+              </button>
+
+              <button type="submit"
+                      class="rg-btn rg-btn-cobalt flex-1">
+                Create account
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="rg-divider">or</div>
+
+        <a href="/accounts/google/login/?process=signup"
+           class="rg-btn rg-google">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+            <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+          </svg>
+          Sign up with Google
+        </a>
       </div>
-    `;
-    card.addEventListener('click', () => selectTemplate(tpl.id));
-    templateGrid.appendChild(card);
-  });
 
-  templateInput.value = list[0].id;
-}
+      <p class="rg-switch">
+        Already have an account?
+        <a href="{% url 'login' %}">Sign in</a>
+      </p>
+    </div>
+  </main>
+</div>
 
-function selectTemplate(id) {
-  templateInput.value = id;
-  document.querySelectorAll('.tpl-card').forEach(card => {
-    card.classList.toggle('is-selected', card.dataset.tplId === id);
-  });
-}
+<script>
+const stepMeta = {
+  1: { label: 'Step 1 of 3', name: 'Your account', progress: '33%' },
+  2: { label: 'Step 2 of 3', name: 'Your specialty', progress: '66%' },
+  3: { label: 'Step 3 of 3', name: 'Your profile', progress: '100%' },
+};
 
-buildTemplatePicker();
+function goToStep(n) {
+  if (n === 2) {
+    const pw = document.querySelector('input[name="password"]').value;
+    const cpw = document.getElementById('confirmPassword').value;
+    const err = document.getElementById('passwordError');
 
-(function() {
-  const input = document.getElementById('photoInput');
-  const zone = document.getElementById('uploadZone');
-  const preview = document.getElementById('previewThumb');
-  const thumb = document.getElementById('thumbImg');
-
-  input.addEventListener('change', function() {
-    const file = this.files && this.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      thumb.src = event.target.result;
-      zone.style.display = 'none';
-      preview.style.display = 'block';
-    };
-    reader.readAsDataURL(file);
-  });
-
-  window.removePhoto = function() {
-    input.value = '';
-    thumb.src = '';
-    zone.style.display = 'block';
-    preview.style.display = 'none';
-  };
-})();
-
-const $ = id => document.getElementById(id);
-
-function showState(name) {
-  ['emptyState', 'skeletonState', 'resultState', 'errorState'].forEach(state => {
-    $(state).classList.toggle('hidden', state !== name);
-  });
-
-  $('resultTitle').textContent = {
-    emptyState: 'Preview',
-    skeletonState: 'Generating...',
-    resultState: 'Your post is ready',
-    errorState: 'Something went wrong',
-  }[name];
-}
-
-const LOADER_MSGS = [
-  'Generating your post...',
-  'Composing the layout...',
-  'Rendering pixels...',
-  'Almost ready...',
-];
-
-let msgInterval = null;
-
-function startLoaderMessages() {
-  let index = 0;
-  $('loaderMsg').textContent = LOADER_MSGS[0];
-
-  msgInterval = setInterval(() => {
-    index = (index + 1) % LOADER_MSGS.length;
-    $('loaderMsg').textContent = LOADER_MSGS[index];
-  }, 2200);
-}
-
-function stopLoaderMessages() {
-  if (msgInterval) clearInterval(msgInterval);
-  msgInterval = null;
-}
-
-const form = document.getElementById('igForm');
-const submit = document.getElementById('submitBtn');
-const formErr = document.getElementById('formError');
-
-let pollTimer = null;
-
-form.addEventListener('submit', function(event) {
-  event.preventDefault();
-  formErr.classList.remove('is-visible');
-
-  if (!templateInput.value) {
-    formErr.textContent = 'Please choose a template.';
-    formErr.classList.add('is-visible');
-    return;
-  }
-
-  const formData = new FormData(form);
-  submitGeneration(formData);
-});
-
-function submitGeneration(formData) {
-  showState('skeletonState');
-  submit.disabled = true;
-  submit.textContent = 'Generating...';
-  startLoaderMessages();
-
-  fetch('{% url "instagram_generate" %}', {
-    method: 'POST',
-    headers: { 'X-CSRFToken': csrfToken },
-    body: formData,
-  })
-  .then(async response => {
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(data.error || 'Generation failed.');
-    return data;
-  })
-  .then(data => {
-    if (data.status === 'finished') {
-      showResult(data);
-    } else {
-      startPolling(data.job_id);
-    }
-  })
-  .catch(error => {
-    showError(error.message);
-  });
-}
-
-function startPolling(jobId) {
-  let attempts = 0;
-  const maxAttempts = 60;
-
-  pollTimer = setInterval(() => {
-    attempts += 1;
-
-    if (attempts > maxAttempts) {
-      clearInterval(pollTimer);
-      showError('Timed out waiting for render. Please try again.');
+    if (cpw && pw !== cpw) {
+      err.classList.remove('hidden');
       return;
     }
 
-    fetch(`/instagram/status/${jobId}/`)
-      .then(async response => {
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok && data.status !== 'error') {
-          throw new Error(data.error || `HTTP ${response.status}`);
-        }
-        return data;
-      })
-      .then(data => {
-        if (data.status === 'finished') {
-          clearInterval(pollTimer);
-          showResult(data);
-        } else if (data.status === 'error') {
-          clearInterval(pollTimer);
-          showError(data.error || 'Render failed.');
-        }
-      })
-      .catch(error => {
-        clearInterval(pollTimer);
-        showError(error.message);
-      });
-  }, 2000);
-}
-
-function showResult(data) {
-  stopLoaderMessages();
-
-  submit.disabled = false;
-  submit.textContent = 'Generate post';
-
-  $('resultImg').src = data.image_url;
-  $('downloadLink').href = data.image_url;
-
-  if (data.caption || data.hashtags) {
-    $('captionText').textContent = data.caption || '';
-    $('hashtagsText').textContent = data.hashtags || '';
-    $('resultCaption').classList.add('is-visible');
-  } else {
-    $('resultCaption').classList.remove('is-visible');
+    err.classList.add('hidden');
   }
 
-  const warning = $('fallbackWarning');
-  if (data.fallback && data.warning) {
-    warning.textContent = data.warning;
-    warning.classList.add('is-visible');
-  } else {
-    warning.classList.remove('is-visible');
-  }
+  document.querySelectorAll('.step').forEach(step => {
+    step.classList.remove('active');
+  });
 
-  showState('resultState');
+  document.getElementById('step-' + n).classList.add('active');
+
+  document.getElementById('stepLabel').textContent = stepMeta[n].label;
+  document.getElementById('stepName').textContent = stepMeta[n].name;
+  document.getElementById('progressBar').style.width = stepMeta[n].progress;
+
+  document.querySelectorAll('.rg-step-indicator').forEach(item => {
+    const num = parseInt(item.dataset.step, 10);
+    const dot = item.querySelector('.rg-step-dot');
+
+    item.classList.remove('is-active', 'is-complete');
+
+    if (num < n) {
+      item.classList.add('is-complete');
+      dot.textContent = '✓';
+    } else if (num === n) {
+      item.classList.add('is-active');
+      dot.textContent = num;
+    } else {
+      dot.textContent = num;
+    }
+  });
 }
 
-function showError(message) {
-  stopLoaderMessages();
-  if (pollTimer) clearInterval(pollTimer);
-
-  submit.disabled = false;
-  submit.textContent = 'Generate post';
-  $('errorMsg').textContent = message;
-
-  showState('errorState');
-}
-
-window.resetForm = function() {
-  showState('emptyState');
-};
-
-window.regenerate = function() {
-  showState('emptyState');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+goToStep(1);
 </script>
-{% endblock %}
+
+</body>
+</html>
