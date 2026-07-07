@@ -97,7 +97,11 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGIN_REDIRECT_URL = '/dashboard/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 
+# Allow Google login to authenticate existing users by matching verified email.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
 
+# After successful Google login, connect that Google account to the existing user.
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 LOGIN_URL = '/auth/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/auth/login/'
