@@ -1,604 +1,1001 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Instagram Post — StyleBook{% endblock %}
+{% block title %}Instagram Post - Showpiece{% endblock %}
+
+{% block page_eyebrow %}
+  <div class="sp-eyebrow">
+    <span class="sp-eyebrow-dot"></span>
+    Template studio
+  </div>
+{% endblock %}
+
 {% block page_title %}Instagram post generator{% endblock %}
-{% block page_sub %}Upload a photo — get a ready-to-post template{% endblock %}
 
-{% block content %}
+{% block page_sub %}
+  <p class="sp-page-sub">Upload a photo, choose a layout, and export a ready-to-post image.</p>
+{% endblock %}
 
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-  <!-- ══════════════════════════════════════════════════ -->
-  <!-- LEFT: Form                                          -->
-  <!-- ══════════════════════════════════════════════════ -->
-  <div>
-    <form id="igForm" enctype="multipart/form-data">
-      {% csrf_token %}
-
-      <!-- ─── Upload zone ─────────────────────────── -->
-      <p class="section-title">Upload photo</p>
-      <div class="card p-0 overflow-hidden mb-4">
-
-        <div id="uploadZone" class="relative">
-          <input type="file" name="photo" id="photoInput"
-                 accept="image/*" required
-                 style="position:absolute; inset:0; width:100%; height:100%;
-                        opacity:0; cursor:pointer; z-index:10;">
-          <div class="flex flex-col items-center justify-center py-10 px-6
-                      border-2 border-dashed border-cream-border rounded-xl
-                      text-center pointer-events-none">
-            <div class="w-10 h-10 rounded-full bg-cream flex items-center
-                        justify-center mb-3">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="text-muted">
-                <path d="M12 5v10M8 8.5L12 5l4 3.5" stroke="currentColor"
-                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
-                      stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <p class="text-sm font-medium text-ink mb-1">Click to choose a photo</p>
-            <p class="text-xs text-muted">JPG, PNG — max 5MB</p>
-          </div>
-        </div>
-
-        <!-- Preview thumbnail (hidden until file picked) -->
-        <div id="previewThumb" style="display:none;" class="relative bg-cream">
-          <img id="thumbImg" src="" alt=""
-               style="display:block; width:100%; max-height:320px;
-                      object-fit:contain; margin:0 auto;">
-          <button type="button" onclick="removePhoto()"
-                  class="absolute top-3 right-3 w-8 h-8 bg-ink text-white
-                         rounded-full flex items-center justify-center
-                         hover:bg-black transition-all text-sm font-medium">
-            ✕
-          </button>
-        </div>
-      </div>
-
-      <!-- ─── Details ─────────────────────────────── -->
-      <p class="section-title">Details</p>
-      <div class="card mb-4">
-        <div class="mb-3">
-          <label class="form-label" for="service">Service performed</label>
-          <input class="form-input" type="text" id="service" name="service"
-                 placeholder="e.g. Skin fade + beard line"
-                 value="{{ prefill_service|default:'' }}" required>
-        </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="form-label" for="client_name">Client name (optional)</label>
-            <input class="form-input" type="text" id="client_name" name="client_name"
-                   placeholder="e.g. Marcus T."
-                   value="{{ prefill_client|default:'' }}">
-          </div>
-          <div>
-            <label class="form-label" for="ig_handle">Your IG handle</label>
-            <input class="form-input" type="text" id="ig_handle" name="ig_handle"
-                   placeholder="@alex.cuts"
-                   value="{{ profile.ig_handle|default:'' }}">
-          </div>
-        </div>
-      </div>
-
-
-<!-- ─── Template picker — 2-col grid with thumbnails ── -->
-      <p class="section-title">Choose template</p>
-      <div class="card mb-4">
-        <div id="templateGrid" class="grid grid-cols-2 gap-3">
-          <!-- Populated dynamically from TEMPLATES JSON -->
-        </div>
-      </div>
-
-      <!-- ─── Caption + hashtags ─────────────────── -->
-      <p class="section-title">Caption</p>
-      <div class="card mb-4">
-        <div class="mb-3">
-          <label class="form-label" for="caption">Caption (optional)</label>
-          <textarea class="form-input" id="caption" name="caption" rows="3"
-                    placeholder="Fresh fade done today. Drop a comment if you want one..."></textarea>
-        </div>
-        <div>
-          <label class="form-label" for="hashtags">Hashtags</label>
-          <input class="form-input" type="text" id="hashtags" name="hashtags"
-                 placeholder="#barbershop #fade #skinfade"
-                 value="#barbershop #stylebook">
-        </div>
-      </div>
-
-      {% if reservation_id %}
-        <input type="hidden" name="reservation_id" value="{{ reservation_id }}">
-      {% endif %}
-
-      <!-- Hidden — JS sets this when a template is picked -->
-      <input type="hidden" name="template" id="templateInput" value="">
-
-      <button type="submit" id="submitBtn"
-              class="btn-gold w-full justify-center py-3 text-base">
-        Generate post
-      </button>
-
-      <p id="formError" class="hidden mt-3 text-sm text-red-600"></p>
-    </form>
-  </div>
-
-  <!-- ══════════════════════════════════════════════════ -->
-  <!-- RIGHT: Preview / skeleton / result / error          -->
-  <!-- ══════════════════════════════════════════════════ -->
-  <div>
-    <p class="section-title" id="resultTitle">Preview</p>
-
-    <!-- ─── EMPTY STATE (default) ──────────────── -->
-    <div id="emptyState" class="card flex flex-col items-center justify-center
-                                py-20 text-center border-2 border-dashed">
-      <div class="w-14 h-14 rounded-full bg-cream flex items-center
-                  justify-center mb-4">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="text-muted">
-          <rect x="2" y="2" width="20" height="20" rx="4"
-                stroke="currentColor" stroke-width="1.2"/>
-          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.2"/>
-          <circle cx="17" cy="7" r="1" fill="currentColor"/>
-        </svg>
-      </div>
-      <p class="text-sm font-medium text-ink mb-1">
-        Your post preview will appear here
-      </p>
-      <p class="text-sm text-muted max-w-xs">
-        Fill in the details, pick a template, and hit generate.
-      </p>
-    </div>
-
-    <!-- ─── SKELETON STATE (while polling) ─────── -->
-    <div id="skeletonState" class="hidden">
-      <div class="card p-0 overflow-hidden mb-4">
-        <div class="flex items-center gap-3 px-4 py-3 border-b border-cream-border">
-          <div class="w-8 h-8 rounded-full bg-cream-border animate-pulse"></div>
-          <div class="h-3 w-24 bg-cream-border rounded animate-pulse"></div>
-        </div>
-        <div id="skeletonBox" class="relative bg-gradient-to-br from-cream to-cream-border
-                                     overflow-hidden"
-             style="width:100%; aspect-ratio: 9 / 16;">
-          <div class="absolute inset-0 shimmer"></div>
-          <div class="absolute inset-0 flex flex-col items-center justify-center">
-            <div class="w-12 h-12 rounded-full border-4 border-ink/20
-                        border-t-ink animate-spin mb-4"></div>
-            <p class="text-sm font-medium text-ink" id="loaderMsg">
-              Generating your post…
-            </p>
-            <p class="text-xs text-muted mt-1">Usually takes 5-10 seconds</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ─── RESULT STATE (filled by JS) ────────── -->
-    <div id="resultState" class="hidden">
-      <div class="card p-0 overflow-hidden mb-4">
-        <div class="flex items-center gap-3 px-4 py-3 border-b border-cream-border">
-          <div class="w-8 h-8 rounded-full bg-gold flex items-center justify-center
-                      text-xs font-semibold text-sidebar">
-            {{ user.username|slice:":2"|upper }}
-          </div>
-          <span class="text-sm font-medium text-ink">
-            {{ profile.ig_handle|default:user.username }}
-          </span>
-        </div>
-        <div class="bg-cream flex items-center justify-center p-0">
-          <img id="resultImg" src="" alt="Generated post"
-               class="w-full h-auto block"
-               style="max-height: 80vh; object-fit: contain;">
-        </div>
-        <div id="resultCaption" class="px-4 py-3 border-t border-cream-border hidden">
-          <p class="text-sm text-ink" id="captionText"></p>
-          <p class="text-sm text-blue-500 mt-1" id="hashtagsText"></p>
-        </div>
-      </div>
-
-      <!-- Pillow fallback warning -->
-      <div id="fallbackWarning" class="hidden mb-3 p-3 bg-yellow-50
-                                       border border-yellow-200 rounded-lg
-                                       text-sm text-yellow-800"></div>
-
-      <div class="flex flex-col gap-3">
-        <a id="downloadLink" href="#" download
-           class="btn-gold w-full justify-center py-3">
-          Download PNG
-        </a>
-        <button type="button" onclick="regenerate()"
-                class="btn-ghost w-full justify-center py-3">
-          Try a different template
-        </button>
-        <a href="{% url 'portfolio' %}"
-           class="btn-ghost w-full justify-center py-3">
-          View in portfolio
-        </a>
-      </div>
-    </div>
-
-    <!-- ─── ERROR STATE ───────────────────────── -->
-    <div id="errorState" class="hidden card border-2 border-red-200
-                                bg-red-50 p-6 text-center">
-      <p class="text-sm font-medium text-red-700 mb-2">Generation failed</p>
-      <p class="text-sm text-red-600" id="errorMsg">Something went wrong.</p>
-      <button type="button" onclick="resetForm()"
-              class="btn-ghost mt-4 justify-center py-2 px-4 inline-flex">
-        Try again
-      </button>
-    </div>
-  </div>
-
-</div>
-
-<!-- Shimmer animation for skeleton loader -->
+{% block extra_head %}
 <style>
-  .shimmer {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.45) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 1.8s infinite;
-  }
-  @keyframes shimmer {
-    0%   { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+  .ig-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.75fr);
+    gap: 24px;
+    align-items: start;
   }
 
-  /* Template thumbnail cards */
-  .tpl-card {
+  .ig-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ig-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+
+  .ig-section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(15,14,13,0.45);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .ig-card {
+    padding: 18px;
+  }
+
+  .ig-upload {
     position: relative;
-    border: 2px solid transparent;
+    min-height: 220px;
+    border: 1px dashed rgba(15,14,13,0.18);
+    border-radius: 12px;
+    background: rgba(15,14,13,0.02);
+    overflow: hidden;
+    transition: all 0.15s;
+  }
+
+  .ig-upload:hover {
+    border-color: #3A3AFF;
+    background: rgba(58,58,255,0.04);
+  }
+
+  .ig-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .ig-upload-inner {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 24px;
+    text-align: center;
+    pointer-events: none;
+  }
+
+  .ig-upload-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(15,14,13,0.04);
+    color: rgba(15,14,13,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+
+  .ig-upload-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-upload-copy {
+    font-size: 12px;
+    color: rgba(15,14,13,0.55);
+  }
+
+  .ig-preview-thumb {
+    position: relative;
+    display: none;
+    background: #FFFFFF;
     border-radius: 12px;
     overflow: hidden;
-    transition: all 0.18s ease;
+  }
+
+  .ig-preview-thumb img {
+    display: block;
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+    margin: 0 auto;
+  }
+
+  .ig-remove {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 10px;
+    background: rgba(15,14,13,0.88);
+    color: #F5F1E8;
     cursor: pointer;
-    background: #fff;
+    font-size: 18px;
+    line-height: 1;
   }
+
+  .ig-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .ig-template-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .tpl-card {
+    position: relative;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.16s;
+    cursor: pointer;
+    background: #FFFFFF;
+  }
+
   .tpl-card:hover {
-    border-color: #1a1a1a;
-    transform: translateY(-2px);
+    border-color: rgba(15,14,13,0.22);
+    transform: translateY(-1px);
   }
+
   .tpl-card.is-selected {
-    border-color: #C9A96E;
-    box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.18);
+    border-color: #3A3AFF;
+    box-shadow: 0 0 0 3px rgba(58,58,255,0.12);
   }
+
   .tpl-thumb-wrap {
     position: relative;
     aspect-ratio: 9 / 16;
-    background: linear-gradient(135deg, #f3eee8, #e5e3dc);
+    background: #F5F1E8;
     overflow: hidden;
   }
+
   .tpl-thumb {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.25s;
   }
+
   .tpl-thumb.loaded {
     opacity: 1;
   }
+
   .tpl-thumb-loader {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    pointer-events: none;
   }
+
+  .tpl-spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 2px solid rgba(15,14,13,0.10);
+    border-top-color: rgba(15,14,13,0.45);
+    animation: ig-spin 0.8s linear infinite;
+  }
+
   .tpl-meta {
-    padding: 10px 12px;
-    text-align: left;
+    padding: 10px 11px 11px;
   }
+
   .tpl-name {
     font-size: 13px;
     font-weight: 600;
-    color: #1a1a1a;
-    line-height: 1.2;
+    color: #0F0E0D;
+    line-height: 1.25;
   }
+
   .tpl-style {
     font-size: 11px;
-    color: #888;
-    margin-top: 2px;
-    line-height: 1.3;
+    color: rgba(15,14,13,0.52);
+    margin-top: 3px;
+    line-height: 1.35;
   }
+
   .tpl-check {
     position: absolute;
     top: 8px;
     right: 8px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: #C9A96E;
-    color: white;
+    width: 23px;
+    height: 23px;
+    border-radius: 999px;
+    background: #3A3AFF;
+    color: #F5F1E8;
     display: none;
     align-items: center;
     justify-content: center;
     font-size: 13px;
-    font-weight: bold;
+    font-weight: 700;
     z-index: 2;
   }
+
   .tpl-card.is-selected .tpl-check {
     display: flex;
   }
+
+  .ig-submit {
+    width: 100%;
+    min-height: 46px;
+    justify-content: center;
+  }
+
+  .ig-error {
+    display: none;
+    margin-top: 12px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: rgba(220,38,38,0.08);
+    color: #991B1B;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .ig-error.is-visible {
+    display: block;
+  }
+
+  .ig-preview-col {
+    position: sticky;
+    top: 96px;
+  }
+
+  .ig-phone {
+    max-width: 390px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .ig-empty,
+  .ig-error-state {
+    min-height: 520px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .ig-empty-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    background: rgba(15,14,13,0.04);
+    color: rgba(15,14,13,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ig-empty-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-empty-copy {
+    font-size: 13px;
+    color: rgba(15,14,13,0.55);
+    max-width: 280px;
+    line-height: 1.55;
+  }
+
+  .ig-skeleton-card,
+  .ig-result-card {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .ig-post-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    border-bottom: 1px solid rgba(15,14,13,0.08);
+    background: #FFFFFF;
+  }
+
+  .ig-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #3A3AFF;
+    color: #F5F1E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .ig-handle {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-skeleton-box {
+    position: relative;
+    aspect-ratio: 9 / 16;
+    background: linear-gradient(135deg, #F5F1E8, rgba(15,14,13,0.08));
+    overflow: hidden;
+  }
+
+  .ig-loader {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ig-loader-ring {
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    border: 4px solid rgba(15,14,13,0.12);
+    border-top-color: #0F0E0D;
+    animation: ig-spin 0.8s linear infinite;
+    margin-bottom: 14px;
+  }
+
+  .ig-loader-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F0E0D;
+  }
+
+  .ig-loader-copy {
+    font-size: 12px;
+    color: rgba(15,14,13,0.55);
+    margin-top: 3px;
+  }
+
+  .ig-shimmer {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255,255,255,0.55) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+    animation: ig-shimmer 1.7s infinite;
+  }
+
+  .ig-result-img-wrap {
+    background: #F5F1E8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .ig-result-img-wrap img {
+    width: 100%;
+    height: auto;
+    max-height: 78vh;
+    object-fit: contain;
+    display: block;
+  }
+
+  .ig-result-caption {
+    display: none;
+    padding: 13px 14px;
+    border-top: 1px solid rgba(15,14,13,0.08);
+    background: #FFFFFF;
+  }
+
+  .ig-result-caption.is-visible {
+    display: block;
+  }
+
+  .ig-result-caption p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .ig-result-caption .tags {
+    color: #2929E8;
+    margin-top: 3px;
+  }
+
+  .ig-warning {
+    display: none;
+    margin-top: 12px;
+    padding: 11px 13px;
+    border-radius: 10px;
+    background: rgba(245,158,11,0.10);
+    color: #92400E;
+    border: 1px solid rgba(245,158,11,0.20);
+    font-size: 13px;
+  }
+
+  .ig-warning.is-visible {
+    display: block;
+  }
+
+  .ig-result-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  @keyframes ig-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes ig-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @media (max-width: 1024px) {
+    .ig-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .ig-preview-col {
+      position: static;
+    }
+
+    .ig-phone {
+      max-width: 460px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ig-card {
+      padding: 15px;
+    }
+
+    .ig-detail-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ig-template-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tpl-meta {
+      padding: 9px;
+    }
+
+    .tpl-name {
+      font-size: 12px;
+    }
+
+    .tpl-style {
+      font-size: 10px;
+    }
+
+    .ig-upload,
+    .ig-upload-inner {
+      min-height: 180px;
+    }
+
+    .ig-empty,
+    .ig-error-state {
+      min-height: 360px;
+    }
+
+    .ig-result-actions .btn-ghost,
+    .ig-result-actions .btn-cobalt {
+      min-height: 44px;
+      justify-content: center;
+    }
+  }
 </style>
+{% endblock %}
+
+{% block content %}
+
+<div class="ig-shell">
+
+  <div>
+    <form id="igForm" enctype="multipart/form-data" class="ig-stack">
+      {% csrf_token %}
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Upload photo</span>
+        </div>
+
+        <div class="card ig-card">
+          <div id="uploadZone" class="ig-upload">
+            <input type="file" name="photo" id="photoInput" accept="image/*" required>
+
+            <div class="ig-upload-inner">
+              <div class="ig-upload-icon">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5v10M8 8.5L12 5l4 3.5" stroke="currentColor"
+                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3"
+                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <p class="ig-upload-title">Choose a finished-work photo</p>
+              <p class="ig-upload-copy">JPG or PNG, max 5MB</p>
+            </div>
+          </div>
+
+          <div id="previewThumb" class="ig-preview-thumb">
+            <img id="thumbImg" src="" alt="">
+            <button type="button" onclick="removePhoto()" class="ig-remove" aria-label="Remove photo">
+              &times;
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Details</span>
+        </div>
+
+        <div class="card ig-card">
+          <div class="mb-3">
+            <label class="form-label" for="service">Service performed</label>
+            <input class="form-input" type="text" id="service" name="service"
+                   placeholder="e.g. Skin fade + beard line"
+                   value="{{ prefill_service|default:'' }}" required>
+          </div>
+
+          <div class="ig-detail-grid">
+            <div>
+              <label class="form-label" for="client_name">Client name (optional)</label>
+              <input class="form-input" type="text" id="client_name" name="client_name"
+                     placeholder="e.g. Marcus T."
+                     value="{{ prefill_client|default:'' }}">
+            </div>
+
+            <div>
+              <label class="form-label" for="ig_handle">Your IG handle</label>
+              <input class="form-input" type="text" id="ig_handle" name="ig_handle"
+                     placeholder="@alex.cuts"
+                     value="{{ profile.ig_handle|default:'' }}">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Choose template</span>
+        </div>
+
+        <div class="card ig-card">
+          <div id="templateGrid" class="ig-template-grid"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="ig-section-head">
+          <span class="ig-section-title">Caption</span>
+        </div>
+
+        <div class="card ig-card">
+          <div class="mb-3">
+            <label class="form-label" for="caption">Caption (optional)</label>
+            <textarea class="form-input" id="caption" name="caption" rows="3"
+                      placeholder="Fresh fade done today. Drop a comment if you want one..."></textarea>
+          </div>
+
+          <div>
+            <label class="form-label" for="hashtags">Hashtags</label>
+            <input class="form-input" type="text" id="hashtags" name="hashtags"
+                   placeholder="#barbershop #fade #skinfade"
+                   value="#barbershop #showpiece">
+          </div>
+        </div>
+      </section>
+
+      {% if reservation_id %}
+        <input type="hidden" name="reservation_id" value="{{ reservation_id }}">
+      {% endif %}
+
+      <input type="hidden" name="template" id="templateInput" value="">
+
+      <button type="submit" id="submitBtn" class="btn-cobalt ig-submit">
+        Generate post
+      </button>
+
+      <p id="formError" class="ig-error"></p>
+    </form>
+  </div>
+
+  <aside class="ig-preview-col">
+    <div class="ig-section-head">
+      <span class="ig-section-title" id="resultTitle">Preview</span>
+    </div>
+
+    <div class="ig-phone">
+
+      <div id="emptyState" class="card ig-empty">
+        <div class="ig-empty-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+            <rect x="2" y="2" width="20" height="20" rx="4"
+                  stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="17" cy="7" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+
+        <p class="ig-empty-title">Your post preview will appear here</p>
+        <p class="ig-empty-copy">Fill in the details, pick a template, and generate your post.</p>
+      </div>
+
+      <div id="skeletonState" class="hidden">
+        <div class="card ig-skeleton-card">
+          <div class="ig-post-head">
+            <div class="ig-avatar">{{ user.username|slice:":2"|upper }}</div>
+            <span class="ig-handle">{{ profile.ig_handle|default:user.username }}</span>
+          </div>
+
+          <div class="ig-skeleton-box">
+            <div class="ig-shimmer"></div>
+            <div class="ig-loader">
+              <div class="ig-loader-ring"></div>
+              <p class="ig-loader-title" id="loaderMsg">Generating your post...</p>
+              <p class="ig-loader-copy">Usually takes 5-10 seconds</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultState" class="hidden">
+        <div class="card ig-result-card">
+          <div class="ig-post-head">
+            <div class="ig-avatar">{{ user.username|slice:":2"|upper }}</div>
+            <span class="ig-handle">{{ profile.ig_handle|default:user.username }}</span>
+          </div>
+
+          <div class="ig-result-img-wrap">
+            <img id="resultImg" src="" alt="Generated post">
+          </div>
+
+          <div id="resultCaption" class="ig-result-caption">
+            <p id="captionText"></p>
+            <p class="tags" id="hashtagsText"></p>
+          </div>
+        </div>
+
+        <div id="fallbackWarning" class="ig-warning"></div>
+
+        <div class="ig-result-actions">
+          <a id="downloadLink" href="#" download class="btn-cobalt">
+            Download PNG
+          </a>
+
+          <button type="button" onclick="regenerate()" class="btn-ghost">
+            Try a different template
+          </button>
+
+          <a href="{% url 'portfolio' %}" class="btn-ghost">
+            View in portfolio
+          </a>
+        </div>
+      </div>
+
+      <div id="errorState" class="hidden card ig-error-state">
+        <div class="ig-empty-icon" style="background: rgba(220,38,38,0.08); color: #991B1B;">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+            <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <p class="ig-empty-title" style="color: #991B1B;">Generation failed</p>
+        <p class="ig-empty-copy" id="errorMsg">Something went wrong.</p>
+
+        <button type="button" onclick="resetForm()" class="btn-ghost">
+          Try again
+        </button>
+      </div>
+
+    </div>
+  </aside>
+
+</div>
 
 {% endblock %}
 
 {% block extra_scripts %}
-<!-- Template catalog injected by Django, parsed by JS -->
 <script id="templatesData" type="application/json">{{ templates_json|safe }}</script>
 
 <script>
-  // ════════════════════════════════════════════════════
-  // Catalog of templates from the backend
-  // ════════════════════════════════════════════════════
-  const TEMPLATES = JSON.parse(document.getElementById('templatesData').textContent);
-  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+const TEMPLATES = JSON.parse(document.getElementById('templatesData').textContent);
+const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-  // ════════════════════════════════════════════════════
-  // Template picker — rebuilds when format changes
-  // ════════════════════════════════════════════════════
-  const templateGrid  = document.getElementById('templateGrid');
-  const templateInput = document.getElementById('templateInput');
+const templateGrid = document.getElementById('templateGrid');
+const templateInput = document.getElementById('templateInput');
 
 function buildTemplatePicker() {
-    const list = TEMPLATES['story'] || [];
-    templateGrid.innerHTML = '';
+  const list = TEMPLATES['story'] || [];
+  templateGrid.innerHTML = '';
 
-    if (list.length === 0) {
-      templateGrid.innerHTML = '<p class="text-sm text-muted col-span-2">No templates available.</p>';
-      templateInput.value = '';
-      return;
-    }
+  if (list.length === 0) {
+    templateGrid.innerHTML = '<p class="text-sm text-muted col-span-2">No templates available.</p>';
+    templateInput.value = '';
+    return;
+  }
 
-    list.forEach((tpl, idx) => {
-      const isFirst = idx === 0;
-      const card = document.createElement('div');
-      card.className = 'tpl-card' + (isFirst ? ' is-selected' : '');
-      card.dataset.tplId = tpl.id;
-      card.innerHTML = `
-        <div class="tpl-check">✓</div>
-        <div class="tpl-thumb-wrap">
-          <img class="tpl-thumb"
-               src="/instagram/thumbnail/${tpl.id}/"
-               alt="${tpl.name}"
-               loading="lazy"
-               onload="this.classList.add('loaded'); this.nextElementSibling.style.display='none';"
-               onerror="this.style.display='none';">
-          <div class="tpl-thumb-loader">
-            <div class="w-8 h-8 rounded-full border-2 border-ink/10 border-t-ink/40 animate-spin"></div>
-          </div>
+  list.forEach((tpl, idx) => {
+    const isFirst = idx === 0;
+    const card = document.createElement('div');
+    card.className = 'tpl-card' + (isFirst ? ' is-selected' : '');
+    card.dataset.tplId = tpl.id;
+    card.innerHTML = `
+      <div class="tpl-check">✓</div>
+      <div class="tpl-thumb-wrap">
+        <img class="tpl-thumb"
+             src="/instagram/thumbnail/${tpl.id}/"
+             alt="${tpl.name}"
+             loading="lazy"
+             onload="this.classList.add('loaded'); this.nextElementSibling.style.display='none';"
+             onerror="this.style.display='none';">
+        <div class="tpl-thumb-loader">
+          <div class="tpl-spinner"></div>
         </div>
-        <div class="tpl-meta">
-          <div class="tpl-name">${tpl.name}</div>
-          <div class="tpl-style">${tpl.style}</div>
-        </div>
-      `;
-      card.addEventListener('click', () => selectTemplate(tpl.id));
-      templateGrid.appendChild(card);
-    });
-
-    templateInput.value = list[0].id;
-  }
-
-  function selectTemplate(id) {
-    templateInput.value = id;
-    document.querySelectorAll('.tpl-card').forEach(c => {
-      c.classList.toggle('is-selected', c.dataset.tplId === id);
-    });
-  }
-
-  buildTemplatePicker();
-
-
-
-
-  // ════════════════════════════════════════════════════
-  // Photo upload preview
-  // ════════════════════════════════════════════════════
-  (function() {
-    const input   = document.getElementById('photoInput');
-    const zone    = document.getElementById('uploadZone');
-    const preview = document.getElementById('previewThumb');
-    const thumb   = document.getElementById('thumbImg');
-
-    input.addEventListener('change', function() {
-      const file = this.files && this.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(ev) {
-        thumb.src             = ev.target.result;
-        zone.style.display    = 'none';
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    });
-
-    window.removePhoto = function() {
-      input.value           = '';
-      thumb.src             = '';
-      zone.style.display    = 'block';
-      preview.style.display = 'none';
-    };
-  })();
-
-  // ════════════════════════════════════════════════════
-  // UI state machine
-  // ════════════════════════════════════════════════════
-  const $ = id => document.getElementById(id);
-
-  function showState(name) {
-    ['emptyState', 'skeletonState', 'resultState', 'errorState'].forEach(s => {
-      $(s).classList.toggle('hidden', s !== name);
-    });
-    $('resultTitle').textContent = {
-      emptyState:    'Preview',
-      skeletonState: 'Generating…',
-      resultState:   'Your post is ready',
-      errorState:    'Something went wrong',
-    }[name];
-  }
-
-  // ════════════════════════════════════════════════════
-  // Rotating loader messages
-  // ════════════════════════════════════════════════════
-  const LOADER_MSGS = [
-    'Generating your post…',
-    'Calling Placid…',
-    'Rendering pixels…',
-    'Almost ready…',
-  ];
-  let msgInterval = null;
-
-  function startLoaderMessages() {
-    let i = 0;
-    $('loaderMsg').textContent = LOADER_MSGS[0];
-    msgInterval = setInterval(() => {
-      i = (i + 1) % LOADER_MSGS.length;
-      $('loaderMsg').textContent = LOADER_MSGS[i];
-    }, 2200);
-  }
-
-  function stopLoaderMessages() {
-    if (msgInterval) clearInterval(msgInterval);
-    msgInterval = null;
-  }
-
-  // ════════════════════════════════════════════════════
-  // Form submission + polling
-  // ════════════════════════════════════════════════════
-  const form    = document.getElementById('igForm');
-  const submit  = document.getElementById('submitBtn');
-  const formErr = document.getElementById('formError');
-
-  let pollTimer = null;
-
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    formErr.classList.add('hidden');
-
-    if (!templateInput.value) {
-      formErr.textContent = 'Please choose a template.';
-      formErr.classList.remove('hidden');
-      return;
-    }
-
-    const formData = new FormData(form);
-    submitGeneration(formData);
+      </div>
+      <div class="tpl-meta">
+        <div class="tpl-name">${tpl.name}</div>
+        <div class="tpl-style">${tpl.style}</div>
+      </div>
+    `;
+    card.addEventListener('click', () => selectTemplate(tpl.id));
+    templateGrid.appendChild(card);
   });
 
-  function submitGeneration(formData) {
-    showState('skeletonState');
-    submit.disabled    = true;
-    submit.textContent = 'Generating…';
-    startLoaderMessages();
+  templateInput.value = list[0].id;
+}
 
-    fetch('{% url "instagram_generate" %}', {
-      method:  'POST',
-      headers: { 'X-CSRFToken': csrfToken },
-      body:    formData,
-    })
-    .then(async r => {
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(data.error || 'Generation failed.');
-      return data;
-    })
-    .then(data => {
-      if (data.status === 'finished') {
-        showResult(data);
-      } else {
-        startPolling(data.job_id);
-      }
-    })
-    .catch(err => {
-      showError(err.message);
-    });
+function selectTemplate(id) {
+  templateInput.value = id;
+  document.querySelectorAll('.tpl-card').forEach(card => {
+    card.classList.toggle('is-selected', card.dataset.tplId === id);
+  });
+}
+
+buildTemplatePicker();
+
+(function() {
+  const input = document.getElementById('photoInput');
+  const zone = document.getElementById('uploadZone');
+  const preview = document.getElementById('previewThumb');
+  const thumb = document.getElementById('thumbImg');
+
+  input.addEventListener('change', function() {
+    const file = this.files && this.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      thumb.src = event.target.result;
+      zone.style.display = 'none';
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  });
+
+  window.removePhoto = function() {
+    input.value = '';
+    thumb.src = '';
+    zone.style.display = 'block';
+    preview.style.display = 'none';
+  };
+})();
+
+const $ = id => document.getElementById(id);
+
+function showState(name) {
+  ['emptyState', 'skeletonState', 'resultState', 'errorState'].forEach(state => {
+    $(state).classList.toggle('hidden', state !== name);
+  });
+
+  $('resultTitle').textContent = {
+    emptyState: 'Preview',
+    skeletonState: 'Generating...',
+    resultState: 'Your post is ready',
+    errorState: 'Something went wrong',
+  }[name];
+}
+
+const LOADER_MSGS = [
+  'Generating your post...',
+  'Composing the layout...',
+  'Rendering pixels...',
+  'Almost ready...',
+];
+
+let msgInterval = null;
+
+function startLoaderMessages() {
+  let index = 0;
+  $('loaderMsg').textContent = LOADER_MSGS[0];
+
+  msgInterval = setInterval(() => {
+    index = (index + 1) % LOADER_MSGS.length;
+    $('loaderMsg').textContent = LOADER_MSGS[index];
+  }, 2200);
+}
+
+function stopLoaderMessages() {
+  if (msgInterval) clearInterval(msgInterval);
+  msgInterval = null;
+}
+
+const form = document.getElementById('igForm');
+const submit = document.getElementById('submitBtn');
+const formErr = document.getElementById('formError');
+
+let pollTimer = null;
+
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  formErr.classList.remove('is-visible');
+
+  if (!templateInput.value) {
+    formErr.textContent = 'Please choose a template.';
+    formErr.classList.add('is-visible');
+    return;
   }
 
-  function startPolling(jobId) {
-    let attempts = 0;
-    const maxAttempts = 60;  // 60 × 2 sec = 2 minutes max
+  const formData = new FormData(form);
+  submitGeneration(formData);
+});
 
-    pollTimer = setInterval(() => {
-      attempts += 1;
-      if (attempts > maxAttempts) {
-        clearInterval(pollTimer);
-        showError('Timed out waiting for render. Please try again.');
-        return;
-      }
+function submitGeneration(formData) {
+  showState('skeletonState');
+  submit.disabled = true;
+  submit.textContent = 'Generating...';
+  startLoaderMessages();
 
-      fetch(`/instagram/status/${jobId}/`)
-        .then(async r => {
-          const data = await r.json().catch(() => ({}));
-          if (!r.ok && data.status !== 'error') {
-            throw new Error(data.error || `HTTP ${r.status}`);
-          }
-          return data;
-        })
-        .then(data => {
-          if (data.status === 'finished') {
-            clearInterval(pollTimer);
-            showResult(data);
-          } else if (data.status === 'error') {
-            clearInterval(pollTimer);
-            showError(data.error || 'Render failed.');
-          }
-          // else: still processing — keep polling
-        })
-        .catch(err => {
+  fetch('{% url "instagram_generate" %}', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrfToken },
+    body: formData,
+  })
+  .then(async response => {
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error || 'Generation failed.');
+    return data;
+  })
+  .then(data => {
+    if (data.status === 'finished') {
+      showResult(data);
+    } else {
+      startPolling(data.job_id);
+    }
+  })
+  .catch(error => {
+    showError(error.message);
+  });
+}
+
+function startPolling(jobId) {
+  let attempts = 0;
+  const maxAttempts = 60;
+
+  pollTimer = setInterval(() => {
+    attempts += 1;
+
+    if (attempts > maxAttempts) {
+      clearInterval(pollTimer);
+      showError('Timed out waiting for render. Please try again.');
+      return;
+    }
+
+    fetch(`/instagram/status/${jobId}/`)
+      .then(async response => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok && data.status !== 'error') {
+          throw new Error(data.error || `HTTP ${response.status}`);
+        }
+        return data;
+      })
+      .then(data => {
+        if (data.status === 'finished') {
           clearInterval(pollTimer);
-          showError(err.message);
-        });
-    }, 2000);
+          showResult(data);
+        } else if (data.status === 'error') {
+          clearInterval(pollTimer);
+          showError(data.error || 'Render failed.');
+        }
+      })
+      .catch(error => {
+        clearInterval(pollTimer);
+        showError(error.message);
+      });
+  }, 2000);
+}
+
+function showResult(data) {
+  stopLoaderMessages();
+
+  submit.disabled = false;
+  submit.textContent = 'Generate post';
+
+  $('resultImg').src = data.image_url;
+  $('downloadLink').href = data.image_url;
+
+  if (data.caption || data.hashtags) {
+    $('captionText').textContent = data.caption || '';
+    $('hashtagsText').textContent = data.hashtags || '';
+    $('resultCaption').classList.add('is-visible');
+  } else {
+    $('resultCaption').classList.remove('is-visible');
   }
 
-  function showResult(data) {
-    stopLoaderMessages();
-    submit.disabled    = false;
-    submit.textContent = 'Generate post';
-
-    $('resultImg').src     = data.image_url;
-    $('downloadLink').href = data.image_url;
-
-    if (data.caption || data.hashtags) {
-      $('captionText').textContent  = data.caption || '';
-      $('hashtagsText').textContent = data.hashtags || '';
-      $('resultCaption').classList.remove('hidden');
-    } else {
-      $('resultCaption').classList.add('hidden');
-    }
-
-    const warn = $('fallbackWarning');
-    if (data.fallback && data.warning) {
-      warn.textContent = data.warning;
-      warn.classList.remove('hidden');
-    } else {
-      warn.classList.add('hidden');
-    }
-
-    showState('resultState');
+  const warning = $('fallbackWarning');
+  if (data.fallback && data.warning) {
+    warning.textContent = data.warning;
+    warning.classList.add('is-visible');
+  } else {
+    warning.classList.remove('is-visible');
   }
 
-  function showError(msg) {
-    stopLoaderMessages();
-    if (pollTimer) clearInterval(pollTimer);
-    submit.disabled    = false;
-    submit.textContent = 'Generate post';
-    $('errorMsg').textContent = msg;
-    showState('errorState');
-  }
+  showState('resultState');
+}
 
-  window.resetForm = function() {
-    showState('emptyState');
-  };
+function showError(message) {
+  stopLoaderMessages();
+  if (pollTimer) clearInterval(pollTimer);
 
-  window.regenerate = function() {
-    showState('emptyState');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  submit.disabled = false;
+  submit.textContent = 'Generate post';
+  $('errorMsg').textContent = message;
+
+  showState('errorState');
+}
+
+window.resetForm = function() {
+  showState('emptyState');
+};
+
+window.regenerate = function() {
+  showState('emptyState');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 </script>
 {% endblock %}
