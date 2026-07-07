@@ -8,6 +8,6 @@ When: {{ booking.start_time|date:"l, F j, Y" }} at {{ booking.start_time|time:"g
 
 {% if reason %}Note from {{ master_name }}: {{ reason }}{% endif %}
 
-If you'd like to book again, you can find {{ master_name }}'s booking page online.
+If you would like to book again, you can find {{ master_name }}'s booking page online.
 
-— {{ site_name }}
+- Showpiece

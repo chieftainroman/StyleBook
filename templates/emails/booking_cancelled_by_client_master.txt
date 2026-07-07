@@ -8,4 +8,4 @@ Was scheduled for: {{ booking.start_time|date:"l, F j" }} at {{ booking.start_ti
 
 {% if reason %}Reason: {{ reason }}{% endif %}
 
-— {{ site_name }}
+- Showpiece

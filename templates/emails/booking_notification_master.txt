@@ -1,16 +1,16 @@
 Hi {{ master_name }},
 
-You have a new booking on StyleBook.
+You have a new booking on Showpiece.
 
 Reference: {{ booking.reference_code }}
 Client: {{ booking.client_name }}
 Email: {{ booking.client_email }}
 {% if booking.client_phone %}Phone: {{ booking.client_phone }}{% endif %}
 
-Service: {{ booking.service.name }} ({{ booking.service.duration_minutes }} min · ${{ booking.service.price }})
+Service: {{ booking.service.name }} ({{ booking.service.duration_minutes }} min / ${{ booking.service.price }})
 When: {{ booking.start_time|date:"l, F j, Y" }} at {{ booking.start_time|time:"g:i A" }}
 
 {% if booking.client_notes %}Client notes: {{ booking.client_notes }}{% endif %}
-{% if booking.first_time_client %}* First-time client *{% endif %}
+{% if booking.first_time_client %}First-time client{% endif %}
 
-— StyleBook
+- Showpiece

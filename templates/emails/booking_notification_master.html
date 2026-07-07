@@ -3,46 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-           background: #FAFAF7; margin: 0; padding: 40px 20px; color: #1C1917; }
-    .container { max-width: 520px; margin: 0 auto; background: #fff;
-                 border: 1px solid #E5E3DC; border-radius: 14px; padding: 36px; }
-    .logo { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
-    .logo span { color: #C9A96E; }
-    h1 { font-size: 22px; margin: 0 0 6px; }
-    .badge { display: inline-block; padding: 3px 10px; background: #F5EDD8;
-             color: #8B6914; font-size: 11px; font-weight: 600;
-             border-radius: 999px; text-transform: uppercase; margin-bottom: 18px; }
-    .summary { background: #FAFAF7; border-radius: 10px; padding: 18px;
-               margin-bottom: 20px; }
-    .row { display: flex; justify-content: space-between; padding: 5px 0;
-           font-size: 14px; }
-    .row .label { color: #888780; }
-    .row .value { color: #1C1917; font-weight: 500; }
-    .notes { font-size: 13px; color: #555; padding: 12px;
-             background: #FAFAF7; border-radius: 8px; margin: 12px 0; }
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: #F5F1E8;
+      color: #0F0E0D;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 540px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 14px;
+      padding: 34px;
+    }
+
+    .logo {
+      margin-bottom: 24px;
+      color: #0F0E0D;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .mark {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      margin-right: 8px;
+      border-radius: 7px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      text-align: center;
+      line-height: 28px;
+      font-weight: 800;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-bottom: 18px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(58,58,255,0.1);
+      color: #2929E8;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      color: #0F0E0D;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .summary {
+      margin-bottom: 20px;
+      padding: 18px;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+      background: #F5F1E8;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(15,14,13,0.07);
+      font-size: 14px;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: #77736A;
+    }
+
+    .value {
+      color: #0F0E0D;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .notes-label {
+      margin: 0 0 6px;
+      color: #0F0E0D;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .notes {
+      padding: 13px 14px;
+      border-radius: 10px;
+      background: #F5F1E8;
+      color: #4F4A43;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 520px) {
+      .row {
+        display: block;
+      }
+
+      .value {
+        display: block;
+        margin-top: 3px;
+        text-align: left;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">Style<span>Book</span></div>
-    {% if booking.first_time_client %}<span class="badge">First-time client</span>{% endif %}
-    <h1>New booking 🎉</h1>
+    <div class="logo"><span class="mark">S</span>Showpiece</div>
+
+    {% if booking.first_time_client %}
+      <span class="badge">First-time client</span>
+    {% endif %}
+
+    <h1>New booking</h1>
 
     <div class="summary">
-      <div class="row"><span class="label">Reference</span><span class="value">{{ booking.reference_code }}</span></div>
-      <div class="row"><span class="label">Client</span><span class="value">{{ booking.client_name }}</span></div>
-      <div class="row"><span class="label">Email</span><span class="value">{{ booking.client_email }}</span></div>
-      {% if booking.client_phone %}<div class="row"><span class="label">Phone</span><span class="value">{{ booking.client_phone }}</span></div>{% endif %}
-      <div class="row"><span class="label">Service</span><span class="value">{{ booking.service.name }}</span></div>
-      <div class="row"><span class="label">When</span><span class="value">{{ booking.start_time|date:"l, F j" }} at {{ booking.start_time|time:"g:i A" }}</span></div>
-      <div class="row"><span class="label">Duration</span><span class="value">{{ booking.service.duration_minutes }} min</span></div>
-      <div class="row"><span class="label">Price</span><span class="value">${{ booking.service.price }}</span></div>
+      <div class="row">
+        <span class="label">Reference</span>
+        <span class="value">{{ booking.reference_code }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Client</span>
+        <span class="value">{{ booking.client_name }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Email</span>
+        <span class="value">{{ booking.client_email }}</span>
+      </div>
+      {% if booking.client_phone %}
+        <div class="row">
+          <span class="label">Phone</span>
+          <span class="value">{{ booking.client_phone }}</span>
+        </div>
+      {% endif %}
+      <div class="row">
+        <span class="label">Service</span>
+        <span class="value">{{ booking.service.name }}</span>
+      </div>
+      <div class="row">
+        <span class="label">When</span>
+        <span class="value">{{ booking.start_time|date:"l, F j" }} at {{ booking.start_time|time:"g:i A" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Duration</span>
+        <span class="value">{{ booking.service.duration_minutes }} min</span>
+      </div>
+      <div class="row">
+        <span class="label">Price</span>
+        <span class="value">${{ booking.service.price }}</span>
+      </div>
     </div>
 
     {% if booking.client_notes %}
-    <p style="margin: 0 0 6px; font-size: 13px; font-weight: 500;">Client notes:</p>
-    <div class="notes">{{ booking.client_notes }}</div>
+      <p class="notes-label">Client notes:</p>
+      <div class="notes">{{ booking.client_notes }}</div>
     {% endif %}
   </div>
 </body>

@@ -1,11 +1,11 @@
 Hi {{ booking.client_name }},
 
-Your verification code is:
+Your Showpiece verification code is:
 
-  {{ code }}
+{{ code }}
 
 Enter this code on the booking page to confirm your appointment with {{ master_name }}.
 
-This code expires in 10 minutes. If you didn't request this booking, you can ignore this email.
+This code expires in 10 minutes. If you did not request this booking, you can ignore this email.
 
-— StyleBook
+- Showpiece

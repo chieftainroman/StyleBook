@@ -1,11 +1,11 @@
 Hi {{ user.username }},
 
-Welcome to {{ site_name }}!
+Welcome to Showpiece.
 
-To finish setting up your account, please verify your email by clicking the link below:
+To finish setting up your account, verify your email by opening the link below:
 
 {{ verify_url }}
 
-This link will expire in 3 days. If you didn't sign up for {{ site_name }}, you can safely ignore this email.
+This link expires in 3 days. If you did not sign up for Showpiece, you can ignore this email.
 
-— The {{ site_name }} team
+- Showpiece

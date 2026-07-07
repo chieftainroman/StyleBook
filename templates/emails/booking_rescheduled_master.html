@@ -3,31 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-           background: #FAFAF7; margin: 0; padding: 40px 20px; color: #1C1917; }
-    .container { max-width: 520px; margin: 0 auto; background: #fff;
-                 border: 1px solid #E5E3DC; border-radius: 14px; padding: 36px; }
-    .logo { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
-    .logo span { color: #C9A96E; }
-    h1 { font-size: 22px; margin: 0 0 6px; }
-    .change { background: #FAFAF7; border-radius: 10px; padding: 18px; margin: 16px 0; }
-    .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
-    .row .label { color: #888780; }
-    .row .value { color: #1C1917; font-weight: 500; }
-    .row.old .value { color: #888780; text-decoration: line-through; }
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: #F5F1E8;
+      color: #0F0E0D;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 540px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 14px;
+      padding: 34px;
+    }
+
+    .logo {
+      margin-bottom: 24px;
+      color: #0F0E0D;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .mark {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      margin-right: 8px;
+      border-radius: 7px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      text-align: center;
+      line-height: 28px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: #0F0E0D;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .sub {
+      margin: 0 0 20px;
+      color: #4F4A43;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .change {
+      margin: 16px 0;
+      padding: 18px;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+      background: #F5F1E8;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(15,14,13,0.07);
+      font-size: 14px;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: #77736A;
+    }
+
+    .value {
+      color: #0F0E0D;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .row.old .value {
+      color: #77736A;
+      text-decoration: line-through;
+    }
+
+    @media (max-width: 520px) {
+      .row {
+        display: block;
+      }
+
+      .value {
+        display: block;
+        margin-top: 3px;
+        text-align: left;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">Style<span>Book</span></div>
+    <div class="logo"><span class="mark">S</span>Showpiece</div>
+
     <h1>Booking rescheduled</h1>
-    <p style="font-size: 14px; color: #555;">{{ client_name }} moved their appointment.</p>
+    <p class="sub">{{ client_name }} moved their appointment.</p>
 
     <div class="change">
-      <div class="row old"><span class="label">Was</span><span class="value">{{ old_start|date:"M j" }} at {{ old_start|time:"g:i A" }}</span></div>
-      <div class="row"><span class="label">Now</span><span class="value">{{ booking.start_time|date:"M j" }} at {{ booking.start_time|time:"g:i A" }}</span></div>
-      <div class="row"><span class="label">Service</span><span class="value">{{ booking.service.name }}</span></div>
-      <div class="row"><span class="label">Reference</span><span class="value">{{ booking.reference_code }}</span></div>
+      <div class="row old">
+        <span class="label">Was</span>
+        <span class="value">{{ old_start|date:"M j" }} at {{ old_start|time:"g:i A" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Now</span>
+        <span class="value">{{ booking.start_time|date:"M j" }} at {{ booking.start_time|time:"g:i A" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Service</span>
+        <span class="value">{{ booking.service.name }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Reference</span>
+        <span class="value">{{ booking.reference_code }}</span>
+      </div>
     </div>
   </div>
 </body>

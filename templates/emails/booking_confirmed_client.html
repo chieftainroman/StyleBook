@@ -3,53 +3,216 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-           background: #FAFAF7; margin: 0; padding: 40px 20px; color: #1C1917; }
-    .container { max-width: 520px; margin: 0 auto; background: #fff;
-                 border: 1px solid #E5E3DC; border-radius: 14px; padding: 36px; }
-    .logo { font-size: 18px; font-weight: 600; margin-bottom: 24px; }
-    .logo span { color: #C9A96E; }
-    h1 { font-size: 22px; margin: 0 0 6px; }
-    .sub { color: #888780; font-size: 14px; margin-bottom: 24px; }
-    .summary { background: #FAFAF7; border-radius: 10px; padding: 18px;
-               margin-bottom: 20px; }
-    .row { display: flex; justify-content: space-between; padding: 5px 0;
-           font-size: 14px; }
-    .row .label { color: #888780; }
-    .row .value { color: #1C1917; font-weight: 500; }
-    .ref { font-family: monospace; background: #fff; padding: 4px 8px;
-           border: 1px dashed #C9A96E; border-radius: 6px; font-weight: 600; }
-    .footer { font-size: 12px; color: #888780; margin-top: 22px;
-              padding-top: 16px; border-top: 1px solid #E5E3DC; }
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      background: #F5F1E8;
+      color: #0F0E0D;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 540px;
+      margin: 0 auto;
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 14px;
+      padding: 34px;
+    }
+
+    .logo {
+      margin-bottom: 24px;
+      color: #0F0E0D;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .mark {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      margin-right: 8px;
+      border-radius: 7px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      text-align: center;
+      line-height: 28px;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      color: #0F0E0D;
+      font-size: 24px;
+      line-height: 1.2;
+    }
+
+    .sub,
+    p {
+      color: #4F4A43;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .sub {
+      margin: 0 0 22px;
+    }
+
+    .summary {
+      margin-bottom: 20px;
+      padding: 18px;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+      background: #F5F1E8;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(15,14,13,0.07);
+      font-size: 14px;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: #77736A;
+    }
+
+    .value {
+      color: #0F0E0D;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .ref {
+      display: inline-block;
+      padding: 4px 8px;
+      border: 1px dashed #3A3AFF;
+      border-radius: 7px;
+      background: #FFFFFF;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-weight: 800;
+    }
+
+    .notes {
+      margin: 0 0 18px;
+      padding: 13px 14px;
+      border-radius: 10px;
+      background: #F5F1E8;
+      color: #4F4A43;
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .actions {
+      margin: 24px 0;
+      padding: 18px;
+      border-radius: 12px;
+      background: #F5F1E8;
+      text-align: center;
+    }
+
+    .actions p {
+      margin: 0 0 12px;
+      color: #4F4A43;
+      font-size: 13px;
+    }
+
+    .btn {
+      display: inline-block;
+      margin: 4px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .btn.primary {
+      background: #3A3AFF;
+      color: #FFFFFF;
+    }
+
+    .btn.ghost {
+      background: #FFFFFF;
+      color: #0F0E0D;
+      border: 1px solid #DED8CA;
+    }
+
+    .footer {
+      margin-top: 22px;
+      padding-top: 16px;
+      border-top: 1px solid #DED8CA;
+      color: #77736A;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 520px) {
+      .row {
+        display: block;
+      }
+
+      .value {
+        display: block;
+        margin-top: 3px;
+        text-align: left;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">Style<span>Book</span></div>
-    <h1>You're booked! ✓</h1>
-    <p class="sub">Confirmation with {{ master_name }}.</p>
+    <div class="logo"><span class="mark">S</span>Showpiece</div>
+
+    <h1>You're booked</h1>
+    <p class="sub">Your appointment with {{ master_name }} is confirmed.</p>
 
     <div class="summary">
-      <div class="row"><span class="label">Reference</span><span class="value"><span class="ref">{{ booking.reference_code }}</span></span></div>
-      <div class="row"><span class="label">Service</span><span class="value">{{ booking.service.name }}</span></div>
-      <div class="row"><span class="label">Duration</span><span class="value">{{ booking.service.duration_minutes }} min</span></div>
-      <div class="row"><span class="label">When</span><span class="value">{{ booking.start_time|date:"l, F j" }}</span></div>
-      <div class="row"><span class="label">Time</span><span class="value">{{ booking.start_time|time:"g:i A" }}</span></div>
-      <div class="row"><span class="label">Total</span><span class="value">${{ booking.service.price }}</span></div>
+      <div class="row">
+        <span class="label">Reference</span>
+        <span class="value"><span class="ref">{{ booking.reference_code }}</span></span>
+      </div>
+      <div class="row">
+        <span class="label">Service</span>
+        <span class="value">{{ booking.service.name }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Duration</span>
+        <span class="value">{{ booking.service.duration_minutes }} min</span>
+      </div>
+      <div class="row">
+        <span class="label">When</span>
+        <span class="value">{{ booking.start_time|date:"l, F j" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Time</span>
+        <span class="value">{{ booking.start_time|time:"g:i A" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Total</span>
+        <span class="value">${{ booking.service.price }}</span>
+      </div>
     </div>
 
-{% if booking.client_notes %}
-    <p style="font-size: 13px; color: #555;"><strong>Your notes:</strong> {{ booking.client_notes }}</p>
+    {% if booking.client_notes %}
+      <div class="notes"><strong>Your notes:</strong> {{ booking.client_notes }}</div>
     {% endif %}
 
-    <div style="margin: 24px 0; padding: 18px; background: #FAFAF7; border-radius: 10px; text-align: center;">
-      <p style="margin: 0 0 12px; font-size: 13px; color: #555;">Need to make changes?</p>
-      <a href="{{ reschedule_url }}" style="display: inline-block; padding: 9px 18px; background: #1C1917; color: #fff; text-decoration: none; border-radius: 7px; font-size: 13px; font-weight: 500; margin: 0 4px;">Reschedule</a>
-      <a href="{{ cancel_url }}" style="display: inline-block; padding: 9px 18px; background: #fff; color: #1C1917; text-decoration: none; border-radius: 7px; font-size: 13px; font-weight: 500; border: 1px solid #E5E3DC; margin: 0 4px;">Cancel</a>
+    <div class="actions">
+      <p>Need to make changes?</p>
+      <a href="{{ reschedule_url }}" class="btn primary">Reschedule</a>
+      <a href="{{ cancel_url }}" class="btn ghost">Cancel</a>
     </div>
 
     <div class="footer">
-      Save your reference code — you'll need it if you contact {{ master_name }} directly.
+      Save your reference code. You may need it if you contact {{ master_name }} directly.
     </div>
   </div>
 </body>

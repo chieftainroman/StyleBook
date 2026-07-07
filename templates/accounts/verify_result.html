@@ -3,43 +3,153 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Email verification — StyleBook</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email verification - Showpiece</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    body { font-family: 'Inter', sans-serif; background: #FAFAF7; min-height: 100vh;
-           display: flex; align-items: center; justify-content: center; padding: 24px; }
-    .card { max-width: 440px; width: 100%; background: #fff; border: 1px solid #E5E3DC;
-            border-radius: 16px; padding: 40px; text-align: center; }
-    .icon-wrap { width: 64px; height: 64px; border-radius: 50%;
-                 display: inline-flex; align-items: center; justify-content: center;
-                 margin-bottom: 20px; font-size: 28px; }
-    .ok  { background: #D1FAE5; color: #065F46; }
-    .err { background: #FEE2E2; color: #991B1B; }
-    .logo { font-size: 18px; font-weight: 600; margin-bottom: 28px; }
-    .logo span { color: #C9A96E; }
-    h1 { font-size: 22px; font-weight: 600; margin: 0 0 10px; color: #1C1917; }
-    p { color: #555; line-height: 1.55; font-size: 14px; }
-    .btn { display: inline-block; margin-top: 24px; padding: 11px 24px;
-           background: #C9A96E; color: #1C1917; text-decoration: none;
-           border-radius: 8px; font-weight: 600; font-size: 14px; }
-    .btn:hover { background: #8B6914; color: #fff; }
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(58,58,255,0.12), transparent 30rem),
+        #F5F1E8;
+      color: #0F0E0D;
+      font-family: 'Space Grotesk', sans-serif;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(460px, 100%);
+      background: #FFFFFF;
+      border: 1px solid #DED8CA;
+      border-radius: 12px;
+      padding: 34px;
+      text-align: center;
+      box-shadow: 0 22px 80px rgba(15,14,13,0.12);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 28px;
+      color: #0F0E0D;
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      font-family: 'Anton', sans-serif;
+      font-size: 18px;
+      font-weight: 400;
+    }
+
+    .icon-wrap {
+      width: 64px;
+      height: 64px;
+      display: inline-grid;
+      place-items: center;
+      margin-bottom: 20px;
+      border-radius: 14px;
+      color: #FFFFFF;
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .ok {
+      background: #3A3AFF;
+    }
+
+    .err {
+      background: #DC2626;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      color: #0F0E0D;
+      font-family: 'Anton', sans-serif;
+      font-size: 42px;
+      line-height: 0.95;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: #77736A;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      margin-top: 24px;
+      padding: 11px 22px;
+      border-radius: 8px;
+      background: #3A3AFF;
+      color: #FFFFFF;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .btn:hover {
+      background: #2929E8;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 16px;
+        align-items: start;
+      }
+
+      .card {
+        padding: 26px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="logo">Style<span>Book</span></div>
+  <main class="card">
+    <a href="/" class="brand">
+      <span class="brand-mark">S</span>
+      <span>Showpiece</span>
+    </a>
+
     {% if success %}
-      <div class="icon-wrap ok">✓</div>
+      <div class="icon-wrap ok">&check;</div>
       <h1>Email verified</h1>
-      <p>Your email is now verified. You can continue using StyleBook.</p>
-      <a href="/dashboard/" class="btn">Go to dashboard →</a>
+      <p>Your email is now verified. You can continue using Showpiece.</p>
+      <a href="/dashboard/" class="btn">Go to dashboard &rarr;</a>
     {% else %}
-      <div class="icon-wrap err">✕</div>
+      <div class="icon-wrap err">X</div>
       <h1>Verification failed</h1>
-      <p>This link is invalid or has expired. You can request a new verification email from your dashboard.</p>
-      <a href="/auth/login/" class="btn">Log in →</a>
+      <p>This link is invalid or expired. You can request a new verification email from your dashboard.</p>
+      <a href="/auth/login/" class="btn">Log in &rarr;</a>
     {% endif %}
-  </div>
+  </main>
 </body>
 </html>
