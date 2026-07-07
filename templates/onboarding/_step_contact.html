@@ -1,78 +1,323 @@
 {% load dict_filters %}
 
-<p class="ob-step-sub">How can clients reach you? Set your working hours so clients know when you're available.</p>
+<style>
+  .contact-shell {
+    display: grid;
+    gap: 22px;
+  }
 
-<form method="POST" action="{% url 'onboarding_step_save' step=5 %}" class="space-y-5">
+  .ob-step-sub {
+    margin: -8px 0 22px;
+    color: #77736A;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .contact-field {
+    display: grid;
+    gap: 7px;
+  }
+
+  .contact-label {
+    color: #77736A;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .contact-input {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #DED8CA;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #0F0E0D;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+
+  .contact-input:focus {
+    border-color: #3A3AFF;
+    box-shadow: 0 0 0 3px rgba(58, 58, 255, 0.12);
+  }
+
+  .contact-input::placeholder {
+    color: #77736A;
+  }
+
+  .required-mark {
+    color: #DC2626;
+  }
+
+  .hours-panel {
+    border: 1px solid #DED8CA;
+    border-radius: 10px;
+    background: #FFFFFF;
+    overflow: hidden;
+  }
+
+  .hours-head {
+    padding: 16px;
+    border-bottom: 1px solid #DED8CA;
+    background: #F5F1E8;
+  }
+
+  .hours-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .hours-note {
+    margin: 6px 0 0;
+    color: #77736A;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .hours-list {
+    display: grid;
+  }
+
+  .hours-row {
+    display: grid;
+    grid-template-columns: minmax(78px, 1fr) minmax(92px, 118px) 22px minmax(92px, 118px) 62px;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #ECE6D8;
+  }
+
+  .hours-row:last-child {
+    border-bottom: 0;
+  }
+
+  .day-name {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .time-input {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #DED8CA;
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #0F0E0D;
+    padding: 8px 9px;
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+  }
+
+  .time-input:focus {
+    border-color: #3A3AFF;
+    box-shadow: 0 0 0 3px rgba(58, 58, 255, 0.10);
+  }
+
+  .time-input:disabled {
+    background: #ECE6D8;
+    color: #77736A;
+    cursor: not-allowed;
+  }
+
+  .time-divider {
+    color: #77736A;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .closed-label {
+    display: inline-flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 7px;
+    color: #77736A;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .closed-toggle {
+    width: 16px;
+    height: 16px;
+    accent-color: #3A3AFF;
+  }
+
+  .phone-help {
+    color: #77736A;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  @media (max-width: 640px) {
+    .contact-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hours-row {
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 14px;
+    }
+
+    .day-name {
+      grid-column: 1 / -1;
+    }
+
+    .time-divider {
+      display: none;
+    }
+
+    .closed-label {
+      grid-column: 1 / -1;
+      justify-content: flex-start;
+      padding-top: 2px;
+    }
+  }
+</style>
+
+<p class="ob-step-sub">
+  How can clients reach you? Add your contact details and working hours so clients know when you are available.
+</p>
+
+<form method="POST" action="{% url 'onboarding_step_save' step=5 %}" class="contact-shell" id="contactStepForm">
   {% csrf_token %}
 
-  <!-- Phone (required) -->
-  <div>
-    <label class="block text-xs font-medium text-muted uppercase tracking-wider mb-1.5"
-           for="phone">Phone <span class="text-red-500">*</span></label>
-    <input id="phone" name="phone" type="tel" required
-           placeholder="+1 555 123 4567"
-           value="{{ profile.phone }}"
-           class="w-full px-3 py-2.5 border border-cream-border rounded-lg text-sm
-                  focus:outline-none focus:border-ink bg-white">
+  <div class="contact-grid">
+    <div class="contact-field">
+      <label class="contact-label" for="phone">
+        Phone <span class="required-mark">*</span>
+      </label>
+      <input id="phone"
+             name="phone"
+             type="tel"
+             required
+             inputmode="tel"
+             autocomplete="tel"
+             placeholder="+1 (555) 123-4567"
+             value="{{ profile.phone }}"
+             class="contact-input">
+      <p class="phone-help">Use numbers only while typing. It will format automatically.</p>
+    </div>
+
+    <div class="contact-field">
+      <label class="contact-label" for="ig_handle">
+        Instagram handle
+      </label>
+      <input id="ig_handle"
+             name="ig_handle"
+             type="text"
+             autocomplete="off"
+             placeholder="yourname"
+             value="{{ profile.ig_handle }}"
+             class="contact-input">
+    </div>
   </div>
 
-  <!-- IG handle (optional) -->
-  <div>
-    <label class="block text-xs font-medium text-muted uppercase tracking-wider mb-1.5"
-           for="ig_handle">Instagram handle (optional)</label>
-    <input id="ig_handle" name="ig_handle" type="text"
-           placeholder="yourname (without @)"
-           value="{{ profile.ig_handle }}"
-           class="w-full px-3 py-2.5 border border-cream-border rounded-lg text-sm
-                  focus:outline-none focus:border-ink bg-white">
-  </div>
+  <div class="hours-panel">
+    <div class="hours-head">
+      <p class="hours-title">Working hours</p>
+      <p class="hours-note">Optional for setup. You can fine-tune these later from your profile edit page.</p>
+    </div>
 
-  <!-- Working hours (optional in wizard — can edit later) -->
-  <div>
-    <p class="text-xs font-medium text-muted uppercase tracking-wider mb-2">Working hours (optional)</p>
-    <p class="text-xs text-muted mb-3">You can fine-tune these later from your profile edit page.</p>
-    <div class="space-y-1.5">
+    <div class="hours-list">
       {% for day_key, day_label in days %}
-        <div class="hours-row grid grid-cols-12 gap-2 items-center text-sm">
-          <div class="col-span-3 text-ink font-medium">{{ day_label }}</div>
-          <div class="col-span-3">
-            <input type="time" name="{{ day_key }}_open"
-                   class="w-full px-2 py-1.5 border border-cream-border rounded text-xs bg-white"
-                   value="{{ working_hours|get_item:day_key|get_item:'open' }}"
-                   {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
-          </div>
-          <div class="col-span-1 text-center text-xs text-muted">to</div>
-          <div class="col-span-3">
-            <input type="time" name="{{ day_key }}_close"
-                   class="w-full px-2 py-1.5 border border-cream-border rounded text-xs bg-white"
-                   value="{{ working_hours|get_item:day_key|get_item:'close' }}"
-                   {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
-          </div>
-          <div class="col-span-2 text-right">
-            <label class="text-xs text-muted inline-flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" name="{{ day_key }}_closed"
-                     class="closed-toggle w-3 h-3"
-                     {% if working_hours|get_item:day_key|get_item:'closed' %}checked{% endif %}>
-              Off
-            </label>
-          </div>
+        <div class="hours-row">
+          <div class="day-name">{{ day_label }}</div>
+
+          <input type="time"
+                 name="{{ day_key }}_open"
+                 class="time-input"
+                 value="{{ working_hours|get_item:day_key|get_item:'open' }}"
+                 {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
+
+          <div class="time-divider">to</div>
+
+          <input type="time"
+                 name="{{ day_key }}_close"
+                 class="time-input"
+                 value="{{ working_hours|get_item:day_key|get_item:'close' }}"
+                 {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
+
+          <label class="closed-label">
+            <input type="checkbox"
+                   name="{{ day_key }}_closed"
+                   class="closed-toggle"
+                   {% if working_hours|get_item:day_key|get_item:'closed' %}checked{% endif %}>
+            Off
+          </label>
         </div>
       {% endfor %}
     </div>
   </div>
 
   <div class="ob-actions">
-    <a href="?step=4" class="ob-btn ob-btn-ghost">← Back</a>
-    <button type="submit" class="ob-btn ob-btn-primary">Finish setup ✓</button>
+    <a href="?step=4" class="ob-btn ob-btn-ghost">&larr; Back</a>
+    <button type="submit" class="ob-btn ob-btn-primary">Finish setup &check;</button>
   </div>
 </form>
 
 <script>
+  const phoneInput = document.getElementById('phone');
+  const contactForm = document.getElementById('contactStepForm');
+
+  function formatPhone(value) {
+    const trimmed = value.trim();
+    const hasPlus = trimmed.startsWith('+');
+    const digits = trimmed.replace(/\D/g, '');
+
+    if (!digits) return '';
+
+    if (digits.length === 10) {
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    }
+
+    if (digits.length === 11 && digits.startsWith('1')) {
+      return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+    }
+
+    if (hasPlus) {
+      return `+${digits}`;
+    }
+
+    return digits;
+  }
+
+  phoneInput.addEventListener('blur', () => {
+    phoneInput.value = formatPhone(phoneInput.value);
+  });
+
+  phoneInput.addEventListener('input', () => {
+    phoneInput.value = phoneInput.value.replace(/[^\d+\-().\s]/g, '');
+  });
+
+  contactForm.addEventListener('submit', () => {
+    phoneInput.value = formatPhone(phoneInput.value);
+
+    const igInput = document.getElementById('ig_handle');
+    igInput.value = igInput.value.trim().replace(/^@+/, '');
+  });
+
   document.querySelectorAll('.closed-toggle').forEach(cb => {
     cb.addEventListener('change', e => {
       const row = e.target.closest('.hours-row');
-      row.querySelectorAll('input[type="time"]').forEach(t => {
-        t.disabled = e.target.checked;
+      row.querySelectorAll('input[type="time"]').forEach(input => {
+        input.disabled = e.target.checked;
       });
     });
   });

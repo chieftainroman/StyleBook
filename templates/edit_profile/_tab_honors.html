@@ -1,131 +1,235 @@
 <style>
+  .ep-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .ep-list-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .ep-list-sub {
+    margin: 4px 0 0;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ep-add-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: #3A3AFF;
+    color: #F5F1E8;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .ep-add-toggle:hover {
+    background: #2929E8;
+  }
+
+  .ep-form-card,
   .honor-card {
-    background: #fff;
-    border: 1px solid #E5E3DC;
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
     border-radius: 12px;
+  }
+
+  .ep-form-card {
+    padding: 18px;
+    margin: 0 0 14px;
+  }
+
+  .ep-form-card.hidden {
+    display: none;
+  }
+
+  .ep-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ep-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .ep-upload-zone {
+    display: block;
+    border: 1px dashed rgba(15,14,13,0.18);
+    border-radius: 10px;
+    background: #FFFFFF;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+
+  .ep-upload-zone:hover,
+  .ep-upload-zone.has-file {
+    border-color: #3A3AFF;
+    background: rgba(58,58,255,0.04);
+  }
+
+  .ep-upload-title {
+    color: #0F0E0D;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .ep-upload-hint {
+    color: rgba(15,14,13,0.55);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .honor-card {
     padding: 16px;
     margin-bottom: 12px;
     display: flex;
     gap: 14px;
     align-items: flex-start;
   }
+
   .honor-thumb {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #F5EDD8, #C9A96E);
+    width: 78px;
+    height: 78px;
+    border-radius: 10px;
+    background: #0F0E0D;
+    color: #FFFFFF;
     flex-shrink: 0;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 32px;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+    font-weight: 700;
   }
+
   .honor-thumb img {
-    width: 100%; height: 100%; object-fit: cover; display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
-  .honor-body { flex: 1; min-width: 0; }
+
+  .honor-body {
+    flex: 1;
+    min-width: 0;
+  }
+
   .honor-title {
+    color: #0F0E0D;
     font-size: 15px;
-    font-weight: 600;
-    color: #1C1917;
+    font-weight: 700;
   }
+
   .honor-meta {
+    color: rgba(15,14,13,0.58);
     font-size: 13px;
-    color: #888780;
-    margin-top: 2px;
+    margin-top: 3px;
   }
+
   .honor-description {
+    color: rgba(15,14,13,0.74);
     font-size: 13px;
-    color: #555;
-    margin-top: 8px;
     line-height: 1.55;
+    margin-top: 8px;
     white-space: pre-line;
   }
-  .honor-actions { display: flex; gap: 8px; flex-shrink: 0; }
-  .honor-action-btn {
-    padding: 4px 10px;
-    background: transparent;
-    border: 1px solid #E5E3DC;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #1C1917;
-    cursor: pointer;
-    text-decoration: none;
+
+  .honor-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
   }
-  .honor-action-btn:hover { background: #FAFAF7; }
+
+  .honor-action-btn {
+    min-height: 32px;
+    padding: 6px 11px;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #0F0E0D;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .honor-action-btn:hover {
+    border-color: rgba(15,14,13,0.22);
+  }
+
   .honor-action-btn.danger {
     color: #B91C1C;
-    border-color: rgba(185, 28, 28, 0.2);
+    border-color: rgba(185,28,28,0.22);
   }
-  .honor-action-btn.danger:hover { background: rgba(185, 28, 28, 0.05); }
 
-  .honor-add-form {
-    background: #FAFAF7;
-    border: 1px dashed #C9A96E;
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 12px;
-  }
-  .honor-add-form.hidden { display: none; }
-  .honor-add-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background: #1C1917;
-    color: #fff;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 16px;
-  }
-  .honor-add-toggle:hover { background: #333330; }
-
-  .honor-img-zone {
-    border: 1px dashed #C9A96E;
-    border-radius: 8px;
-    padding: 16px;
-    text-align: center;
-    cursor: pointer;
-    background: #fff;
-    transition: background 0.15s;
-  }
-  .honor-img-zone:hover { background: #FAFAF7; }
-  .honor-img-zone.has-file {
-    background: rgba(201, 169, 110, 0.08);
-  }
-  .honor-img-preview {
+  .honor-img-preview,
+  .svc-photo-preview {
     max-width: 100%;
     max-height: 120px;
-    border-radius: 6px;
+    border-radius: 8px;
     margin: 0 auto 8px;
     display: block;
   }
-  .honor-img-preview.hidden { display: none; }
-  .honor-img-status {
-    font-size: 13px;
-    color: #1C1917;
-    font-weight: 500;
+
+  .honor-img-preview.hidden,
+  .svc-photo-preview.hidden {
+    display: none;
   }
-  .honor-img-hint {
-    font-size: 11px;
-    color: #888780;
-    margin-top: 4px;
+
+  .ep-empty {
+    background: #FFFFFF;
+    border: 1px dashed rgba(15,14,13,0.16);
+    border-radius: 12px;
+    padding: 42px 18px;
+    text-align: center;
+  }
+
+  @media (max-width: 700px) {
+    .ep-list-header,
+    .honor-card {
+      display: grid;
+    }
+
+    .ep-add-toggle,
+    .honor-actions,
+    .honor-actions form,
+    .honor-action-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .ep-form-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 
+<div class="ep-list-header">
+  <div>
+    <h2 class="ep-list-title">Honors</h2>
+    <p class="ep-list-sub">Add awards, recognitions, and visible proof of strong work.</p>
+  </div>
+  <button type="button" class="ep-add-toggle" id="honorAddToggle">
+    + Add honor
+  </button>
+</div>
 
-<button type="button" class="honor-add-toggle" id="honorAddToggle">
-  + Add honor
-</button>
-
-
-<!-- Add form -->
-<form method="POST" action="{% url 'honor_add' %}" id="honorAddForm" class="honor-add-form hidden">
+<form method="POST" action="{% url 'honor_add' %}" id="honorAddForm" class="ep-form-card hidden">
   {% csrf_token %}
   {% include 'edit_profile/_form_honor.html' with honor=None form_id="add" %}
   <div class="flex gap-3 mt-4">
@@ -134,24 +238,21 @@
   </div>
 </form>
 
-
-<!-- Existing honors -->
 {% if honors %}
   <div class="mt-4">
     {% for honor in honors %}
-
       <div class="honor-card" id="honorCard-{{ honor.pk }}">
         <div class="honor-thumb">
           {% if honor.image_url %}
             <img src="{{ honor.image_url }}" alt="{{ honor.title }}">
           {% else %}
-            🏆
+            H
           {% endif %}
         </div>
         <div class="honor-body">
           <div class="honor-title">{{ honor.title }}</div>
           <div class="honor-meta">
-            {% if honor.issuer %}{{ honor.issuer }} · {% endif %}{{ honor.year }}
+            {% if honor.issuer %}{{ honor.issuer }} / {% endif %}{{ honor.year }}
           </div>
           {% if honor.description %}
             <div class="honor-description">{{ honor.description }}</div>
@@ -169,9 +270,8 @@
         </div>
       </div>
 
-      <!-- Edit form -->
       <form method="POST" action="{% url 'honor_edit' pk=honor.pk %}"
-            class="honor-add-form hidden" id="honorEdit-{{ honor.pk }}">
+            class="ep-form-card hidden" id="honorEdit-{{ honor.pk }}">
         {% csrf_token %}
         {% include 'edit_profile/_form_honor.html' with honor=honor form_id=honor.pk %}
         <div class="flex gap-3 mt-4">
@@ -180,27 +280,26 @@
                   onclick="toggleHonorEdit({{ honor.pk }})">Cancel</button>
         </div>
       </form>
-
     {% endfor %}
   </div>
 {% else %}
-  <div class="card text-center py-12">
+  <div class="ep-empty">
     <p class="text-sm font-medium text-ink mb-1">No honors yet</p>
     <p class="text-sm text-muted">Add awards, recognitions, and achievements to stand out.</p>
   </div>
 {% endif %}
 
-
 <script>
-  // ── Add form toggle ──
   (function() {
     const toggle = document.getElementById('honorAddToggle');
-    const form   = document.getElementById('honorAddForm');
+    const form = document.getElementById('honorAddForm');
     const cancel = document.getElementById('honorAddCancel');
+
     toggle.addEventListener('click', () => {
       form.classList.remove('hidden');
       toggle.style.display = 'none';
     });
+
     cancel.addEventListener('click', () => {
       form.classList.add('hidden');
       toggle.style.display = '';
@@ -210,6 +309,7 @@
   function toggleHonorEdit(pk) {
     const card = document.getElementById('honorCard-' + pk);
     const form = document.getElementById('honorEdit-' + pk);
+
     if (form.classList.contains('hidden')) {
       form.classList.remove('hidden');
       card.style.display = 'none';
@@ -219,13 +319,13 @@
     }
   }
 
-  // ── Image upload to Cloudinary ──
   function setupHonorImageUpload(formId) {
     const fileInput = document.getElementById(`honorImg-${formId}`);
-    const zone      = document.getElementById(`honorImgZone-${formId}`);
-    const statusEl  = document.getElementById(`honorImgStatus-${formId}`);
-    const preview   = document.getElementById(`honorImgPreview-${formId}`);
+    const zone = document.getElementById(`honorImgZone-${formId}`);
+    const statusEl = document.getElementById(`honorImgStatus-${formId}`);
+    const preview = document.getElementById(`honorImgPreview-${formId}`);
     const hiddenUrl = document.getElementById(`honorImgUrl-${formId}`);
+
     if (!fileInput) return;
 
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -239,13 +339,14 @@
         fileInput.value = '';
         return;
       }
+
       if (!f.type.startsWith('image/')) {
         alert('Only images allowed.');
         fileInput.value = '';
         return;
       }
 
-      statusEl.textContent = 'Uploading…';
+      statusEl.textContent = 'Uploading...';
       zone.classList.add('has-file');
 
       const fd = new FormData();
@@ -265,18 +366,19 @@
         hiddenUrl.value = data.url;
         preview.src = data.url;
         preview.classList.remove('hidden');
-        statusEl.textContent = '✓ Image uploaded';
+        statusEl.textContent = 'Image uploaded';
       })
       .catch(err => {
         alert('Upload failed: ' + err.message);
         zone.classList.remove('has-file');
-        statusEl.textContent = 'Click to upload image (optional)';
+        statusEl.textContent = 'Click to upload image';
         fileInput.value = '';
       });
     });
   }
 
   setupHonorImageUpload('add');
+
   {% for honor in honors %}
     setupHonorImageUpload('{{ honor.pk }}');
   {% endfor %}

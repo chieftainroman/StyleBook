@@ -1,113 +1,209 @@
 {% load dict_filters %}
 
 <style>
+  .ep-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .ep-list-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .ep-list-sub {
+    margin: 4px 0 0;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ep-add-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: #3A3AFF;
+    color: #F5F1E8;
+    cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .ep-add-toggle:hover {
+    background: #2929E8;
+  }
+
+  .ep-form-card,
   .exp-card {
-    background: #fff;
-    border: 1px solid #E5E3DC;
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
     border-radius: 12px;
-    padding: 20px;
+  }
+
+  .ep-form-card {
+    padding: 18px;
+    margin: 0 0 14px;
+  }
+
+  .ep-form-card.hidden {
+    display: none;
+  }
+
+  .ep-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ep-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .ep-two-col {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .ep-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #0F0E0D;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .ep-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: #3A3AFF;
+  }
+
+  .exp-card {
+    padding: 18px;
     margin-bottom: 12px;
   }
+
   .exp-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 12px;
+    gap: 14px;
   }
+
   .exp-title {
+    color: #0F0E0D;
     font-size: 15px;
-    font-weight: 600;
-    color: #1C1917;
+    font-weight: 700;
   }
-  .exp-meta {
-    font-size: 13px;
-    color: #888780;
-    margin-top: 2px;
-  }
+
+  .exp-meta,
   .exp-period {
-    font-size: 12px;
-    color: #888780;
-    margin-top: 4px;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    margin-top: 3px;
   }
+
   .exp-current-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    background: #F5EDD8;
-    color: #8B6914;
-    font-size: 11px;
-    font-weight: 600;
+    display: inline-flex;
+    margin-left: 8px;
+    padding: 3px 8px;
     border-radius: 999px;
-    margin-left: 6px;
+    background: rgba(58,58,255,0.1);
+    color: #2929E8;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
+
+  .exp-description {
+    color: rgba(15,14,13,0.74);
+    font-size: 13px;
+    line-height: 1.55;
+    margin-top: 10px;
+    white-space: pre-line;
+  }
+
   .exp-actions {
     display: flex;
     gap: 8px;
     flex-shrink: 0;
   }
+
   .exp-action-btn {
-    padding: 4px 10px;
-    background: transparent;
-    border: 1px solid #E5E3DC;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #1C1917;
+    min-height: 32px;
+    padding: 6px 11px;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 8px;
+    background: #FFFFFF;
+    color: #0F0E0D;
     cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
     text-decoration: none;
   }
+
   .exp-action-btn:hover {
-    background: #FAFAF7;
+    border-color: rgba(15,14,13,0.22);
   }
+
   .exp-action-btn.danger {
     color: #B91C1C;
-    border-color: rgba(185, 28, 28, 0.2);
+    border-color: rgba(185,28,28,0.22);
   }
-  .exp-action-btn.danger:hover {
-    background: rgba(185, 28, 28, 0.05);
-  }
-  .exp-description {
-    font-size: 13px;
-    color: #555;
-    margin-top: 10px;
-    line-height: 1.55;
-    white-space: pre-line;
-  }
-  .exp-add-form {
-    background: #FAFAF7;
-    border: 1px dashed #C9A96E;
+
+  .ep-empty {
+    background: #FFFFFF;
+    border: 1px dashed rgba(15,14,13,0.16);
     border-radius: 12px;
-    padding: 20px;
-    margin-top: 12px;
+    padding: 42px 18px;
+    text-align: center;
   }
-  .exp-add-form.hidden { display: none; }
-  .exp-add-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background: #1C1917;
-    color: #fff;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    margin-bottom: 16px;
+
+  @media (max-width: 700px) {
+    .ep-list-header,
+    .exp-card-header {
+      display: grid;
+    }
+
+    .ep-add-toggle,
+    .exp-actions,
+    .exp-actions form,
+    .exp-action-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .ep-form-grid,
+    .ep-two-col {
+      grid-template-columns: 1fr;
+    }
   }
-  .exp-add-toggle:hover { background: #333330; }
 </style>
 
+<div class="ep-list-header">
+  <div>
+    <h2 class="ep-list-title">Experience</h2>
+    <p class="ep-list-sub">Add work history clients can use to understand your background.</p>
+  </div>
+  <button type="button" class="ep-add-toggle" id="expAddToggle">
+    + Add experience
+  </button>
+</div>
 
-<!-- ═════════════════════════════════════════════════ -->
-<!-- EXPERIENCE LIST                                      -->
-<!-- ═════════════════════════════════════════════════ -->
-
-<button type="button" class="exp-add-toggle" id="expAddToggle">
-  + Add experience
-</button>
-
-
-<!-- Add form (hidden by default) -->
-<form method="POST" action="{% url 'experience_add' %}" id="expAddForm" class="exp-add-form hidden">
+<form method="POST" action="{% url 'experience_add' %}" id="expAddForm" class="ep-form-card hidden">
   {% csrf_token %}
   {% include 'edit_profile/_form_experience.html' with exp=None %}
   <div class="flex gap-3 mt-4">
@@ -116,13 +212,9 @@
   </div>
 </form>
 
-
-<!-- Existing experiences -->
 {% if experiences %}
   <div class="mt-4">
     {% for exp in experiences %}
-
-      <!-- Read view (default) -->
       <div class="exp-card" id="expCard-{{ exp.pk }}">
         <div class="exp-card-header">
           <div>
@@ -133,7 +225,7 @@
             {% if exp.studio_name or exp.city %}
               <div class="exp-meta">
                 {% if exp.studio_name %}{{ exp.studio_name }}{% endif %}
-                {% if exp.studio_name and exp.city %} · {% endif %}
+                {% if exp.studio_name and exp.city %} / {% endif %}
                 {% if exp.city %}{{ exp.city }}{% endif %}
               </div>
             {% endif %}
@@ -155,9 +247,8 @@
         </div>
       </div>
 
-      <!-- Edit form (hidden by default) -->
       <form method="POST" action="{% url 'experience_edit' pk=exp.pk %}"
-            class="exp-add-form hidden" id="expEdit-{{ exp.pk }}">
+            class="ep-form-card hidden" id="expEdit-{{ exp.pk }}">
         {% csrf_token %}
         {% include 'edit_profile/_form_experience.html' with exp=exp %}
         <div class="flex gap-3 mt-4">
@@ -166,37 +257,36 @@
                   onclick="toggleEdit({{ exp.pk }})">Cancel</button>
         </div>
       </form>
-
     {% endfor %}
   </div>
 {% else %}
-  <div class="card text-center py-12">
+  <div class="ep-empty">
     <p class="text-sm font-medium text-ink mb-1">No experience added yet</p>
     <p class="text-sm text-muted">Add your work history to build trust with clients.</p>
   </div>
 {% endif %}
 
-
 <script>
-  // Toggle the Add form
   (function() {
     const toggle = document.getElementById('expAddToggle');
-    const form   = document.getElementById('expAddForm');
+    const form = document.getElementById('expAddForm');
     const cancel = document.getElementById('expAddCancel');
+
     toggle.addEventListener('click', () => {
       form.classList.remove('hidden');
       toggle.style.display = 'none';
     });
+
     cancel.addEventListener('click', () => {
       form.classList.add('hidden');
       toggle.style.display = '';
     });
   })();
 
-  // Toggle a per-row Edit form
   function toggleEdit(pk) {
     const card = document.getElementById('expCard-' + pk);
     const form = document.getElementById('expEdit-' + pk);
+
     if (form.classList.contains('hidden')) {
       form.classList.remove('hidden');
       card.style.display = 'none';
@@ -206,7 +296,6 @@
     }
   }
 
-  // "Currently work here" toggle disables end date inputs in any form
   document.querySelectorAll('.exp-current-toggle').forEach(cb => {
     cb.addEventListener('change', e => {
       const wrapper = e.target.closest('form');

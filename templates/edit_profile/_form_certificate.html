@@ -1,47 +1,43 @@
-<div class="space-y-3">
+<div class="ep-form-grid">
 
-  <div>
+  <div class="ep-field ep-field-full">
     <label class="form-label">Certificate name <span class="text-red-500">*</span></label>
     <input class="form-input" type="text" name="name" required
            placeholder="e.g. Master Barber Diploma"
            value="{% if cert %}{{ cert.name }}{% endif %}">
   </div>
 
-  <div class="grid grid-cols-2 gap-3">
-    <div>
-      <label class="form-label">Institution <span class="text-red-500">*</span></label>
-      <input class="form-input" type="text" name="institution" required
-             placeholder="e.g. NY Barber Academy"
-             value="{% if cert %}{{ cert.institution }}{% endif %}">
-    </div>
-    <div>
-      <label class="form-label">Year <span class="text-red-500">*</span></label>
-      <input class="form-input" type="number" name="year" required
-             min="1950" max="2100" placeholder="e.g. 2020"
-             value="{% if cert %}{{ cert.year }}{% endif %}">
-    </div>
+  <div class="ep-field">
+    <label class="form-label">Institution <span class="text-red-500">*</span></label>
+    <input class="form-input" type="text" name="institution" required
+           placeholder="e.g. NY Barber Academy"
+           value="{% if cert %}{{ cert.institution }}{% endif %}">
   </div>
 
-<!-- File upload zone -->
-  <div>
-    <label class="form-label">Certificate file (PDF or image)</label>
-    <label class="cert-file-zone {% if cert.file_url %}has-file{% endif %}"
-           id="certFileZone-{{ form_id }}"
-           style="display: block;">
+  <div class="ep-field">
+    <label class="form-label">Year <span class="text-red-500">*</span></label>
+    <input class="form-input" type="number" name="year" required
+           min="1950" max="2100" placeholder="e.g. 2020"
+           value="{% if cert %}{{ cert.year }}{% endif %}">
+  </div>
+
+  <div class="ep-field ep-field-full">
+    <label class="form-label">Certificate file</label>
+    <label class="cert-file-zone ep-upload-zone {% if cert.file_url %}has-file{% endif %}"
+           id="certFileZone-{{ form_id }}">
       <input type="file" id="certFile-{{ form_id }}"
              accept="application/pdf,image/*"
              style="display: none;">
-      <div class="cert-file-status" id="certFileStatus-{{ form_id }}">
+      <div class="cert-file-status ep-upload-title" id="certFileStatus-{{ form_id }}">
         {% if cert.file_url %}
-          ✓ File attached ({{ cert.file_kind|upper }})
+          File attached ({{ cert.file_kind|upper }})
         {% else %}
           Click to upload PDF or image
         {% endif %}
       </div>
-      <div class="cert-file-hint">Max 5 MB</div>
+      <div class="cert-file-hint ep-upload-hint">Max 5 MB</div>
     </label>
-    <!-- Hidden fields set by JS after upload -->
-    <input type="hidden" name="file_url"  id="certFileUrl-{{ form_id }}"
+    <input type="hidden" name="file_url" id="certFileUrl-{{ form_id }}"
            value="{% if cert %}{{ cert.file_url }}{% endif %}">
     <input type="hidden" name="file_kind" id="certFileKind-{{ form_id }}"
            value="{% if cert %}{{ cert.file_kind }}{% endif %}">

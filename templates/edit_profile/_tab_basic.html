@@ -1,47 +1,382 @@
 {% load dict_filters %}
 
-<!-- Cropper.js CDN -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
 
-<form method="POST" action="{% url 'profile_edit' %}" class="max-w-3xl" id="editProfileForm">
+<style>
+  .ep-basic-form {
+    max-width: 920px;
+  }
+
+  .ep-section {
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .ep-section-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .ep-section-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .ep-section-sub {
+    margin: 4px 0 0;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .ep-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ep-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .ep-photo-preview {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    background: #F5F1E8;
+    margin-bottom: 16px;
+  }
+
+  .ep-cover {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 7;
+    min-height: 190px;
+    max-height: 280px;
+    background:
+      linear-gradient(135deg, rgba(58,58,255,0.14), transparent 60%),
+      #ECE6D8;
+    overflow: hidden;
+  }
+
+  .ep-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ep-cover-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    color: rgba(15,14,13,0.52);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .ep-avatar-wrap {
+    position: absolute;
+    left: 24px;
+    bottom: 20px;
+    width: 104px;
+    height: 104px;
+    border: 4px solid #FFFFFF;
+    border-radius: 14px;
+    background: #0F0E0D;
+    color: #FFFFFF;
+    overflow: hidden;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 18px 46px rgba(15,14,13,0.22);
+  }
+
+  .ep-avatar-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .ep-avatar-wrap span {
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .ep-photo-meta {
+    padding: 16px 16px 16px 146px;
+    min-height: 76px;
+  }
+
+  .ep-photo-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .ep-photo-copy {
+    margin: 4px 0 0;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+  }
+
+  .ep-upload-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ep-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #0F0E0D;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .ep-check input {
+    width: 16px;
+    height: 16px;
+    accent-color: #3A3AFF;
+  }
+
+  .ep-lang-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    min-height: 44px;
+    padding: 7px;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 10px;
+    background: #FFFFFF;
+  }
+
+  .ep-lang-box:focus-within {
+    border-color: #3A3AFF;
+    box-shadow: 0 0 0 3px rgba(58,58,255,0.1);
+  }
+
+  .ep-lang-box input {
+    flex: 1;
+    min-width: 130px;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #0F0E0D;
+    font: inherit;
+    font-size: 14px;
+    padding: 3px 4px;
+  }
+
+  .lang-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: #0F0E0D;
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .lang-chip button {
+    border: 0;
+    background: transparent;
+    color: rgba(255,255,255,0.7);
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .hours-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .hours-row {
+    display: grid;
+    grid-template-columns: minmax(88px, 1fr) minmax(96px, 132px) 24px minmax(96px, 132px) 82px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    border: 1px solid rgba(15,14,13,0.06);
+    border-radius: 10px;
+    background: #FFFFFF;
+  }
+
+  .hours-day {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .hours-to {
+    color: rgba(15,14,13,0.48);
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .hours-closed {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
+    color: rgba(15,14,13,0.58);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .hours-closed input {
+    width: 16px;
+    height: 16px;
+    accent-color: #3A3AFF;
+  }
+
+  .cropper-modal-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    background: rgba(15,14,13,0.72);
+  }
+
+  .cropper-modal-bg.hidden {
+    display: none;
+  }
+
+  .cropper-dialog {
+    width: min(760px, 100%);
+    max-height: calc(100vh - 36px);
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+    padding: 18px;
+    display: grid;
+    gap: 14px;
+    box-shadow: 0 28px 90px rgba(0,0,0,0.32);
+  }
+
+  .cropper-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .cropper-frame {
+    max-height: 58vh;
+    border-radius: 10px;
+    background: #ECE6D8;
+    overflow: hidden;
+  }
+
+  .cropper-frame img {
+    max-width: 100%;
+    display: block;
+  }
+
+  @media (max-width: 760px) {
+    .ep-section-head,
+    .ep-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .ep-cover {
+      aspect-ratio: 16 / 9;
+      min-height: 150px;
+    }
+
+    .ep-avatar-wrap {
+      width: 88px;
+      height: 88px;
+      left: 16px;
+      bottom: 70px;
+    }
+
+    .ep-photo-meta {
+      padding: 58px 16px 16px;
+    }
+
+    .ep-upload-actions .btn-ghost,
+    .ep-basic-actions .btn-gold,
+    .ep-basic-actions .btn-ghost {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .hours-row {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .hours-day,
+    .hours-closed {
+      grid-column: 1 / -1;
+    }
+
+    .hours-to {
+      display: none;
+    }
+  }
+</style>
+
+<form method="POST" action="{% url 'profile_edit' %}" class="ep-basic-form" id="editProfileForm">
   {% csrf_token %}
 
-  <!-- ─── Photos (avatar + cover) ─────────────── -->
-  <p class="section-title">Profile photos</p>
-  <div class="card mb-5">
-
-    <!-- Cover banner -->
-    <div class="relative w-full bg-cream-border rounded-xl overflow-hidden mb-4"
-         style="aspect-ratio: 16 / 9; max-height: 240px;">
-      {% if profile.cover_url %}
-        <img id="coverPreview" src="{{ profile.cover_url }}"
-             class="w-full h-full object-cover" alt="Cover">
-      {% else %}
-        <img id="coverPreview" src=""
-             class="w-full h-full object-cover hidden" alt="Cover">
-        <div id="coverEmpty" class="absolute inset-0 flex items-center justify-center text-muted text-sm">
-          No cover photo yet
-        </div>
-      {% endif %}
-
-      <!-- Avatar (overlapping bottom-left of cover) -->
-      <div class="absolute -bottom-8 left-6">
-        <div class="relative w-24 h-24 rounded-full overflow-hidden bg-gold
-                    border-4 border-white flex items-center justify-center
-                    text-white font-semibold text-2xl">
-          {% if profile.avatar_url %}
-            <img id="avatarPreview" src="{{ profile.avatar_url }}"
-                 class="w-full h-full object-cover" alt="Avatar">
-          {% else %}
-            <span id="avatarInitials">{{ user.username|slice:":2"|upper }}</span>
-            <img id="avatarPreview" src="" class="w-full h-full object-cover hidden" alt="Avatar">
-          {% endif %}
-        </div>
+  <section class="ep-section">
+    <div class="ep-section-head">
+      <div>
+        <h2 class="ep-section-title">Profile photos</h2>
+        <p class="ep-section-sub">Update the profile header clients see first.</p>
       </div>
     </div>
 
-    <div class="flex flex-wrap gap-3 mt-10">
+    <div class="ep-photo-preview">
+      <div class="ep-cover">
+        {% if profile.cover_url %}
+          <img id="coverPreview" src="{{ profile.cover_url }}" alt="Cover">
+        {% else %}
+          <img id="coverPreview" src="" class="hidden" alt="Cover">
+          <div id="coverEmpty" class="ep-cover-empty">No cover photo yet</div>
+        {% endif %}
+      </div>
+
+      <div class="ep-avatar-wrap">
+        {% if profile.avatar_url %}
+          <img id="avatarPreview" src="{{ profile.avatar_url }}" alt="Avatar">
+        {% else %}
+          <span id="avatarInitials">{{ user.username|slice:":2"|upper }}</span>
+          <img id="avatarPreview" src="" class="hidden" alt="Avatar">
+        {% endif %}
+      </div>
+
+      <div class="ep-photo-meta">
+        <p class="ep-photo-title">{{ user.username }}</p>
+        <p class="ep-photo-copy">Use clear, high-quality images for better client trust.</p>
+      </div>
+    </div>
+
+    <div class="ep-upload-actions">
       <label class="btn-ghost cursor-pointer text-sm py-2 px-4">
         Change avatar
         <input type="file" id="avatarInput" accept="image/*" class="hidden">
@@ -51,82 +386,98 @@
         <input type="file" id="coverInput" accept="image/*" class="hidden">
       </label>
     </div>
-  </div>
+  </section>
 
-  <!-- ─── Basic info ─────────────────────────── -->
-  <p class="section-title">Basic info</p>
-  <div class="card mb-5 space-y-4">
-
-    <div>
-      <label class="form-label" for="specialty">Specialty <span class="text-red-500">*</span></label>
-      <select class="form-input" id="specialty" name="specialty" required>
-        <option value="">Select your specialty</option>
-        <option value="barber"    {% if profile.specialty == 'barber' %}selected{% endif %}>Barber</option>
-        <option value="stylist"   {% if profile.specialty == 'stylist' %}selected{% endif %}>Hair Stylist</option>
-        <option value="nails"     {% if profile.specialty == 'nails' %}selected{% endif %}>Nail Master</option>
-        <option value="makeup"    {% if profile.specialty == 'makeup' %}selected{% endif %}>Makeup Artist</option>
-        <option value="tattoo"    {% if profile.specialty == 'tattoo' %}selected{% endif %}>Tattoo Artist</option>
-        <option value="lash"      {% if profile.specialty == 'lash' %}selected{% endif %}>Lash Artist</option>
-        <option value="brow"      {% if profile.specialty == 'brow' %}selected{% endif %}>Brow Artist</option>
-        <option value="esthetics" {% if profile.specialty == 'esthetics' %}selected{% endif %}>Esthetician</option>
-        <option value="massage"   {% if profile.specialty == 'massage' %}selected{% endif %}>Massage Therapist</option>
-        <option value="other"     {% if profile.specialty == 'other' %}selected{% endif %}>Other</option>
-      </select>
+  <section class="ep-section">
+    <div class="ep-section-head">
+      <div>
+        <h2 class="ep-section-title">Basic info</h2>
+        <p class="ep-section-sub">Keep this clear and specific so clients understand your work.</p>
+      </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
+    <div class="ep-grid">
+      <div class="ep-field-full">
+        <label class="form-label" for="specialty">Specialty <span class="text-red-500">*</span></label>
+        <select class="form-input" id="specialty" name="specialty" required>
+          <option value="">Select your specialty</option>
+          <option value="barber" {% if profile.specialty == 'barber' %}selected{% endif %}>Barber</option>
+          <option value="stylist" {% if profile.specialty == 'stylist' %}selected{% endif %}>Hair Stylist</option>
+          <option value="nails" {% if profile.specialty == 'nails' %}selected{% endif %}>Nail Master</option>
+          <option value="makeup" {% if profile.specialty == 'makeup' %}selected{% endif %}>Makeup Artist</option>
+          <option value="tattoo" {% if profile.specialty == 'tattoo' %}selected{% endif %}>Tattoo Artist</option>
+          <option value="lash" {% if profile.specialty == 'lash' %}selected{% endif %}>Lash Artist</option>
+          <option value="brow" {% if profile.specialty == 'brow' %}selected{% endif %}>Brow Artist</option>
+          <option value="esthetics" {% if profile.specialty == 'esthetics' %}selected{% endif %}>Esthetician</option>
+          <option value="massage" {% if profile.specialty == 'massage' %}selected{% endif %}>Massage Therapist</option>
+          <option value="other" {% if profile.specialty == 'other' %}selected{% endif %}>Other</option>
+        </select>
+      </div>
+
       <div>
         <label class="form-label" for="years_exp">Years of experience <span class="text-red-500">*</span></label>
         <input class="form-input" type="number" id="years_exp" name="years_exp"
                min="0" max="60" required value="{{ profile.years_exp }}">
       </div>
+
       <div>
         <label class="form-label" for="years_at_location">Years at current location</label>
         <input class="form-input" type="number" id="years_at_location" name="years_at_location"
                min="0" max="60" value="{{ profile.years_at_location }}">
       </div>
+
+      <div class="ep-field-full">
+        <label class="form-label" for="location">Location <span class="text-red-500">*</span></label>
+        <input class="form-input" type="text" id="location" name="location"
+               placeholder="City, State / Country" required value="{{ profile.location }}">
+      </div>
+
+      <div class="ep-field-full">
+        <label class="form-label" for="studio_name">Studio / shop name</label>
+        <input class="form-input" type="text" id="studio_name" name="studio_name"
+               placeholder="e.g. Iron & Comb Barbershop" value="{{ profile.studio_name }}">
+      </div>
+
+      <div class="ep-field-full">
+        <label class="form-label" for="bio">Bio <span class="text-red-500">*</span></label>
+        <textarea class="form-input" id="bio" name="bio" rows="4" required
+                  placeholder="Tell clients about your style, training, and what makes your work unique.">{{ profile.bio }}</textarea>
+      </div>
+    </div>
+  </section>
+
+  <section class="ep-section">
+    <div class="ep-section-head">
+      <div>
+        <h2 class="ep-section-title">Contact</h2>
+        <p class="ep-section-sub">Phone is formatted before saving. Instagram is saved without the @ symbol.</p>
+      </div>
     </div>
 
-    <div>
-      <label class="form-label" for="location">Location <span class="text-red-500">*</span></label>
-      <input class="form-input" type="text" id="location" name="location"
-             placeholder="City, State / Country" required value="{{ profile.location }}">
-    </div>
-
-    <div>
-      <label class="form-label" for="studio_name">Studio / shop name (optional)</label>
-      <input class="form-input" type="text" id="studio_name" name="studio_name"
-             placeholder="e.g. Iron & Comb Barbershop" value="{{ profile.studio_name }}">
-    </div>
-
-    <div>
-      <label class="form-label" for="bio">Bio <span class="text-red-500">*</span></label>
-      <textarea class="form-input" id="bio" name="bio" rows="4" required
-                placeholder="Tell clients about your style, training, and what makes your work unique.">{{ profile.bio }}</textarea>
-    </div>
-  </div>
-
-  <!-- ─── Contact ─────────────────────────────── -->
-  <p class="section-title">Contact</p>
-  <div class="card mb-5 space-y-4">
-    <div class="grid grid-cols-2 gap-3">
+    <div class="ep-grid">
       <div>
         <label class="form-label" for="phone">Phone <span class="text-red-500">*</span></label>
         <input class="form-input" type="tel" id="phone" name="phone"
-               placeholder="+1 555 123 4567" required value="{{ profile.phone }}">
+               inputmode="tel" autocomplete="tel"
+               placeholder="+1 (555) 123-4567" required value="{{ profile.phone }}">
       </div>
       <div>
         <label class="form-label" for="ig_handle">Instagram handle</label>
         <input class="form-input" type="text" id="ig_handle" name="ig_handle"
-               placeholder="yourname (without @)" value="{{ profile.ig_handle }}">
+               placeholder="yourname" value="{{ profile.ig_handle }}">
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- ─── Services & pricing ──────────────────── -->
-  <p class="section-title">Services & pricing</p>
-  <div class="card mb-5 space-y-4">
-    <div class="grid grid-cols-2 gap-3">
+  <section class="ep-section">
+    <div class="ep-section-head">
+      <div>
+        <h2 class="ep-section-title">Services & pricing</h2>
+        <p class="ep-section-sub">Set your public starting point and travel options.</p>
+      </div>
+    </div>
+
+    <div class="ep-grid">
       <div>
         <label class="form-label" for="pricing_from">Starting price ($)</label>
         <input class="form-input" type="number" id="pricing_from" name="pricing_from"
@@ -139,25 +490,24 @@
                min="0" placeholder="10"
                value="{% if profile.travel_radius_km %}{{ profile.travel_radius_km }}{% endif %}">
       </div>
+      <label class="ep-check ep-field-full">
+        <input type="checkbox" name="home_visits"
+               {% if profile.home_visits %}checked{% endif %}>
+        <span>I offer home visits / mobile service</span>
+      </label>
+    </div>
+  </section>
+
+  <section class="ep-section">
+    <div class="ep-section-head">
+      <div>
+        <h2 class="ep-section-title">Languages spoken</h2>
+        <p class="ep-section-sub">Press Enter or comma after each language.</p>
+      </div>
     </div>
 
-    <label class="flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" name="home_visits"
-             class="w-4 h-4 rounded border-cream-border"
-             {% if profile.home_visits %}checked{% endif %}>
-      <span class="text-sm text-ink">I offer home visits / mobile service</span>
-    </label>
-  </div>
-
-  <!-- ─── Languages ───────────────────────────── -->
-  <p class="section-title">Languages spoken</p>
-  <div class="card mb-5">
-    <label class="form-label" for="langInput">Add languages — press Enter or comma to confirm</label>
-    <div id="langChips" class="flex flex-wrap gap-2 mb-2 min-h-[36px] p-2
-                               border border-cream-border rounded-lg bg-white">
-      <input type="text" id="langInput" placeholder="Start typing..."
-             class="flex-1 min-w-[120px] outline-none text-sm bg-transparent"
-             list="langSuggestions">
+    <div id="langChips" class="ep-lang-box">
+      <input type="text" id="langInput" placeholder="Start typing..." list="langSuggestions">
     </div>
     <datalist id="langSuggestions">
       <option value="English"><option value="Spanish"><option value="French">
@@ -168,96 +518,82 @@
       <option value="Vietnamese"><option value="Polish"><option value="Ukrainian">
     </datalist>
     <input type="hidden" name="languages" id="languagesHidden" value="{{ languages_str }}">
-  </div>
+  </section>
 
-  <!-- ─── Working hours ───────────────────────── -->
-  <p class="section-title">Working hours</p>
-  <div class="card mb-5">
-    <div class="space-y-2">
+  <section class="ep-section">
+    <div class="ep-section-head">
+      <div>
+        <h2 class="ep-section-title">Working hours</h2>
+        <p class="ep-section-sub">Mark closed days and set the open range clients can book.</p>
+      </div>
+    </div>
+
+    <div class="hours-list">
       {% for day_key, day_label in days %}
-        <div class="hours-row grid grid-cols-12 gap-2 items-center">
-          <div class="col-span-3 text-sm font-medium text-ink">{{ day_label }}</div>
-          <div class="col-span-3">
-            <input type="time" name="{{ day_key }}_open"
-                   class="form-input text-sm"
-                   value="{{ working_hours|get_item:day_key|get_item:'open' }}"
-                   {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
-          </div>
-          <div class="col-span-1 text-center text-xs text-muted">to</div>
-          <div class="col-span-3">
-            <input type="time" name="{{ day_key }}_close"
-                   class="form-input text-sm"
-                   value="{{ working_hours|get_item:day_key|get_item:'close' }}"
-                   {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
-          </div>
-          <div class="col-span-2 text-right">
-            <label class="text-xs text-muted inline-flex items-center gap-1 cursor-pointer">
-              <input type="checkbox" name="{{ day_key }}_closed"
-                     class="closed-toggle w-3.5 h-3.5"
-                     {% if working_hours|get_item:day_key|get_item:'closed' %}checked{% endif %}>
-              Closed
-            </label>
-          </div>
+        <div class="hours-row">
+          <div class="hours-day">{{ day_label }}</div>
+          <input type="time" name="{{ day_key }}_open"
+                 class="form-input text-sm"
+                 value="{{ working_hours|get_item:day_key|get_item:'open' }}"
+                 {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
+          <div class="hours-to">to</div>
+          <input type="time" name="{{ day_key }}_close"
+                 class="form-input text-sm"
+                 value="{{ working_hours|get_item:day_key|get_item:'close' }}"
+                 {% if working_hours|get_item:day_key|get_item:'closed' %}disabled{% endif %}>
+          <label class="hours-closed">
+            <input type="checkbox" name="{{ day_key }}_closed"
+                   class="closed-toggle"
+                   {% if working_hours|get_item:day_key|get_item:'closed' %}checked{% endif %}>
+            Closed
+          </label>
         </div>
       {% endfor %}
     </div>
-  </div>
+  </section>
 
-  <!-- ─── Booking settings ─── -->
-<div class="mt-8 pt-6 border-t border-cream-border">
-  <p class="text-xs font-medium text-muted uppercase tracking-wider mb-4">
-    Booking settings
-  </p>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-    <div>
-      <label class="form-label" for="min_lead_time_hours">
-        Minimum lead time (hours)
-      </label>
-      <input class="form-input" type="number" id="min_lead_time_hours"
-             name="min_lead_time_hours" min="0" max="168" step="1"
-             value="{{ profile.min_lead_time_hours }}">
-      <p class="text-xs text-muted mt-1.5">
-        Clients can't book closer than this many hours from now.
-        Default 2h. Set to 24 if you need a day's notice.
-      </p>
+  <section class="ep-section">
+    <div class="ep-section-head">
+      <div>
+        <h2 class="ep-section-title">Booking settings</h2>
+        <p class="ep-section-sub">Control how close clients can book and how many clients can overlap.</p>
+      </div>
     </div>
 
-    <div>
-      <label class="form-label" for="concurrent_clients">
-        Concurrent clients
-      </label>
-      <input class="form-input" type="number" id="concurrent_clients"
-             name="concurrent_clients" min="1" max="20" step="1"
-             value="{{ profile.concurrent_clients }}">
-      <p class="text-xs text-muted mt-1.5">
-        How many clients you can handle simultaneously.
-        Most solo masters keep this at 1.
-      </p>
-    </div>
+    <div class="ep-grid">
+      <div>
+        <label class="form-label" for="min_lead_time_hours">Minimum lead time (hours)</label>
+        <input class="form-input" type="number" id="min_lead_time_hours"
+               name="min_lead_time_hours" min="0" max="168" step="1"
+               value="{{ profile.min_lead_time_hours }}">
+        <p class="text-xs text-muted mt-1.5">Clients cannot book closer than this many hours from now.</p>
+      </div>
 
-  </div>
-</div>
-  <!-- ─── Submit ──────────────────────────────── -->
-  <div class="flex gap-3">
+      <div>
+        <label class="form-label" for="concurrent_clients">Concurrent clients</label>
+        <input class="form-input" type="number" id="concurrent_clients"
+               name="concurrent_clients" min="1" max="20" step="1"
+               value="{{ profile.concurrent_clients }}">
+        <p class="text-xs text-muted mt-1.5">Most solo professionals keep this at 1.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="ep-basic-actions flex gap-3">
     <button type="submit" class="btn-gold flex-1 justify-center py-3">Save basic info</button>
     <a href="{% url 'profile' username=user.username %}"
        class="btn-ghost flex-1 justify-center py-3">Cancel</a>
   </div>
-
 </form>
 
-
-<!-- Cropper Modal -->
 <div id="cropperModal" class="cropper-modal-bg hidden">
-  <div class="bg-white rounded-2xl max-w-2xl w-full p-6">
-    <h3 id="cropperTitle" class="text-lg font-semibold text-ink mb-4">Crop your photo</h3>
-    <div class="bg-cream rounded-xl overflow-hidden" style="max-height: 60vh;">
-      <img id="cropperImage" alt="" style="max-width: 100%; display: block;">
+  <div class="cropper-dialog">
+    <h3 id="cropperTitle" class="cropper-title">Crop your photo</h3>
+    <div class="cropper-frame">
+      <img id="cropperImage" alt="">
     </div>
-    <p class="text-xs text-muted mt-3 text-center">Drag to move, scroll or pinch to zoom</p>
-    <div class="flex gap-3 mt-5">
+    <p class="text-xs text-muted text-center">Drag to move, scroll or pinch to zoom.</p>
+    <div class="flex gap-3">
       <button type="button" id="cropperCancel" class="btn-ghost flex-1 justify-center py-2.5">Cancel</button>
       <button type="button" id="cropperSave" class="btn-gold flex-1 justify-center py-2.5">
         <span id="cropperSaveText">Save photo</span>
@@ -266,12 +602,10 @@
   </div>
 </div>
 
-
 <script>
-  // ── Chip-tag languages ──
   (function() {
-    const wrap   = document.getElementById('langChips');
-    const input  = document.getElementById('langInput');
+    const wrap = document.getElementById('langChips');
+    const input = document.getElementById('langInput');
     const hidden = document.getElementById('languagesHidden');
     let langs = hidden.value.split(',').map(s => s.trim()).filter(Boolean);
 
@@ -279,19 +613,20 @@
       wrap.querySelectorAll('.lang-chip').forEach(c => c.remove());
       langs.forEach((l, i) => {
         const chip = document.createElement('span');
-        chip.className = 'lang-chip inline-flex items-center gap-1.5 px-2.5 py-1 bg-ink ' +
-                         'text-white text-xs rounded-full';
-        chip.innerHTML = `${l} <button type="button" data-i="${i}" class="text-white/70 hover:text-white">&times;</button>`;
+        chip.className = 'lang-chip';
+        chip.innerHTML = `${l} <button type="button" data-i="${i}">&times;</button>`;
         wrap.insertBefore(chip, input);
       });
       hidden.value = langs.join(', ');
     }
+
     function addLang(v) {
       v = v.trim();
       if (!v || langs.includes(v)) return;
       langs.push(v);
       render();
     }
+
     input.addEventListener('keydown', e => {
       if (e.key === 'Enter' || e.key === ',') {
         e.preventDefault();
@@ -302,16 +637,17 @@
         render();
       }
     });
+
     wrap.addEventListener('click', e => {
       if (e.target.tagName === 'BUTTON' && e.target.dataset.i !== undefined) {
         langs.splice(parseInt(e.target.dataset.i), 1);
         render();
       }
     });
+
     render();
   })();
 
-  // ── Working hours: "closed" toggle ──
   document.querySelectorAll('.closed-toggle').forEach(cb => {
     cb.addEventListener('change', e => {
       const row = e.target.closest('.hours-row');
@@ -321,54 +657,129 @@
     });
   });
 
-  // ── Cropper UI for avatar + cover ──
+  (function() {
+    const phoneInput = document.getElementById('phone');
+    const igInput = document.getElementById('ig_handle');
+    const form = document.getElementById('editProfileForm');
+
+    function formatPhone(value) {
+      const trimmed = value.trim();
+      const hasPlus = trimmed.startsWith('+');
+      const digits = trimmed.replace(/\D/g, '');
+
+      if (!digits) return '';
+
+      if (digits.length === 10) {
+        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+      }
+
+      if (digits.length === 11 && digits.startsWith('1')) {
+        return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+      }
+
+      if (hasPlus) return `+${digits}`;
+
+      return digits;
+    }
+
+    phoneInput.addEventListener('input', () => {
+      phoneInput.value = phoneInput.value.replace(/[^\d+\-().\s]/g, '');
+    });
+
+    phoneInput.addEventListener('blur', () => {
+      phoneInput.value = formatPhone(phoneInput.value);
+    });
+
+    form.addEventListener('submit', () => {
+      phoneInput.value = formatPhone(phoneInput.value);
+      igInput.value = igInput.value.trim().replace(/^@+/, '');
+    });
+  })();
+
   (function() {
     const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const modal       = document.getElementById('cropperModal');
-    const imgEl       = document.getElementById('cropperImage');
-    const titleEl     = document.getElementById('cropperTitle');
-    const cancelBtn   = document.getElementById('cropperCancel');
-    const saveBtn     = document.getElementById('cropperSave');
-    const saveText    = document.getElementById('cropperSaveText');
+    const modal = document.getElementById('cropperModal');
+    const imgEl = document.getElementById('cropperImage');
+    const titleEl = document.getElementById('cropperTitle');
+    const cancelBtn = document.getElementById('cropperCancel');
+    const saveBtn = document.getElementById('cropperSave');
+    const saveText = document.getElementById('cropperSaveText');
     const avatarInput = document.getElementById('avatarInput');
-    const coverInput  = document.getElementById('coverInput');
-    let cropper = null, currentKind = null, currentUrl = null;
+    const coverInput = document.getElementById('coverInput');
+
+    let cropper = null;
+    let currentKind = null;
+    let currentUrl = null;
 
     function openCropper(file, kind) {
+      if (!file || !file.type.startsWith('image/')) {
+        alert('Please choose an image file.');
+        return;
+      }
+
       currentKind = kind;
       currentUrl = kind === 'avatar' ? '{% url "upload_avatar" %}' : '{% url "upload_cover" %}';
-      titleEl.textContent = kind === 'avatar' ? 'Crop your profile picture' : 'Crop your cover photo';
+      titleEl.textContent = kind === 'avatar' ? 'Crop profile picture' : 'Crop cover photo';
+
       const reader = new FileReader();
+
       reader.onload = ev => {
         imgEl.src = ev.target.result;
         modal.classList.remove('hidden');
+
         if (cropper) cropper.destroy();
+
         cropper = new Cropper(imgEl, {
           aspectRatio: kind === 'avatar' ? 1 : 16 / 9,
-          viewMode: 1, dragMode: 'move', autoCropArea: 0.9,
-          background: false, rotatable: false, scalable: false,
+          viewMode: 1,
+          dragMode: 'move',
+          autoCropArea: 0.9,
+          background: false,
+          rotatable: false,
+          scalable: false,
         });
       };
+
       reader.readAsDataURL(file);
     }
+
     function closeCropper() {
-      if (cropper) { cropper.destroy(); cropper = null; }
+      if (cropper) {
+        cropper.destroy();
+        cropper = null;
+      }
+
       modal.classList.add('hidden');
       imgEl.src = '';
       avatarInput.value = '';
       coverInput.value = '';
     }
+
     function saveCrop() {
       if (!cropper) return;
+
       const w = currentKind === 'avatar' ? 512 : 1600;
       const h = currentKind === 'avatar' ? 512 : 900;
       const canvas = cropper.getCroppedCanvas({ width: w, height: h, imageSmoothingQuality: 'high' });
+
+      if (!canvas) {
+        alert('Could not crop this image. Please try another file.');
+        return;
+      }
+
       const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
       saveBtn.disabled = true;
-      saveText.textContent = 'Uploading…';
+      saveText.textContent = 'Uploading...';
+
       const fd = new FormData();
       fd.append('image_data', dataUrl);
-      fetch(currentUrl, { method: 'POST', headers: { 'X-CSRFToken': csrf }, body: fd })
+
+      fetch(currentUrl, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrf },
+        body: fd
+      })
         .then(async r => {
           const data = await r.json().catch(() => ({}));
           if (!r.ok) throw new Error(data.error || 'Upload failed.');
@@ -378,14 +789,21 @@
           if (currentKind === 'avatar') {
             const p = document.getElementById('avatarPreview');
             const i = document.getElementById('avatarInitials');
-            p.src = data.url; p.classList.remove('hidden');
+
+            p.src = data.url;
+            p.classList.remove('hidden');
+
             if (i) i.classList.add('hidden');
           } else {
             const p = document.getElementById('coverPreview');
             const e = document.getElementById('coverEmpty');
-            p.src = data.url; p.classList.remove('hidden');
+
+            p.src = data.url;
+            p.classList.remove('hidden');
+
             if (e) e.classList.add('hidden');
           }
+
           closeCropper();
         })
         .catch(err => alert('Upload failed: ' + err.message))
@@ -395,10 +813,24 @@
         });
     }
 
-    avatarInput.addEventListener('change', e => { if (e.target.files[0]) openCropper(e.target.files[0], 'avatar'); });
-    coverInput.addEventListener('change', e => { if (e.target.files[0]) openCropper(e.target.files[0], 'cover'); });
+    avatarInput.addEventListener('change', e => {
+      if (e.target.files[0]) openCropper(e.target.files[0], 'avatar');
+    });
+
+    coverInput.addEventListener('change', e => {
+      if (e.target.files[0]) openCropper(e.target.files[0], 'cover');
+    });
+
     cancelBtn.addEventListener('click', closeCropper);
-    modal.addEventListener('click', e => { if (e.target === modal) closeCropper(); });
+
+    modal.addEventListener('click', e => {
+      if (e.target === modal) closeCropper();
+    });
+
     saveBtn.addEventListener('click', saveCrop);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeCropper();
+    });
   })();
 </script>

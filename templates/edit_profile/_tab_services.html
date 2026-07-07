@@ -1,78 +1,188 @@
 {% load static %}
 
 <style>
-  /* Services tab specific styles */
-  .svc-presets-panel {
-    background: linear-gradient(135deg, #F5EDD8, #fff);
-    border: 1px solid #C9A96E;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
+  .ep-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
   }
-  .svc-presets-panel.hidden { display: none; }
+
+  .ep-list-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .ep-list-sub {
+    margin: 4px 0 0;
+    color: rgba(15,14,13,0.58);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .svc-presets-panel,
+  .svc-form-card,
+  .svc-card,
+  .ep-empty {
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 12px;
+  }
+
+  .svc-presets-panel {
+    padding: 18px;
+    margin-bottom: 18px;
+    border-color: rgba(58,58,255,0.18);
+  }
+
+  .svc-presets-panel.hidden,
+  .svc-form-card.hidden {
+    display: none;
+  }
+
   .svc-presets-title {
+    color: #0F0E0D;
     font-size: 15px;
-    font-weight: 600;
-    color: #1C1917;
+    font-weight: 700;
     margin-bottom: 4px;
   }
+
   .svc-presets-sub {
+    color: rgba(15,14,13,0.62);
     font-size: 13px;
-    color: #555;
+    line-height: 1.5;
     margin-bottom: 14px;
   }
+
   .svc-preset-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 10px;
     margin-bottom: 14px;
   }
+
   .svc-preset-chip {
-    background: #fff;
-    border: 1px solid #E5E3DC;
-    border-radius: 8px;
-    padding: 10px 12px;
+    background: #FFFFFF;
+    border: 1px solid rgba(15,14,13,0.08);
+    border-radius: 10px;
+    padding: 12px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: border-color .15s, background .15s, color .15s;
     user-select: none;
   }
+
   .svc-preset-chip:hover {
-    border-color: #C9A96E;
+    border-color: #3A3AFF;
   }
+
   .svc-preset-chip.selected {
-    background: #1C1917;
-    color: #fff;
-    border-color: #1C1917;
+    background: #3A3AFF;
+    color: #FFFFFF;
+    border-color: #3A3AFF;
   }
-  .svc-preset-chip.selected .svc-preset-meta { color: #C9A96E; }
+
   .svc-preset-name {
     font-size: 13px;
-    font-weight: 500;
-    margin-bottom: 2px;
+    font-weight: 700;
+    margin-bottom: 3px;
   }
+
   .svc-preset-meta {
+    color: rgba(15,14,13,0.58);
     font-size: 11px;
-    color: #888780;
   }
-  .svc-import-btn {
-    background: #1C1917;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
+
+  .svc-preset-chip.selected .svc-preset-meta {
+    color: rgba(255,255,255,0.72);
+  }
+
+  .svc-import-btn,
+  .svc-add-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 9px 16px;
+    border: 0;
+    border-radius: 10px;
+    background: #3A3AFF;
+    color: #F5F1E8;
     cursor: pointer;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
   }
+
+  .svc-import-btn:hover,
+  .svc-add-toggle:hover {
+    background: #2929E8;
+  }
+
   .svc-import-btn:disabled {
-    background: #ccc;
+    background: rgba(15,14,13,0.18);
     cursor: not-allowed;
   }
 
+  .svc-form-card {
+    padding: 18px;
+    margin: 0 0 14px;
+  }
+
+  .ep-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .ep-field-full {
+    grid-column: 1 / -1;
+  }
+
+  .ep-upload-zone {
+    display: block;
+    border: 1px dashed rgba(15,14,13,0.18);
+    border-radius: 10px;
+    background: #FFFFFF;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+
+  .ep-upload-zone:hover,
+  .ep-upload-zone.has-file {
+    border-color: #3A3AFF;
+    background: rgba(58,58,255,0.04);
+  }
+
+  .ep-upload-title {
+    color: #0F0E0D;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .ep-upload-hint {
+    color: rgba(15,14,13,0.55);
+    font-size: 12px;
+    margin-top: 4px;
+  }
+
+  .svc-photo-preview {
+    max-width: 100%;
+    max-height: 120px;
+    border-radius: 8px;
+    margin: 0 auto 8px;
+    display: block;
+  }
+
+  .svc-photo-preview.hidden {
+    display: none;
+  }
+
   .svc-card {
-    background: #fff;
-    border: 1px solid #E5E3DC;
-    border-radius: 12px;
     margin-bottom: 10px;
     overflow: hidden;
     display: flex;
@@ -80,127 +190,149 @@
     padding: 14px;
     align-items: center;
     cursor: grab;
-    transition: border-color 0.15s, opacity 0.2s;
+    transition: border-color .15s, opacity .2s;
   }
-  .svc-card.inactive { opacity: 0.55; }
-  .svc-card.dragging { opacity: 0.4; }
+
+  .svc-card:hover {
+    border-color: rgba(58,58,255,0.28);
+  }
+
+  .svc-card.inactive {
+    opacity: 0.56;
+  }
+
+  .svc-card.dragging {
+    opacity: 0.4;
+  }
+
   .svc-handle {
-    color: #C9A96E;
+    color: rgba(15,14,13,0.35);
     cursor: grab;
     font-size: 18px;
     flex-shrink: 0;
   }
+
   .svc-photo {
-    width: 56px; height: 56px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #F5EDD8, #C9A96E);
+    width: 58px;
+    height: 58px;
+    border-radius: 10px;
+    background: #0F0E0D;
+    color: #FFFFFF;
     flex-shrink: 0;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-size: 20px;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    font-weight: 700;
   }
-  .svc-photo img { width: 100%; height: 100%; object-fit: cover; }
-  .svc-body { flex: 1; min-width: 0; }
+
+  .svc-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .svc-body {
+    flex: 1;
+    min-width: 0;
+  }
+
   .svc-name {
+    color: #0F0E0D;
     font-size: 14px;
-    font-weight: 600;
-    color: #1C1917;
+    font-weight: 700;
   }
+
   .svc-meta {
+    color: rgba(15,14,13,0.58);
     font-size: 12px;
-    color: #888780;
-    margin-top: 2px;
+    margin-top: 3px;
   }
+
   .svc-actions {
     display: flex;
     gap: 6px;
     flex-shrink: 0;
   }
+
   .svc-action-btn {
-    padding: 5px 10px;
-    border: 1px solid #E5E3DC;
-    background: transparent;
-    border-radius: 6px;
-    font-size: 12px;
-    color: #1C1917;
+    min-height: 32px;
+    padding: 6px 10px;
+    border: 1px solid rgba(15,14,13,0.08);
+    background: #FFFFFF;
+    border-radius: 8px;
+    color: #0F0E0D;
     cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
   }
-  .svc-action-btn:hover { background: #FAFAF7; }
+
+  .svc-action-btn:hover {
+    border-color: rgba(15,14,13,0.22);
+  }
+
   .svc-action-btn.danger {
     color: #B91C1C;
-    border-color: rgba(185, 28, 28, 0.2);
+    border-color: rgba(185,28,28,0.22);
   }
 
-  .svc-form-card {
-    background: #FAFAF7;
-    border: 1px dashed #C9A96E;
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 12px;
-  }
-  .svc-form-card.hidden { display: none; }
-
-  .svc-add-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
-    background: #1C1917;
-    color: #fff;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    border: none;
-    cursor: pointer;
-    margin-right: 8px;
-  }
-
-  .svc-photo-zone {
-    border: 1px dashed #C9A96E;
-    border-radius: 8px;
-    padding: 14px;
+  .ep-empty {
+    border-style: dashed;
+    padding: 42px 18px;
     text-align: center;
-    cursor: pointer;
-    background: #fff;
-    display: block;
   }
-  .svc-photo-zone:hover { background: #FAFAF7; }
-  .svc-photo-preview {
-    max-width: 100%;
-    max-height: 100px;
-    border-radius: 6px;
-    margin: 0 auto 6px;
-    display: block;
+
+  @media (max-width: 760px) {
+    .ep-list-header,
+    .svc-card {
+      display: grid;
+    }
+
+    .svc-actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .svc-actions form,
+    .svc-action-btn,
+    .svc-add-toggle,
+    .svc-import-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .ep-form-grid {
+      grid-template-columns: 1fr;
+    }
   }
-  .svc-photo-preview.hidden { display: none; }
-  .svc-photo-status {
-    font-size: 13px;
-    color: #1C1917;
-  }
-  .svc-photo-hint {
-    font-size: 11px;
-    color: #888780;
-    margin-top: 3px;
+
+  @media (max-width: 520px) {
+    .svc-actions {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 
+<div class="ep-list-header">
+  <div>
+    <h2 class="ep-list-title">Services</h2>
+    <p class="ep-list-sub">Manage what clients can book, including prices, timing, images, and visibility.</p>
+  </div>
+  <button type="button" class="svc-add-toggle" id="svcAddToggle">
+    + Add custom service
+  </button>
+</div>
 
-<!-- ─── Preset import panel (only shows if there are presets for this specialty) ─── -->
 {% if profile.specialty %}
   <div class="svc-presets-panel" id="svcPresetsPanel" data-specialty="{{ profile.specialty }}">
-    <div class="svc-presets-title">✨ Quick-add common services</div>
+    <div class="svc-presets-title">Quick-add common services</div>
     <p class="svc-presets-sub">
-      Tap the services you offer. We'll fill in suggested durations and prices —
-      you can adjust them later.
+      Select the services you offer. Suggested durations and prices will be filled automatically.
     </p>
     <div class="svc-preset-grid" id="svcPresetGrid">
-      <!-- Filled by JS -->
-      <div class="text-sm text-muted">Loading suggestions…</div>
+      <div class="text-sm text-muted">Loading suggestions...</div>
     </div>
-    <div class="flex items-center gap-3 mt-2">
+    <div class="flex items-center gap-3 mt-2 flex-wrap">
       <button type="button" class="svc-import-btn" id="svcImportBtn" disabled>
         Add <span id="svcImportCount">0</span> services
       </button>
@@ -210,19 +342,6 @@
   </div>
 {% endif %}
 
-
-<!-- ─── Add custom service button ─── -->
-<div class="flex items-center gap-2 mb-3">
-  <button type="button" class="svc-add-toggle" id="svcAddToggle">
-    + Add custom service
-  </button>
-  {% if profile.specialty and not services %}
-    <span class="text-sm text-muted">or pick from suggestions above</span>
-  {% endif %}
-</div>
-
-
-<!-- ─── Add form (hidden until "Add custom" clicked) ─── -->
 <form method="POST" action="{% url 'service_add' %}"
       id="svcAddForm" class="svc-form-card hidden">
   {% csrf_token %}
@@ -233,29 +352,26 @@
   </div>
 </form>
 
-
-<!-- ─── List of existing services ─── -->
 <div id="svcList" class="mt-4">
   {% if services %}
     {% for service in services %}
-
       <div class="svc-card {% if not service.is_active %}inactive{% endif %}"
            data-service-id="{{ service.id }}"
            id="svcCard-{{ service.id }}"
            draggable="true">
-        <div class="svc-handle">⋮⋮</div>
+        <div class="svc-handle">::</div>
         <div class="svc-photo">
           {% if service.photo_url %}
             <img src="{{ service.photo_url }}" alt="{{ service.name }}">
           {% else %}
-            ✂️
+            S
           {% endif %}
         </div>
         <div class="svc-body">
           <div class="svc-name">{{ service.name }}</div>
           <div class="svc-meta">
-            {{ service.duration_display }} · ${{ service.price }}
-            {% if not service.is_active %}<span class="text-red-500 font-medium">· Hidden</span>{% endif %}
+            {{ service.duration_display }} / ${{ service.price }}
+            {% if not service.is_active %}<span class="text-red-500 font-medium"> / Hidden</span>{% endif %}
           </div>
         </div>
         <div class="svc-actions">
@@ -274,7 +390,6 @@
         </div>
       </div>
 
-      <!-- Edit form -->
       <form method="POST" action="{% url 'service_edit' pk=service.id %}"
             class="svc-form-card hidden" id="svcEdit-{{ service.id }}">
         {% csrf_token %}
@@ -285,34 +400,28 @@
                   onclick="toggleSvcEdit({{ service.id }})">Cancel</button>
         </div>
       </form>
-
     {% endfor %}
   {% else %}
-    <div class="card text-center py-12">
+    <div class="ep-empty">
       <p class="text-sm font-medium text-ink mb-1">No services yet</p>
       <p class="text-sm text-muted">Add the services you offer so clients can book them.</p>
     </div>
   {% endif %}
 </div>
 
-
 <script>
 (function() {
   const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-  // ════════════════════════════════════
-  // Preset suggestions
-  // ════════════════════════════════════
   const presetsPanel = document.getElementById('svcPresetsPanel');
   if (presetsPanel) {
-    const grid       = document.getElementById('svcPresetGrid');
-    const importBtn  = document.getElementById('svcImportBtn');
-    const importCnt  = document.getElementById('svcImportCount');
-    const hideBtn    = document.getElementById('svcHidePresets');
-    const selected   = new Set();
+    const grid = document.getElementById('svcPresetGrid');
+    const importBtn = document.getElementById('svcImportBtn');
+    const importCnt = document.getElementById('svcImportCount');
+    const hideBtn = document.getElementById('svcHidePresets');
+    const selected = new Set();
     let presets = [];
 
-    // Fetch suggestions for this specialty
     fetch('{% url "service_presets_api" %}')
       .then(r => r.json())
       .then(data => {
@@ -333,7 +442,7 @@
         chip.dataset.idx = i;
         chip.innerHTML = `
           <div class="svc-preset-name">${escapeHtml(p.name)}</div>
-          <div class="svc-preset-meta">${p.duration_minutes} min · $${p.price_low}–$${p.price_high}</div>
+          <div class="svc-preset-meta">${p.duration_minutes} min / $${p.price_low}-${p.price_high}</div>
         `;
         chip.addEventListener('click', () => togglePreset(i, chip));
         grid.appendChild(chip);
@@ -354,15 +463,15 @@
 
     importBtn.addEventListener('click', () => {
       const services = [...selected].map(i => ({
-        name:             presets[i].name,
+        name: presets[i].name,
         duration_minutes: presets[i].duration_minutes,
-        price:            presets[i].price_suggested,
-        description:      '',
-        photo_url:        '',
+        price: presets[i].price_suggested,
+        description: '',
+        photo_url: '',
       }));
 
       importBtn.disabled = true;
-      importBtn.textContent = 'Adding…';
+      importBtn.textContent = 'Adding...';
 
       fetch('{% url "service_add" %}', {
         method: 'POST',
@@ -373,8 +482,7 @@
         body: JSON.stringify({ services }),
       })
       .then(r => r.json())
-      .then(data => {
-        // Reload to show new services
+      .then(() => {
         window.location.href = '?tab=services';
       })
       .catch(err => {
@@ -389,24 +497,20 @@
     });
   }
 
-  // ════════════════════════════════════
-  // Add custom service toggle
-  // ════════════════════════════════════
   const addToggle = document.getElementById('svcAddToggle');
-  const addForm   = document.getElementById('svcAddForm');
+  const addForm = document.getElementById('svcAddForm');
   const addCancel = document.getElementById('svcAddCancel');
+
   addToggle.addEventListener('click', () => {
     addForm.classList.remove('hidden');
     addToggle.style.display = 'none';
   });
+
   addCancel.addEventListener('click', () => {
     addForm.classList.add('hidden');
     addToggle.style.display = '';
   });
 
-  // ════════════════════════════════════
-  // Drag and drop reorder
-  // ════════════════════════════════════
   const list = document.getElementById('svcList');
   let dragging = null;
 
@@ -415,46 +519,59 @@
     dragging = e.target;
     e.target.classList.add('dragging');
   });
-  list.addEventListener('dragend', e => {
+
+  list.addEventListener('dragend', () => {
     if (dragging) dragging.classList.remove('dragging');
     dragging = null;
-    // Save new order
+
     const ids = [...list.querySelectorAll('.svc-card')].map(c => parseInt(c.dataset.serviceId));
+    if (!ids.length) return;
+
     fetch('{% url "service_reorder" %}', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
       body: JSON.stringify({ ids }),
     });
   });
+
   list.addEventListener('dragover', e => {
     e.preventDefault();
     if (!dragging) return;
+
     const target = e.target.closest('.svc-card');
     if (!target || target === dragging) return;
+
     const rect = target.getBoundingClientRect();
     const after = (e.clientY - rect.top) > rect.height / 2;
+
     if (after) target.parentNode.insertBefore(dragging, target.nextSibling);
-    else       target.parentNode.insertBefore(dragging, target);
+    else target.parentNode.insertBefore(dragging, target);
   });
 
-  // ════════════════════════════════════
-  // Photo upload per-form
-  // ════════════════════════════════════
   function setupPhotoUpload(formId) {
-    const fileInput  = document.getElementById(`svcPhoto-${formId}`);
-    const statusEl   = document.getElementById(`svcPhotoStatus-${formId}`);
-    const preview    = document.getElementById(`svcPhotoPreview-${formId}`);
-    const hiddenUrl  = document.getElementById(`svcPhotoUrl-${formId}`);
+    const fileInput = document.getElementById(`svcPhoto-${formId}`);
+    const statusEl = document.getElementById(`svcPhotoStatus-${formId}`);
+    const preview = document.getElementById(`svcPhotoPreview-${formId}`);
+    const hiddenUrl = document.getElementById(`svcPhotoUrl-${formId}`);
+    const zone = document.getElementById(`svcPhotoZone-${formId}`);
+
     if (!fileInput) return;
 
     fileInput.addEventListener('change', e => {
       const f = e.target.files[0];
       if (!f) return;
-      if (f.size > 5 * 1024 * 1024) { alert('Max 5 MB'); return; }
 
-      statusEl.textContent = 'Uploading…';
+      if (f.size > 5 * 1024 * 1024) {
+        alert('Max 5 MB');
+        return;
+      }
+
+      statusEl.textContent = 'Uploading...';
+      if (zone) zone.classList.add('has-file');
+
       const fd = new FormData();
       fd.append('file', f);
+
       fetch('{% url "upload_service_photo" %}', {
         method: 'POST',
         headers: { 'X-CSRFToken': csrf },
@@ -463,14 +580,16 @@
       .then(r => r.json())
       .then(data => {
         if (!data.url) throw new Error(data.error || 'upload failed');
+
         hiddenUrl.value = data.url;
         preview.src = data.url;
         preview.classList.remove('hidden');
-        statusEl.textContent = '✓ Photo uploaded';
+        statusEl.textContent = 'Photo uploaded';
       })
       .catch(err => {
         alert('Upload failed: ' + err.message);
         statusEl.textContent = 'Click to upload photo';
+        if (zone) zone.classList.remove('has-file');
       });
     });
   }
@@ -480,12 +599,10 @@
     setupPhotoUpload('{{ service.id }}');
   {% endfor %}
 
-  // ════════════════════════════════════
-  // Edit / toggle handlers
-  // ════════════════════════════════════
   window.toggleSvcEdit = function(id) {
     const card = document.getElementById('svcCard-' + id);
     const form = document.getElementById('svcEdit-' + id);
+
     if (form.classList.contains('hidden')) {
       form.classList.remove('hidden');
       card.style.display = 'none';
@@ -503,6 +620,7 @@
     .then(r => r.json())
     .then(data => {
       const card = document.getElementById('svcCard-' + id);
+
       if (data.is_active) {
         card.classList.remove('inactive');
         btn.textContent = 'Hide';
@@ -513,12 +631,13 @@
     });
   };
 
-  // ════════════════════════════════════
-  // Utility
-  // ════════════════════════════════════
   function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
     }[c]));
   }
 })();
