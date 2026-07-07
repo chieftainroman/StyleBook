@@ -7,6 +7,11 @@ from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta, date as date_cls
 from django.contrib.auth.decorators import login_required
+from collections import Counter
+from decimal import Decimal
+from django.db.models import Count
+from portfolio.models import PortfolioItem
+
 
 from django.conf import settings
 from accounts.models import MasterProfile, Service
@@ -20,10 +25,149 @@ from django.db import transaction
 
 @login_required
 def dashboard_view(request):
-    """Master's dashboard."""
-    return render(request, 'dashboard.html', {
+    """Master dashboard with calculated booking stats."""
+    profile, _ = MasterProfile.objects.get_or_create(user=request.user)
+
+    now = timezone.localtime(timezone.now())
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    tomorrow_start = today_start + timedelta(days=1)
+    month_start = today_start.replace(day=1)
+
+    if month_start.month == 12:
+        next_month_start = month_start.replace(year=month_start.year + 1, month=1)
+    else:
+        next_month_start = month_start.replace(month=month_start.month + 1)
+
+    excluded_statuses = ['cancelled', 'refused']
+
+    bookings = Booking.objects.filter(master=profile).select_related('service')
+    active_bookings = bookings.exclude(status__in=excluded_statuses)
+
+    today_bookings = active_bookings.filter(
+        start_time__gte=today_start,
+        start_time__lt=tomorrow_start,
+    ).order_by('start_time')
+
+    month_bookings = active_bookings.filter(
+        start_time__gte=month_start,
+        start_time__lt=next_month_start,
+    )
+
+    completed_bookings = bookings.filter(status='completed')
+    completed_this_month = completed_bookings.filter(
+        start_time__gte=month_start,
+        start_time__lt=next_month_start,
+    ).select_related('service')
+
+    revenue_month = sum(
+        (booking.service.price for booking in completed_this_month if booking.service),
+        Decimal('0')
+    )
+
+    completed_month_count = completed_this_month.count()
+    avg_booking_value = revenue_month / completed_month_count if completed_month_count else Decimal('0')
+
+    client_emails = list(
+        active_bookings.exclude(client_email='')
+        .values_list('client_email', flat=True)
+    )
+    client_counts = Counter(email.lower().strip() for email in client_emails if email)
+    total_clients = len(client_counts)
+    return_clients = sum(1 for count in client_counts.values() if count > 1)
+    return_rate = round((return_clients / total_clients) * 100) if total_clients else 0
+
+    chart_start = today_start - timedelta(days=6)
+    raw_day_counts = active_bookings.filter(
+        start_time__gte=chart_start,
+        start_time__lt=tomorrow_start,
+    ).values('start_time__date').annotate(total=Count('id'))
+
+    counts_by_day = {
+        row['start_time__date']: row['total']
+        for row in raw_day_counts
+    }
+
+    chart_days = []
+    for index in range(6, -1, -1):
+        day = today_start.date() - timedelta(days=index)
+        count = counts_by_day.get(day, 0)
+        chart_days.append({
+            'label': day.strftime('%a'),
+            'date': day.strftime('%b %d'),
+            'count': count,
+        })
+
+    max_chart_value = max([day['count'] for day in chart_days] or [1])
+    for day in chart_days:
+        day['percent'] = round((day['count'] / max_chart_value) * 100) if max_chart_value else 0
+
+    status_labels = dict(Booking.STATUS_CHOICES)
+    raw_status_rows = bookings.values('status').annotate(total=Count('id')).order_by('-total')
+    max_status_count = max([row['total'] for row in raw_status_rows] or [1])
+
+    status_rows = []
+    for row in raw_status_rows:
+        status_rows.append({
+            'label': status_labels.get(row['status'], row['status']),
+            'count': row['total'],
+            'percent': round((row['total'] / max_status_count) * 100) if max_status_count else 0,
+        })
+
+    source_labels = dict(Booking.SOURCE_CHOICES)
+    raw_source_rows = month_bookings.values('source').annotate(total=Count('id')).order_by('-total')
+    max_source_count = max([row['total'] for row in raw_source_rows] or [1])
+
+    source_rows = []
+    for row in raw_source_rows:
+        source_rows.append({
+            'label': source_labels.get(row['source'], row['source']),
+            'count': row['total'],
+            'percent': round((row['total'] / max_source_count) * 100) if max_source_count else 0,
+        })
+
+    recent_portfolio = PortfolioItem.objects.filter(user=request.user).order_by('-id')[:4]
+
+    if now.hour < 12:
+        greeting = 'Good morning'
+    elif now.hour < 18:
+        greeting = 'Good afternoon'
+    else:
+        greeting = 'Good evening'
+
+    context = {
         'active': 'dashboard',
-    })
+        'profile': profile,
+        'greeting': greeting,
+        'today_date': today_start.date(),
+        'is_open_for_bookings': profile.is_open_for_bookings(),
+
+        'today_bookings': today_bookings,
+        'today_count': today_bookings.count(),
+        'pending_count': bookings.filter(status='pending_otp').count(),
+        'month_count': month_bookings.count(),
+        'completed_count': completed_bookings.count(),
+        'return_rate': return_rate,
+        'return_clients': return_clients,
+        'total_clients': total_clients,
+
+        'revenue_month': revenue_month,
+        'avg_booking_value': avg_booking_value,
+        'upcoming_count': active_bookings.filter(start_time__gte=now).count(),
+        'cancelled_count': bookings.filter(status__in=excluded_statuses).count(),
+
+        'chart_days': chart_days,
+        'max_chart_value': max_chart_value,
+        'status_rows': status_rows,
+        'source_rows': source_rows,
+
+        'services_count': profile.services.filter(is_active=True).count(),
+        'recent_portfolio': recent_portfolio,
+        'portfolio_count': PortfolioItem.objects.filter(user=request.user).count(),
+
+        'booking_url': request.build_absolute_uri(reverse('book_master', args=[request.user.username])),
+    }
+
+    return render(request, 'dashboard.html', context)
 
 
 

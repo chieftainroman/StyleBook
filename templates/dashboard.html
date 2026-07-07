@@ -1,431 +1,802 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Dashboard — Showpiece{% endblock %}
+{% block title %}Dashboard - Showpiece{% endblock %}
 
 {% block page_eyebrow %}
-  <div class="sp-eyebrow">
-    <span class="sp-eyebrow-dot"></span>
-    {% if profile.is_open_for_bookings %}
-      <span>You're accepting bookings · {% now "l, F j" %}</span>
-    {% else %}
-      <span>Bookings paused · {% now "l, F j" %}</span>
-    {% endif %}
-  </div>
+  <span class="dash-status-dot {% if is_open_for_bookings %}is-open{% else %}is-closed{% endif %}"></span>
+  {% if is_open_for_bookings %}
+    Bookings open
+  {% else %}
+    Bookings paused
+  {% endif %}
+  · {{ today_date|date:"l, F j" }}
 {% endblock %}
 
-{% block page_title %}Good morning, {{ user.username }}.{% endblock %}
+{% block page_title %}{{ greeting }}, {{ user.username }}.{% endblock %}
 
 {% block page_sub %}
-  <p class="sp-page-sub max-w-[520px]">
-    {% if today_reservations %}
-      {{ today_reservations|length }} appointment{{ today_reservations|length|pluralize }} today.
-      {% if pending_count %}
-        {{ pending_count }} still waiting to confirm.
-      {% else %}
-        All confirmed and ready.
-      {% endif %}
-    {% else %}
-      Your schedule is clear today. Share your booking link to fill it.
-    {% endif %}
-  </p>
+  {% if today_count %}
+    You have {{ today_count }} appointment{{ today_count|pluralize }} scheduled today.
+  {% else %}
+    Your schedule is clear today. Share your booking link to fill it.
+  {% endif %}
 {% endblock %}
 
 {% block topbar_actions %}
-  <a href="{% url 'my_profile' %}" class="btn-ghost">
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-      <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5l-1 1M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1"
-            stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-    </svg>
+  <a href="{% url 'my_profile' %}" class="sp-action-btn">
+    <span data-lucide="link-2"></span>
     Share profile
   </a>
-  <a href="{% url 'instagram' %}" class="btn-ghost">
-    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
-      <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-    </svg>
+  <a href="{% url 'portfolio' %}" class="sp-action-btn">
+    <span data-lucide="plus"></span>
     Upload work
   </a>
 {% endblock %}
 
 {% block content %}
-
-{# ── Email verification banner ─────────────────────── #}
-{% if request.user.is_authenticated and not request.user.profile.email_verified %}
-  <div class="flash flash-warning mb-4">
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink: 0;">
-      <rect x="1.5" y="3" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
-      <path d="M2 4.5l6 4.5 6-4.5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
-    </svg>
-    <div class="flex-1">
-      <span class="font-semibold">Verify your email.</span>
-      <span class="opacity-80">We sent a link to {{ request.user.email }}. Check your inbox.</span>
-    </div>
-    <a href="{% url 'resend_verification' %}"
-       class="underline font-semibold hover:opacity-70 transition-opacity whitespace-nowrap ml-2">
-      Resend
-    </a>
-  </div>
-{% endif %}
-
-
-{# ── Stats row ─────────────────────────────────────── #}
 <style>
-  .stat {
-    background: #FFFFFF;
-    border: 1px solid rgba(15,14,13,0.06);
-    border-radius: 14px;
-    padding: 18px 20px;
-    transition: all 0.15s;
+  .dash-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    display: inline-block;
+    background: #3A3AFF;
   }
-  .stat:hover { border-color: rgba(15,14,13,0.14); transform: translateY(-1px); }
-  .stat-label { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(15,14,13,0.55); margin-bottom: 10px; letter-spacing: -0.005em; }
-  .stat-dot { width: 6px; height: 6px; border-radius: 50%; background: #3A3AFF; flex-shrink: 0; }
-  .stat-value { font-family: 'Anton', sans-serif; font-size: 32px; line-height: 1; letter-spacing: -0.02em; color: #0F0E0D; margin-bottom: 4px; }
-  .stat-value .fade { color: rgba(15,14,13,0.3); font-size: 22px; }
-  .stat-hint { font-size: 12px; color: rgba(15,14,13,0.45); letter-spacing: -0.005em; }
-  .stat-hint-good { color: #059669; }
-  .stat-hint-warn { color: #B45309; }
 
-  .panel {
+  .dash-status-dot.is-closed {
+    background: #D97706;
+  }
+
+  .dash-grid {
+    display: grid;
+    gap: 26px;
+  }
+
+  .dash-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 18px;
+    border: 1px solid #A7D8BE;
+    background: #E8F5ED;
+    color: #006B4A;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .dash-alert span {
+    width: 18px;
+    height: 18px;
+  }
+
+  .dash-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .dash-card {
     background: #FFFFFF;
-    border: 1px solid rgba(15,14,13,0.06);
-    border-radius: 14px;
+    border: 1px solid #ECE6D8;
+    border-radius: 10px;
     overflow: hidden;
   }
-  .panel-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 20px 14px;
-    border-bottom: 1px solid rgba(15,14,13,0.06);
-  }
-  .panel-title { font-size: 14px; font-weight: 600; color: #0F0E0D; letter-spacing: -0.01em; }
-  .panel-link { font-size: 12px; color: rgba(15,14,13,0.55); text-decoration: none; letter-spacing: -0.005em; transition: color 0.15s; }
-  .panel-link:hover { color: #3A3AFF; }
-  .panel-body { padding: 8px; }
 
-  .row {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px; border-radius: 10px;
-    transition: background 0.15s;
-    text-decoration: none; color: inherit;
+  .dash-stat {
+    min-height: 148px;
+    padding: 24px;
   }
-  .row:hover { background: rgba(15,14,13,0.03); }
-  .row-time {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: rgba(15,14,13,0.55);
-    letter-spacing: 0.03em; min-width: 52px;
+
+  .dash-stat-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #77736A;
+    font-size: 14px;
+    line-height: 1.3;
   }
-  .row-avatar {
-    width: 34px; height: 34px; border-radius: 10px;
-    background: rgba(15,14,13,0.06);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 600; color: #0F0E0D;
-    flex-shrink: 0; letter-spacing: 0.02em;
+
+  .dash-stat-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: #3A3AFF;
   }
-  .row-main { flex: 1; min-width: 0; }
-  .row-name { font-size: 13.5px; font-weight: 500; color: #0F0E0D; letter-spacing: -0.005em; margin-bottom: 2px; }
-  .row-svc { font-size: 12px; color: rgba(15,14,13,0.5); letter-spacing: -0.005em; }
-  .row-status {
-    font-size: 11px; padding: 4px 8px; border-radius: 6px;
-    letter-spacing: -0.005em; font-weight: 500;
+
+  .dash-stat-number {
+    margin-top: 12px;
+    color: #0F0E0D;
+    font-family: var(--font-display);
+    font-size: 46px;
+    line-height: 0.9;
+    letter-spacing: 0;
+  }
+
+  .dash-stat-number small {
+    color: #B5B0A6;
+    font-size: 30px;
+  }
+
+  .dash-stat-sub {
+    margin-top: 9px;
+    color: #77736A;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .dash-stat-sub.good {
+    color: #006B4A;
+  }
+
+  .dash-stat-sub.warn {
+    color: #B45309;
+  }
+
+  .dash-main {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+    gap: 16px;
+  }
+
+  .dash-section-head {
+    padding: 22px 24px;
+    border-bottom: 1px solid #ECE6D8;
+  }
+
+  .dash-section-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0;
+  }
+
+  .dash-section-sub {
+    margin: 5px 0 0;
+    color: #77736A;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .dash-schedule-list {
+    display: grid;
+  }
+
+  .dash-booking-row {
+    display: grid;
+    grid-template-columns: 86px minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: center;
+    padding: 18px 24px;
+    border-bottom: 1px solid #F0ECE3;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dash-booking-row:last-child {
+    border-bottom: 0;
+  }
+
+  .dash-booking-row:hover {
+    background: #FAF8F3;
+  }
+
+  .dash-time {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 800;
     white-space: nowrap;
   }
-  .row-status.confirmed { background: rgba(5,150,105,0.1); color: #059669; }
-  .row-status.pending   { background: rgba(245,158,11,0.12); color: #B45309; }
-  .row-status.completed { background: rgba(15,14,13,0.05); color: rgba(15,14,13,0.55); }
-  .row-status.cancelled { background: rgba(220,38,38,0.08); color: #991B1B; }
 
-  .quick-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px; border-radius: 10px;
-    text-decoration: none; color: #0F0E0D;
-    transition: all 0.15s;
+  .dash-client {
+    color: #0F0E0D;
+    font-size: 15px;
+    font-weight: 800;
   }
-  .quick-item:hover { background: rgba(15,14,13,0.03); }
-  .quick-icon {
-    width: 34px; height: 34px; border-radius: 10px;
-    background: rgba(58,58,255,0.08); color: #3A3AFF;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .quick-body { flex: 1; min-width: 0; }
-  .quick-title { font-size: 13.5px; font-weight: 500; letter-spacing: -0.005em; }
-  .quick-desc { font-size: 12px; color: rgba(15,14,13,0.5); letter-spacing: -0.005em; margin-top: 1px; }
-  .quick-arrow { color: rgba(15,14,13,0.3); font-size: 18px; line-height: 1; }
 
-  .empty {
-    padding: 40px 24px; text-align: center;
+  .dash-service {
+    margin-top: 3px;
+    color: #77736A;
+    font-size: 13px;
   }
-  .empty-icon {
-    width: 44px; height: 44px; border-radius: 12px;
-    background: rgba(15,14,13,0.04); color: rgba(15,14,13,0.4);
-    display: inline-flex; align-items: center; justify-content: center;
-    margin-bottom: 14px;
-  }
-  .empty-title { font-size: 14px; font-weight: 600; color: #0F0E0D; margin-bottom: 4px; letter-spacing: -0.005em; }
-  .empty-desc { font-size: 13px; color: rgba(15,14,13,0.55); margin-bottom: 16px; letter-spacing: -0.005em; }
 
-  .work-tile {
-    background: #FFFFFF;
-    border: 1px solid rgba(15,14,13,0.06);
-    border-radius: 12px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: all 0.2s;
+  .dash-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #F1F0FF;
+    color: #3A3AFF;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .dash-pill.confirmed {
+    background: #E8F5ED;
+    color: #006B4A;
+  }
+
+  .dash-pill.pending_otp {
+    background: #FFF4D6;
+    color: #A16207;
+  }
+
+  .dash-pill.completed {
+    background: #F0F0F0;
+    color: #4B4B47;
+  }
+
+  .dash-empty {
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    padding: 70px 24px;
+  }
+
+  .dash-empty-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    background: #F1F0FF;
+    color: #3A3AFF;
+    display: grid;
+    place-items: center;
+    margin-bottom: 16px;
+  }
+
+  .dash-empty-icon span {
+    width: 25px;
+    height: 25px;
+  }
+
+  .dash-empty-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  .dash-empty-copy {
+    margin: 8px 0 18px;
+    color: #77736A;
+    font-size: 14px;
+  }
+
+  .dash-primary-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 10px;
+    background: #3A3AFF;
+    color: #FFFFFF;
     text-decoration: none;
-    color: inherit;
-    display: block;
+    font-size: 14px;
+    font-weight: 800;
   }
-  .work-tile:hover { border-color: rgba(15,14,13,0.14); transform: translateY(-2px); }
-  .work-img { aspect-ratio: 1; overflow: hidden; background: rgba(15,14,13,0.04); }
-  .work-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1); }
-  .work-tile:hover .work-img img { transform: scale(1.04); }
-  .work-body { padding: 12px 14px; }
-  .work-svc { font-size: 13px; font-weight: 500; color: #0F0E0D; letter-spacing: -0.005em; }
-  .work-date { font-size: 11px; color: rgba(15,14,13,0.5); margin-top: 2px; letter-spacing: -0.005em; }
 
-  .section-mono {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; color: rgba(15,14,13,0.4);
-    text-transform: uppercase; letter-spacing: 0.12em;
-    margin-bottom: 12px;
+  .dash-primary-btn span {
+    width: 17px;
+    height: 17px;
+  }
+
+  .dash-actions-list {
+    display: grid;
+    padding: 14px;
+  }
+
+  .dash-action-row {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 18px;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 10px;
+    border-radius: 10px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .dash-action-row:hover {
+    background: #FAF8F3;
+  }
+
+  .dash-action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    background: #F1F0FF;
+    color: #3A3AFF;
+  }
+
+  .dash-action-icon span {
+    width: 21px;
+    height: 21px;
+  }
+
+  .dash-action-title {
+    color: #0F0E0D;
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  .dash-action-sub {
+    margin-top: 3px;
+    color: #77736A;
+    font-size: 13px;
+  }
+
+  .dash-action-arrow {
+    color: #B5B0A6;
+  }
+
+  .dash-analytics {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(320px, 1fr);
+    gap: 16px;
+  }
+
+  .dash-chart {
+    padding: 22px 24px 24px;
+  }
+
+  .bar-chart {
+    height: 230px;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 14px;
+    align-items: end;
+    padding-top: 18px;
+  }
+
+  .bar-item {
+    display: grid;
+    gap: 9px;
+    align-items: end;
+    min-width: 0;
+  }
+
+  .bar-track {
+    height: 168px;
+    border-radius: 10px;
+    background: #F5F1E8;
+    display: flex;
+    align-items: end;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    width: 100%;
+    min-height: 5px;
+    border-radius: 10px 10px 0 0;
+    background: #3A3AFF;
+  }
+
+  .bar-label {
+    color: #77736A;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .bar-count {
+    color: #0F0E0D;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  .dash-metrics {
+    display: grid;
+  }
+
+  .metric-row {
+    padding: 16px 24px;
+    border-bottom: 1px solid #F0ECE3;
+  }
+
+  .metric-row:last-child {
+    border-bottom: 0;
+  }
+
+  .metric-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .metric-count {
+    color: #77736A;
+  }
+
+  .metric-track {
+    height: 8px;
+    margin-top: 10px;
+    border-radius: 999px;
+    background: #F5F1E8;
+    overflow: hidden;
+  }
+
+  .metric-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: #3A3AFF;
+  }
+
+  .dash-recent-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .dash-work-card {
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #ECE6D8;
+    background: #FFFFFF;
+  }
+
+  .dash-work-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: block;
+    object-fit: cover;
+    background: #F5F1E8;
+  }
+
+  .dash-work-body {
+    padding: 11px;
+  }
+
+  .dash-work-title {
+    color: #0F0E0D;
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dash-work-sub {
+    margin-top: 3px;
+    color: #77736A;
+    font-size: 12px;
+  }
+
+  @media (max-width: 1100px) {
+    .dash-stats {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dash-main,
+    .dash-analytics {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .dash-grid {
+      gap: 18px;
+    }
+
+    .dash-stats {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .dash-stat {
+      min-height: 122px;
+      padding: 18px;
+    }
+
+    .dash-stat-number {
+      font-size: 40px;
+    }
+
+    .dash-booking-row {
+      grid-template-columns: 1fr;
+      gap: 9px;
+      padding: 16px;
+    }
+
+    .dash-pill {
+      justify-self: start;
+    }
+
+    .bar-chart {
+      gap: 8px;
+    }
+
+    .dash-chart {
+      padding: 18px;
+    }
+
+    .dash-recent-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      padding: 14px;
+    }
   }
 </style>
 
+<div class="dash-grid">
+  {% if messages %}
+    {% for message in messages %}
+      <div class="dash-alert">
+        <span data-lucide="check"></span>
+        {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
 
-{# ── Stats ────────────────────────────────────────── #}
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+  <section class="dash-stats">
+    <article class="dash-card dash-stat">
+      <div class="dash-stat-label">
+        <span class="dash-stat-dot"></span>
+        Today
+      </div>
+      <div class="dash-stat-number">{{ today_count }}</div>
+      <div class="dash-stat-sub">appointments booked</div>
+    </article>
 
-  <div class="stat">
-    <div class="stat-label">
-      <span class="stat-dot"></span>
-      Today
-    </div>
-    <div class="stat-value">{{ today_reservations|length|default:0 }}</div>
-    <div class="stat-hint">appointment{{ today_reservations|length|pluralize }} booked</div>
-  </div>
+    <article class="dash-card dash-stat">
+      <div class="dash-stat-label">This month</div>
+      <div class="dash-stat-number">{{ month_count }}</div>
+      <div class="dash-stat-sub">total bookings</div>
+    </article>
 
-  <div class="stat">
-    <div class="stat-label">This month</div>
-    <div class="stat-value">{{ month_count|default:0 }}</div>
-    <div class="stat-hint">total bookings</div>
-  </div>
+    <article class="dash-card dash-stat">
+      <div class="dash-stat-label">Completed</div>
+      <div class="dash-stat-number">{{ completed_count }}</div>
+      <div class="dash-stat-sub">jobs done</div>
+    </article>
 
-  <div class="stat">
-    <div class="stat-label">Completed</div>
-    <div class="stat-value">{{ completed_count|default:0 }}</div>
-    <div class="stat-hint">jobs done</div>
-  </div>
+    <article class="dash-card dash-stat">
+      <div class="dash-stat-label">Return clients</div>
+      <div class="dash-stat-number">{{ return_rate }}<small>%</small></div>
+      <div class="dash-stat-sub {% if return_rate %}good{% else %}warn{% endif %}">
+        {{ return_clients }} of {{ total_clients }} clients
+      </div>
+    </article>
+  </section>
 
-  <div class="stat">
-    <div class="stat-label">Return clients</div>
-    <div class="stat-value">
-      {{ return_rate|default:0 }}<span class="fade">%</span>
-    </div>
-    <div class="stat-hint {% if return_rate >= 50 %}stat-hint-good{% else %}stat-hint-warn{% endif %}">
-      {% if return_rate >= 50 %}strong retention{% else %}room to grow{% endif %}
-    </div>
-  </div>
+  <section class="dash-analytics">
+    <article class="dash-card">
+      <div class="dash-section-head">
+        <h2 class="dash-section-title">Bookings this week</h2>
+        <p class="dash-section-sub">Calculated from confirmed and active bookings by appointment date.</p>
+      </div>
 
-</div>
+      <div class="dash-chart">
+        <div class="bar-chart">
+          {% for day in chart_days %}
+            <div class="bar-item" title="{{ day.date }}: {{ day.count }}">
+              <div class="bar-track">
+                <div class="bar-fill" style="height: {{ day.percent }}%;"></div>
+              </div>
+              <div class="bar-count">{{ day.count }}</div>
+              <div class="bar-label">{{ day.label }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </article>
 
+    <article class="dash-card">
+      <div class="dash-section-head">
+        <h2 class="dash-section-title">Booking sources</h2>
+        <p class="dash-section-sub">This month, grouped by where the client started.</p>
+      </div>
 
-{# ── Schedule + Quick actions split ────────────────── #}
-<div class="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-3 mb-8">
-
-  {# Left: Today's schedule #}
-  <div class="panel">
-    <div class="panel-head">
-      <div class="panel-title">Today's schedule</div>
-      {% if today_reservations %}
-        <a href="{% url 'reservations' %}" class="panel-link">View all →</a>
-      {% endif %}
-    </div>
-    <div class="panel-body">
-      {% if today_reservations %}
-        {% for res in today_reservations %}
-          {# Assume a reservation has: client_name, service, time, status, notes #}
-          <a href="{% url 'reservations' %}" class="row">
-            <div class="row-time">{{ res.time }}</div>
-            <div class="row-avatar">{{ res.client_name|slice:":2"|upper }}</div>
-            <div class="row-main">
-              <div class="row-name">{{ res.client_name }}</div>
-              <div class="row-svc truncate">
-                {{ res.service }}{% if res.notes %} · {{ res.notes|truncatechars:40 }}{% endif %}
+      <div class="dash-metrics">
+        {% if source_rows %}
+          {% for row in source_rows %}
+            <div class="metric-row">
+              <div class="metric-top">
+                <span>{{ row.label }}</span>
+                <span class="metric-count">{{ row.count }}</span>
+              </div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: {{ row.percent }}%;"></div>
               </div>
             </div>
-            {% if res.status == 'completed' %}
-              <span class="row-status completed">Done</span>
-            {% elif res.status == 'cancelled' %}
-              <span class="row-status cancelled">Cancelled</span>
-            {% elif res.status == 'pending' or res.status == 'pending_otp' %}
-              <span class="row-status pending">Pending</span>
-            {% else %}
-              <span class="row-status confirmed">Confirmed</span>
-            {% endif %}
-          </a>
-        {% endfor %}
-      {% else %}
-        <div class="empty">
-          <div class="empty-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/>
-              <path d="M7 3v4M17 3v4M3 10h18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+          {% endfor %}
+        {% else %}
+          <div class="dash-empty">
+            <div class="dash-empty-icon"><span data-lucide="bar-chart-3"></span></div>
+            <h3 class="dash-empty-title">No source data yet</h3>
+            <p class="dash-empty-copy">New bookings will appear here.</p>
           </div>
-          <div class="empty-title">Nothing scheduled today</div>
-          <div class="empty-desc">Share your booking link to fill your day.</div>
-          <a href="/book/{{ user.username }}/" target="_blank" class="btn-cobalt" style="font-size: 12px; padding: 8px 14px;">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-              <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5l-1 1M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-            </svg>
+        {% endif %}
+      </div>
+    </article>
+  </section>
+
+  <section class="dash-main">
+    <article class="dash-card">
+      <div class="dash-section-head">
+        <h2 class="dash-section-title">Today's schedule</h2>
+        <p class="dash-section-sub">
+          {{ today_count }} appointment{{ today_count|pluralize }} for {{ today_date|date:"M j" }}.
+        </p>
+      </div>
+
+      {% if today_bookings %}
+        <div class="dash-schedule-list">
+          {% for booking in today_bookings %}
+            <a href="{% url 'booking_detail' booking.reference_code %}" class="dash-booking-row">
+              <div class="dash-time">{{ booking.start_time|date:"g:i A" }}</div>
+              <div>
+                <div class="dash-client">{{ booking.client_name }}</div>
+                <div class="dash-service">
+                  {% if booking.service %}
+                    {{ booking.service.name }} · {{ booking.service.duration_minutes }} min
+                  {% else %}
+                    Service not set
+                  {% endif %}
+                </div>
+              </div>
+              <div class="dash-pill {{ booking.status }}">{{ booking.get_status_display }}</div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="dash-empty">
+          <div class="dash-empty-icon">
+            <span data-lucide="calendar"></span>
+          </div>
+          <h3 class="dash-empty-title">Nothing scheduled today</h3>
+          <p class="dash-empty-copy">Share your booking link to fill your day.</p>
+          <a href="{{ booking_url }}" class="dash-primary-btn">
+            <span data-lucide="copy"></span>
             Copy booking link
           </a>
         </div>
       {% endif %}
-    </div>
-  </div>
+    </article>
 
-  {# Right: Quick actions #}
-  <div class="panel">
-    <div class="panel-head">
-      <div class="panel-title">Quick actions</div>
-    </div>
-    <div class="panel-body">
+    <aside class="dash-card">
+      <div class="dash-section-head">
+        <h2 class="dash-section-title">Quick actions</h2>
+      </div>
 
-      <a href="{% url 'qr_code_page' %}" class="quick-item">
-        <div class="quick-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="1.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
-            <rect x="9.5" y="1.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
-            <rect x="1.5" y="9.5" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>
-            <rect x="10" y="10" width="1.5" height="1.5" fill="currentColor"/>
-            <rect x="13" y="13" width="1.5" height="1.5" fill="currentColor"/>
-          </svg>
-        </div>
-        <div class="quick-body">
-          <div class="quick-title">Get your QR code</div>
-          <div class="quick-desc">Print for your station or business card</div>
-        </div>
-        <div class="quick-arrow">›</div>
-      </a>
-
-      <a href="{% url 'instagram' %}" class="quick-item">
-        <div class="quick-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="2" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/>
-            <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/>
-            <circle cx="11.5" cy="4.5" r="0.7" fill="currentColor"/>
-          </svg>
-        </div>
-        <div class="quick-body">
-          <div class="quick-title">Create Instagram post</div>
-          <div class="quick-desc">
-            {% if templates_used_this_month %}
-              {{ templates_used_this_month }} of 5 free this month
-            {% else %}
-              5 free templates this month
-            {% endif %}
-          </div>
-        </div>
-        <div class="quick-arrow">›</div>
-      </a>
-
-      <a href="{% url 'profile_edit' %}?tab=services" class="quick-item">
-        <div class="quick-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="quick-body">
-          <div class="quick-title">Add a service</div>
-          <div class="quick-desc">
-            {% if services_count %}
-              {{ services_count }} active service{{ services_count|pluralize }}
-            {% else %}
-              Set your first service
-            {% endif %}
-          </div>
-        </div>
-        <div class="quick-arrow">›</div>
-      </a>
-
-      <a href="{% url 'my_profile' %}" class="quick-item">
-        <div class="quick-icon">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.4"/>
-            <path d="M2.5 14c0-3 2.5-4.5 5.5-4.5S13.5 11 13.5 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="quick-body">
-          <div class="quick-title">View public profile</div>
-          <div class="quick-desc">See what clients see</div>
-        </div>
-        <div class="quick-arrow">›</div>
-      </a>
-
-    </div>
-  </div>
-
-</div>
-
-
-{# ── Recent work ──────────────────────────────────── #}
-<div>
-  <div class="flex items-center justify-between mb-4">
-    <div>
-      <div class="section-mono">[ PORTFOLIO / LATEST ]</div>
-      <h2 style="font-family: 'Anton', sans-serif; font-size: 28px; line-height: 1; letter-spacing: -0.02em; color: #0F0E0D;">
-        Recent work
-      </h2>
-    </div>
-    {% if recent_portfolio %}
-      <a href="{% url 'portfolio' %}" class="btn-ghost" style="font-size: 12px; padding: 7px 12px;">
-        View all →
-      </a>
-    {% endif %}
-  </div>
-
-  {% if recent_portfolio %}
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-      {% for item in recent_portfolio %}
-        <a href="{% url 'portfolio' %}" class="work-tile">
-          <div class="work-img">
-            {% if item.generated_image %}
-              {% if 'http' in item.generated_image %}
-                <img src="{{ item.generated_image }}" alt="{{ item.service }}">
-              {% else %}
-                <img src="/media/generated/{{ item.generated_image }}" alt="{{ item.service }}">
-              {% endif %}
-            {% else %}
-              <img src="/media/uploads/{{ item.image }}" alt="{{ item.service }}">
-            {% endif %}
-          </div>
-          <div class="work-body">
-            <div class="work-svc truncate">{{ item.service }}</div>
-            <div class="work-date">{{ item.date }}</div>
-          </div>
+      <div class="dash-actions-list">
+        <a href="{% url 'qr_code_page' %}" class="dash-action-row">
+          <span class="dash-action-icon"><span data-lucide="qr-code"></span></span>
+          <span>
+            <span class="dash-action-title">Get your QR code</span>
+            <span class="dash-action-sub">Print for your station or business card</span>
+          </span>
+          <span class="dash-action-arrow">›</span>
         </a>
-      {% endfor %}
-    </div>
 
-  {% else %}
-    <div class="panel">
-      <div class="empty" style="padding: 56px 24px;">
-        <div class="empty-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/>
-            <circle cx="12" cy="11" r="3" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M3 17l4-4 3 3 4-5 4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="empty-title">No portfolio pieces yet</div>
-        <div class="empty-desc">Upload a photo from a finished job to start building your gallery.</div>
-        <a href="{% url 'instagram' %}" class="btn-cobalt" style="font-size: 12px; padding: 8px 14px;">
-          Upload first work
+        <a href="{% url 'instagram' %}" class="dash-action-row">
+          <span class="dash-action-icon"><span data-lucide="instagram"></span></span>
+          <span>
+            <span class="dash-action-title">Create Instagram post</span>
+            <span class="dash-action-sub">{{ portfolio_count }} portfolio post{{ portfolio_count|pluralize }} saved</span>
+          </span>
+          <span class="dash-action-arrow">›</span>
+        </a>
+
+        <a href="{% url 'edit_profile' %}?tab=services" class="dash-action-row">
+          <span class="dash-action-icon"><span data-lucide="plus"></span></span>
+          <span>
+            <span class="dash-action-title">Add a service</span>
+            <span class="dash-action-sub">
+              {% if services_count %}
+                {{ services_count }} active service{{ services_count|pluralize }}
+              {% else %}
+                Set your first service
+              {% endif %}
+            </span>
+          </span>
+          <span class="dash-action-arrow">›</span>
         </a>
       </div>
-    </div>
-  {% endif %}
-</div>
+    </aside>
+  </section>
 
+  <section class="dash-analytics">
+    <article class="dash-card">
+      <div class="dash-section-head">
+        <h2 class="dash-section-title">Booking status</h2>
+        <p class="dash-section-sub">All-time booking status breakdown.</p>
+      </div>
+
+      <div class="dash-metrics">
+        {% if status_rows %}
+          {% for row in status_rows %}
+            <div class="metric-row">
+              <div class="metric-top">
+                <span>{{ row.label }}</span>
+                <span class="metric-count">{{ row.count }}</span>
+              </div>
+              <div class="metric-track">
+                <div class="metric-fill" style="width: {{ row.percent }}%;"></div>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="dash-empty">
+            <div class="dash-empty-icon"><span data-lucide="activity"></span></div>
+            <h3 class="dash-empty-title">No bookings yet</h3>
+            <p class="dash-empty-copy">Status data appears after clients book.</p>
+          </div>
+        {% endif %}
+      </div>
+    </article>
+
+    <article class="dash-card">
+      <div class="dash-section-head">
+        <h2 class="dash-section-title">Revenue snapshot</h2>
+        <p class="dash-section-sub">Estimated from completed bookings and current service prices.</p>
+      </div>
+
+      <div class="dash-stats" style="grid-template-columns: 1fr 1fr; padding: 18px;">
+        <article class="dash-stat" style="min-height: 120px; padding: 0;">
+          <div class="dash-stat-label">This month</div>
+          <div class="dash-stat-number" style="font-size: 38px;">${{ revenue_month|floatformat:0 }}</div>
+          <div class="dash-stat-sub">completed revenue</div>
+        </article>
+
+        <article class="dash-stat" style="min-height: 120px; padding: 0;">
+          <div class="dash-stat-label">Average</div>
+          <div class="dash-stat-number" style="font-size: 38px;">${{ avg_booking_value|floatformat:0 }}</div>
+          <div class="dash-stat-sub">per completed job</div>
+        </article>
+      </div>
+    </article>
+  </section>
+
+  <section class="dash-card">
+    <div class="dash-section-head">
+      <h2 class="dash-section-title">Recent work</h2>
+      <p class="dash-section-sub">Latest portfolio items saved in Showpiece.</p>
+    </div>
+
+    {% if recent_portfolio %}
+      <div class="dash-recent-grid">
+        {% for item in recent_portfolio %}
+          <article class="dash-work-card">
+            {% if item.generated_image %}
+              <img src="/media/generated/{{ item.generated_image }}" alt="{{ item.service }}" class="dash-work-img">
+            {% elif item.image %}
+              <img src="/media/uploads/{{ item.image }}" alt="{{ item.service }}" class="dash-work-img">
+            {% else %}
+              <div class="dash-work-img"></div>
+            {% endif %}
+            <div class="dash-work-body">
+              <div class="dash-work-title">{{ item.service }}</div>
+              <div class="dash-work-sub">{{ item.client_name|default:"Portfolio item" }}</div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="dash-empty">
+        <div class="dash-empty-icon">
+          <span data-lucide="image"></span>
+        </div>
+        <h3 class="dash-empty-title">No portfolio work yet</h3>
+        <p class="dash-empty-copy">Upload finished work to build your profile.</p>
+        <a href="{% url 'portfolio' %}" class="dash-primary-btn">
+          <span data-lucide="plus"></span>
+          Upload work
+        </a>
+      </div>
+    {% endif %}
+  </section>
+</div>
 {% endblock %}
