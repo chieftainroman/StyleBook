@@ -20,26 +20,32 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
 
+    next_page = request.GET.get('next') or request.POST.get('next') or ''
+
     if request.method == 'POST':
-        username = request.POST.get('username', '').strip()
+        login_value = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
+
+        user_obj = User.objects.filter(email__iexact=login_value).first()
+        username = user_obj.username if user_obj else login_value
+
         user = authenticate(request, username=username, password=password)
 
         if not user:
-            messages.error(request, 'Invalid username or password.')
+            messages.error(request, 'Invalid email or password.')
             return redirect('login')
 
         login(request, user)
 
-        # Check if profile is complete
         profile, _ = MasterProfile.objects.get_or_create(user=user)
         if not profile.specialty:
             return redirect('onboarding_start')
 
-        next_page = request.GET.get('next')
         return redirect(next_page or 'dashboard')
 
-    return render(request, 'login.html')
+    return render(request, 'login.html', {
+        'next': next_page,
+    })
 
 
 def register_view(request):

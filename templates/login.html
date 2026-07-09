@@ -430,7 +430,7 @@
       {# ═══════════════════════════════════════════════ #}
       {# Login form                                      #}
       {# ═══════════════════════════════════════════════ #}
-      <form method="post" action="{% url 'account_login' %}" novalidate id="loginForm">
+      <form method="post" action="{% url 'login' %}" novalidate id="loginForm">
         {% csrf_token %}
 
         {# Email / login field #}
@@ -438,16 +438,14 @@
           <label class="lg-label" for="id_login">Email address</label>
           <input type="text"
                  id="id_login"
-                 name="login"
+                 name="username"
                  class="lg-input"
                  placeholder="you@example.com"
                  value="{{ form.login.value|default_if_none:'' }}"
                  required
                  autofocus
                  autocomplete="email">
-          {% if form.login.errors %}
-            <p class="lg-field-error">{{ form.login.errors|join:" · " }}</p>
-          {% endif %}
+
         </div>
 
         {# Password field #}
@@ -480,8 +478,8 @@
         </div>
 
         {# Preserve next redirect if allauth sent one #}
-        {% if redirect_field_value %}
-          <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% if next %}
+          <input type="hidden" name="next" value="{{ next }}">
         {% endif %}
 
         <button type="submit" class="lg-submit" id="submitBtn">
