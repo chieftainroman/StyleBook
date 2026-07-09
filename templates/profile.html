@@ -621,7 +621,41 @@
     background: #FFFFFF;
     overflow: hidden;
   }
+    .credential-view {
+    width: 100%;
+    border: 0;
+    padding: 0;
+    cursor: zoom-in;
+    text-decoration: none;
+  }
 
+  .credential-view::after {
+    content: "View full size";
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    background: rgba(15, 14, 13, 0.82);
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: 0.15s ease;
+  }
+
+  .credential-media {
+    position: relative;
+  }
+
+  .credential-card:hover .credential-view::after {
+    opacity: 1;
+    transform: translateY(0);
+  }
   .credential-media {
     height: 140px;
     background: #F5F1E8;
@@ -1073,7 +1107,7 @@
           </section>
         {% endif %}
 
-        {% if certificates %}
+          {% if certificates %}
           <section class="profile-section">
             <div class="profile-section-head">
               <h2 class="profile-section-title">Certificates</h2>
@@ -1082,15 +1116,22 @@
             <div class="credential-grid">
               {% for cert in certificates %}
                 <article class="credential-card">
-                  <div class="credential-media">
-                    {% if cert.file_url and cert.file_kind == 'image' %}
+                  {% if cert.file_url and cert.file_kind == 'image' %}
+                    <button type="button"
+                            class="credential-media credential-view"
+                            data-full-src="{{ cert.file_url }}"
+                            data-title="{{ cert.name }}">
                       <img src="{{ cert.file_url }}" alt="{{ cert.name }}">
-                    {% elif cert.file_url and cert.file_kind == 'pdf' %}
+                    </button>
+                  {% elif cert.file_url and cert.file_kind == 'pdf' %}
+                    <a href="{{ cert.file_url }}" target="_blank" rel="noopener" class="credential-media credential-view">
                       <span data-lucide="file-text"></span>
-                    {% else %}
+                    </a>
+                  {% else %}
+                    <div class="credential-media">
                       <span data-lucide="award"></span>
-                    {% endif %}
-                  </div>
+                    </div>
+                  {% endif %}
 
                   <div class="credential-body">
                     <div class="credential-title">{{ cert.name }}</div>
@@ -1098,7 +1139,7 @@
 
                     {% if cert.file_url %}
                       <a href="{{ cert.file_url }}" target="_blank" rel="noopener" class="credential-link">
-                        View certificate
+                        Open full size
                         <span data-lucide="arrow-up-right"></span>
                       </a>
                     {% endif %}
@@ -1271,7 +1312,7 @@ function copyProfileLink() {
 
   if (!modal || !image || !title || !download || !close) return;
 
-  document.querySelectorAll('.work-media[data-full-src]').forEach(button => {
+    document.querySelectorAll('.work-media[data-full-src], .credential-view[data-full-src]').forEach(button => {
     button.addEventListener('click', () => {
       const src = button.dataset.fullSrc;
       const itemTitle = button.dataset.title || 'Portfolio work';

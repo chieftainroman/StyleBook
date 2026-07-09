@@ -377,6 +377,132 @@
         transition-duration: 0.01ms !important;
       }
     }
+        /* Mobile toolbar fix */
+    @media (max-width: 640px) {
+      .sp-nav {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 10px 12px;
+        padding: 12px;
+      }
+
+      .sp-nav-left {
+        display: contents;
+      }
+
+      .sp-logo {
+        grid-column: 1;
+        grid-row: 1;
+        font-size: 21px;
+      }
+
+      .sp-nav-right {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+        min-width: 0;
+        gap: 5px;
+      }
+
+      .sp-links {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        justify-content: flex-start;
+        padding: 4px;
+        gap: 4px;
+        border-radius: 12px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .sp-links::-webkit-scrollbar {
+        display: none;
+      }
+
+      .sp-link {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 38px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 9px;
+      }
+
+      .sp-link-label {
+        display: none !important;
+      }
+
+      .sp-icon-btn,
+      .sp-primary {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        padding: 0;
+        border-radius: 10px;
+        justify-content: center;
+      }
+
+      .sp-primary-label {
+        display: none !important;
+      }
+
+      .sp-primary-plus {
+        margin: 0;
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      .sp-user {
+        width: 38px;
+        height: 36px;
+        padding: 4px;
+        justify-content: center;
+      }
+
+      .sp-user-name,
+      .sp-user > svg {
+        display: none !important;
+      }
+
+      .sp-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+      }
+
+      .sp-menu {
+        right: 0;
+        min-width: 230px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .sp-nav {
+        padding: 10px;
+        gap: 8px;
+      }
+
+      .sp-logo {
+        font-size: 19px;
+      }
+
+      .sp-icon-btn,
+      .sp-primary,
+      .sp-user {
+        width: 34px;
+        height: 34px;
+        min-width: 34px;
+      }
+
+      .sp-link {
+        width: 38px;
+        height: 36px;
+      }
+    }
   </style>
 
   {% block extra_head %}{% endblock %}
