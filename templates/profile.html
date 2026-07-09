@@ -608,7 +608,86 @@
   #linkBanner {
     z-index: 120;
   }
+    .credential-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px;
+  }
 
+  .credential-card {
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    border-radius: 10px;
+    background: #FFFFFF;
+    overflow: hidden;
+  }
+
+  .credential-media {
+    height: 140px;
+    background: #F5F1E8;
+    display: grid;
+    place-items: center;
+    color: rgba(15, 14, 13, 0.45);
+    overflow: hidden;
+  }
+
+  .credential-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .credential-media span {
+    width: 30px;
+    height: 30px;
+  }
+
+  .credential-body {
+    padding: 14px;
+  }
+
+  .credential-title {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.3;
+  }
+
+  .credential-meta {
+    margin-top: 5px;
+    color: rgba(15, 14, 13, 0.55);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .credential-copy {
+    margin-top: 8px;
+    color: #0F0E0D;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .credential-link {
+    margin-top: 10px;
+    color: #3A3AFF;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  @media (max-width: 640px) {
+    .credential-grid {
+      grid-template-columns: 1fr;
+      padding: 12px;
+    }
+
+    .credential-media {
+      height: 170px;
+    }
+  }
   @media (max-width: 860px) {
     .profile-shell {
       padding: 14px 12px 88px;
@@ -959,6 +1038,77 @@
           </section>
         {% endif %}
       </main>
+      
+
+              {% if honors %}
+          <section class="profile-section">
+            <div class="profile-section-head">
+              <h2 class="profile-section-title">Honors</h2>
+            </div>
+
+            <div class="credential-grid">
+              {% for honor in honors %}
+                <article class="credential-card">
+                  <div class="credential-media">
+                    {% if honor.image_url %}
+                      <img src="{{ honor.image_url }}" alt="{{ honor.title }}">
+                    {% else %}
+                      <span data-lucide="trophy"></span>
+                    {% endif %}
+                  </div>
+
+                  <div class="credential-body">
+                    <div class="credential-title">{{ honor.title }}</div>
+                    <div class="credential-meta">
+                      {% if honor.issuer %}{{ honor.issuer }} &middot; {% endif %}{{ honor.year }}
+                    </div>
+
+                    {% if honor.description %}
+                      <div class="credential-copy">{{ honor.description }}</div>
+                    {% endif %}
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+
+        {% if certificates %}
+          <section class="profile-section">
+            <div class="profile-section-head">
+              <h2 class="profile-section-title">Certificates</h2>
+            </div>
+
+            <div class="credential-grid">
+              {% for cert in certificates %}
+                <article class="credential-card">
+                  <div class="credential-media">
+                    {% if cert.file_url and cert.file_kind == 'image' %}
+                      <img src="{{ cert.file_url }}" alt="{{ cert.name }}">
+                    {% elif cert.file_url and cert.file_kind == 'pdf' %}
+                      <span data-lucide="file-text"></span>
+                    {% else %}
+                      <span data-lucide="award"></span>
+                    {% endif %}
+                  </div>
+
+                  <div class="credential-body">
+                    <div class="credential-title">{{ cert.name }}</div>
+                    <div class="credential-meta">{{ cert.institution }} &middot; {{ cert.year }}</div>
+
+                    {% if cert.file_url %}
+                      <a href="{{ cert.file_url }}" target="_blank" rel="noopener" class="credential-link">
+                        View certificate
+                        <span data-lucide="arrow-up-right"></span>
+                      </a>
+                    {% endif %}
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+
 
       <aside class="info-stack">
         <section class="profile-section">
@@ -1098,7 +1248,11 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
+if (window.lucide) {
+  lucide.createIcons();
+}
 function copyProfileLink() {
   const url = window.location.origin + '/profile/{{ profile_user.username }}/';
   navigator.clipboard.writeText(url).then(() => {
