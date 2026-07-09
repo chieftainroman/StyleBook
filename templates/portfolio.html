@@ -373,7 +373,25 @@
     }
 
     .pf-modal {
-      display: none !important;
+      padding: 12px;
+    }
+
+    .pf-modal.is-open {
+      display: flex !important;
+    }
+
+    .pf-modal-dialog {
+      width: 100%;
+      max-height: 94vh;
+      border-radius: 12px;
+    }
+
+    .pf-modal-body {
+      padding: 10px;
+    }
+
+    .pf-modal-body img {
+      max-height: calc(94vh - 90px);
     }
   }
 </style>
@@ -464,19 +482,43 @@
           {% if item.generated_image %}
             <div class="pf-mobile-actions">
               {% if 'http' in item.generated_image %}
-                <a href="{{ item.generated_image }}" target="_blank" rel="noopener" class="pf-action secondary">View</a>
+                <button type="button"
+                        class="pf-action secondary pf-view-btn"
+                        data-preview-src="{{ item.generated_image }}"
+                        data-preview-title="{{ item.service }}"
+                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
+                  View
+                </button>
                 <a href="{{ item.generated_image }}" download class="pf-action">Download PNG</a>
               {% else %}
-                <a href="/media/generated/{{ item.generated_image }}" target="_blank" rel="noopener" class="pf-action secondary">View</a>
+                <button type="button"
+                        class="pf-action secondary pf-view-btn"
+                        data-preview-src="/media/generated/{{ item.generated_image }}"
+                        data-preview-title="{{ item.service }}"
+                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
+                  View
+                </button>
                 <a href="/media/generated/{{ item.generated_image }}" download class="pf-action">Download PNG</a>
               {% endif %}
             </div>
           {% else %}
             <div class="pf-mobile-actions single">
               {% if 'http' in item.image %}
-                <a href="{{ item.image }}" target="_blank" rel="noopener" class="pf-action secondary">View full size</a>
+                <button type="button"
+                        class="pf-action secondary pf-view-btn"
+                        data-preview-src="{{ item.image }}"
+                        data-preview-title="{{ item.service }}"
+                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
+                  View full size
+                </button>
               {% else %}
-                <a href="/media/uploads/{{ item.image }}" target="_blank" rel="noopener" class="pf-action secondary">View full size</a>
+                <button type="button"
+                        class="pf-action secondary pf-view-btn"
+                        data-preview-src="/media/uploads/{{ item.image }}"
+                        data-preview-title="{{ item.service }}"
+                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
+                  View full size
+                </button>
               {% endif %}
             </div>
           {% endif %}
@@ -532,7 +574,6 @@ function filterPortfolio(category, btn) {
 }
 
 function openPortfolioPreview(src, title, meta) {
-  if (window.matchMedia('(max-width: 640px)').matches) return;
 
   const modal = document.getElementById('portfolioModal');
   const image = document.getElementById('portfolioModalImage');
