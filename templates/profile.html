@@ -2,19 +2,30 @@
 {% load static %}
 {% load dict_filters %}
 
-{% block title %}{{ profile_user.username }} — StyleBook{% endblock %}
-{% block page_title %}{% if is_own_profile %}My profile{% else %}{{ profile_user.username }}{% endif %}{% endblock %}
-{% block page_sub %}{% if is_own_profile %}Public portfolio — shareable link{% else %}{{ profile_user.profile.get_specialty_display|default:'Professional' }}{% endif %}{% endblock %}
+{% block title %}{{ profile_user.username }} - Showpiece{% endblock %}
+
+{% block page_header %}
+  {% if is_own_profile %}
+    {{ block.super }}
+  {% endif %}
+{% endblock %}
+
+{% block page_title %}
+  {% if is_own_profile %}My profile{% else %}{{ profile_user.username }}{% endif %}
+{% endblock %}
+
+{% block page_sub %}
+  {% if is_own_profile %}
+    Public portfolio and booking profile.
+  {% else %}
+    {{ profile_user.profile.get_specialty_display|default:"Professional" }}
+  {% endif %}
+{% endblock %}
 
 {% block topbar_actions %}
   {% if is_own_profile %}
     <button onclick="copyProfileLink()" class="btn-ghost">
-      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-        <path d="M6.5 9.5a3.5 3.5 0 005 0l2-2a3.5 3.5 0 00-5-5l-1 1"
-              stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-        <path d="M9.5 6.5a3.5 3.5 0 00-5 0l-2 2a3.5 3.5 0 005 5l1-1"
-              stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-      </svg>
+      <span data-lucide="link-2"></span>
       Share profile
     </button>
 
@@ -24,545 +35,1066 @@
   {% endif %}
 {% endblock %}
 
-{% block content %}
+{% block extra_head %}
+  {% if not is_own_profile %}
+    <style>
+      .sp-nav {
+        display: none !important;
+      }
 
+      body {
+        background: #F5F1E8;
+      }
+
+      main {
+        max-width: none !important;
+        padding: 0 !important;
+      }
+    </style>
+  {% endif %}
+{% endblock %}
+
+{% block content %}
 <style>
-  .sb-hero {
-    background: #fff;
-    border: 1px solid rgba(15, 14, 13, 0.08);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 24px;
+  .public-profile {
+    min-height: 100vh;
+    background: #F5F1E8;
   }
-  .sb-hero-cover {
-    position: relative;
-    width: 100%;
-    height: 220px;
-    background: linear-gradient(135deg, #f3eee8, #e5e3dc);
-    overflow: hidden;
+
+  .profile-shell {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    padding: 26px 18px 52px;
   }
-  .sb-hero-cover img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-  .sb-hero-body {
-    padding: 0 24px 24px 24px;
-  }
-  .sb-hero-row {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-top: -56px;
-      margin-bottom: 16px;
-      position: relative;
-      z-index: 2;
-    }
-  .sb-hero-avatar {
-    width: 112px;
-    height: 112px;
-    border-radius: 50%;
-    overflow: hidden;
-    background: #C9A96E;
+
+  .public-brand {
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: #fff;
-    font-weight: 600;
-    font-size: 30px;
-    border: 4px solid #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    flex-shrink: 0;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 18px;
   }
-  .sb-hero-avatar img {
+
+  .public-logo {
+    font-family: var(--font-display);
+    color: #0F0E0D;
+    font-size: 26px;
+    line-height: 1;
+    text-decoration: none;
+    letter-spacing: 0;
+  }
+
+  .owner-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .profile-hero {
+    overflow: hidden;
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    border-radius: 12px;
+    background: #FFFFFF;
+  }
+
+  .profile-cover {
+    position: relative;
+    height: clamp(210px, 34vw, 360px);
+    background: #ECE6D8;
+    overflow: hidden;
+  }
+
+  .profile-cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
-  .sb-hero-stats {
+
+  .profile-cover-empty {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(135deg, rgba(58, 58, 255, 0.12), transparent 34%),
+      linear-gradient(145deg, #EEE8DA, #FFFFFF);
+  }
+
+  .profile-body {
+    position: relative;
+    padding: 0 24px 26px;
+  }
+
+  .profile-top {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 22px;
+    align-items: end;
+    margin-top: -58px;
+  }
+
+  .profile-avatar {
+    width: 116px;
+    height: 116px;
+    border-radius: 999px;
+    border: 5px solid #FFFFFF;
+    background: #3A3AFF;
+    color: #FFFFFF;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-size: 30px;
+    font-weight: 800;
+    box-shadow: 0 14px 32px rgba(15, 14, 13, 0.14);
+  }
+
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-stats {
     display: flex;
-    gap: 24px;
+    align-items: center;
+    gap: 18px;
+    justify-content: flex-end;
     padding-bottom: 8px;
   }
-  .sb-hero-stat {
+
+  .profile-stat {
+    min-width: 72px;
     text-align: center;
   }
-  .sb-hero-stat-num {
-    font-size: 20px;
-    font-weight: 600;
+
+  .profile-stat-number {
+    font-family: var(--font-display);
     color: #0F0E0D;
+    font-size: 28px;
+    line-height: 1;
   }
-  .sb-hero-stat-label {
-    font-size: 11px;
-    color: rgba(15, 14, 13, 0.45);
-    margin-top: 2px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-  .sb-hero-name {
-    font-size: 24px;
-    font-weight: 600;
-    color: #0F0E0D;
-    display: inline-block;
-    margin-right: 8px;
-  }
-  .sb-hero-specialty {
-    display: inline-block;
-    padding: 4px 10px;
-    background: rgba(245, 158, 11, 0.15);
-    color: #B45309;
-    font-size: 12px;
-    font-weight: 500;
-    border-radius: 12px;
-    vertical-align: middle;
-  }
-  .sb-hero-location {
-    font-size: 14px;
+
+  .profile-stat-label {
+    margin-top: 5px;
     color: rgba(15, 14, 13, 0.5);
-    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
   }
-  .sb-hero-chips {
+
+  .profile-mainline {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 20px;
+    align-items: start;
+    margin-top: 20px;
+  }
+
+  .profile-name-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .profile-name {
+    font-family: var(--font-display);
+    color: #0F0E0D;
+    font-size: clamp(36px, 6vw, 64px);
+    line-height: 0.92;
+    letter-spacing: 0;
+  }
+
+  .profile-specialty {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #F1F0FF;
+    color: #3A3AFF;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .profile-location {
+    margin-top: 10px;
+    color: rgba(15, 14, 13, 0.58);
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .profile-chips {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 16px;
   }
-  .sb-hero-chip {
+
+  .profile-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: #F5EFE6;
+    gap: 7px;
+    min-height: 34px;
+    padding: 0 12px;
     border: 1px solid rgba(15, 14, 13, 0.08);
     border-radius: 999px;
-    font-size: 12px;
+    background: #F9F7F1;
     color: #0F0E0D;
     text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
   }
-  .sb-hero-chip.gold {
-    background: rgba(245, 158, 11, 0.15);
-    border-color: transparent;
-    color: #B45309;
-    font-weight: 500;
+
+  .profile-chip span {
+    width: 15px;
+    height: 15px;
   }
-  .sb-book-btn {
+
+  .booking-card {
+    width: 260px;
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    border-radius: 12px;
+    background: #0F0E0D;
+    color: #FFFFFF;
+    padding: 18px;
+  }
+
+  .booking-card-title {
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.25;
+  }
+
+  .booking-card-sub {
+    margin-top: 8px;
+    color: rgba(255, 255, 255, 0.68);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .book-button {
+    margin-top: 16px;
+    min-height: 46px;
+    width: 100%;
+    border-radius: 10px;
+    background: #3A3AFF;
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .book-button span {
+    width: 18px;
+    height: 18px;
+  }
+
+  .profile-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.85fr);
+    gap: 18px;
+    margin-top: 18px;
+  }
+
+  .profile-section {
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    border-radius: 12px;
+    background: #FFFFFF;
+    overflow: hidden;
+  }
+
+  .profile-section-head {
+    padding: 20px 22px;
+    border-bottom: 1px solid rgba(15, 14, 13, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .profile-section-title {
+    margin: 0;
+    color: #0F0E0D;
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  .profile-section-link {
+    color: rgba(15, 14, 13, 0.58);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .work-card {
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    background: #FFFFFF;
+  }
+
+  .work-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border: 0;
+    padding: 0;
+    background: #ECE6D8;
+    cursor: zoom-in;
+    display: block;
+    overflow: hidden;
+  }
+
+  .work-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #F5F1E8;
+  }
+
+  .work-media::after {
+    content: "View";
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    background: rgba(15, 14, 13, 0.82);
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 800;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: 0.15s ease;
+  }
+
+  .work-card:hover .work-media::after {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .work-body {
+    padding: 13px;
+  }
+
+  .work-title {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .work-meta {
+    margin-top: 4px;
+    color: rgba(15, 14, 13, 0.55);
+    font-size: 12px;
+  }
+
+  .info-stack {
+    display: grid;
+    gap: 18px;
+  }
+
+  .section-body {
+    padding: 20px 22px;
+  }
+
+  .about-copy {
+    color: #0F0E0D;
+    font-size: 15px;
+    line-height: 1.7;
+    white-space: pre-line;
+  }
+
+  .detail-list {
+    display: grid;
+    gap: 0;
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 13px 0;
+    border-bottom: 1px solid rgba(15, 14, 13, 0.08);
+  }
+
+  .detail-row:last-child {
+    border-bottom: 0;
+  }
+
+  .detail-label {
+    color: rgba(15, 14, 13, 0.5);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .detail-value {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    min-height: 32px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 14, 13, 0.08);
+    background: #F9F7F1;
+    color: #0F0E0D;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .timeline {
+    display: grid;
+    gap: 18px;
+  }
+
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 12px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #3A3AFF;
+    margin-top: 6px;
+  }
+
+  .timeline-title {
+    color: #0F0E0D;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .timeline-meta {
+    margin-top: 3px;
+    color: rgba(15, 14, 13, 0.55);
+    font-size: 13px;
+  }
+
+  .timeline-copy {
+    margin-top: 8px;
+    color: #0F0E0D;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .empty-work {
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 52px 18px;
+  }
+
+  .empty-work-title {
+    color: #0F0E0D;
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  .empty-work-copy {
+    margin-top: 6px;
+    color: rgba(15, 14, 13, 0.55);
+    font-size: 14px;
+  }
+
+  .image-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    background: rgba(15, 14, 13, 0.86);
+    padding: 18px;
+  }
+
+  .image-modal.is-open {
+    display: grid;
+    place-items: center;
+  }
+
+  .image-modal-panel {
+    position: relative;
+    width: min(920px, 100%);
+    max-height: 92vh;
+    display: grid;
+    gap: 12px;
+  }
+
+  .image-modal-img {
+    width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #FFFFFF;
+  }
+
+  .image-modal-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #FFFFFF;
+  }
+
+  .image-modal-title {
+    min-width: 0;
+    font-size: 14px;
+    font-weight: 800;
+  }
+
+  .image-modal-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .modal-btn {
+    min-height: 38px;
+    padding: 0 13px;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 11px 22px;
-    background: #C9A96E;
-    color: #1C1917;
-    border: 1px solid #C9A96E;
-    border-radius: 10px;
-    font-weight: 600;
-    font-size: 14px;
     text-decoration: none;
-    transition: all 0.15s;
-    flex-shrink: 0;
-    box-shadow: 0 1px 3px rgba(201, 169, 110, 0.25);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
   }
-  .sb-book-btn:hover {
-    background: #8B6914;
-    border-color: #8B6914;
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(139, 105, 20, 0.3);
+
+  .mobile-booking-bar {
+    display: none;
   }
-  .sb-book-btn:active {
-    transform: translateY(0);
+
+  #linkBanner {
+    z-index: 120;
+  }
+
+  @media (max-width: 860px) {
+    .profile-shell {
+      padding: 14px 12px 88px;
+    }
+
+    .public-brand {
+      margin-bottom: 12px;
+    }
+
+    .public-logo {
+      font-size: 22px;
+    }
+
+    .profile-cover {
+      height: 185px;
+    }
+
+    .profile-body {
+      padding: 0 18px 20px;
+    }
+
+    .profile-top {
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 12px;
+      align-items: end;
+      margin-top: -48px;
+    }
+
+    .profile-avatar {
+      width: 96px;
+      height: 96px;
+      border-width: 4px;
+      font-size: 24px;
+    }
+
+    .profile-stats {
+      gap: 8px;
+      justify-content: flex-end;
+      padding-bottom: 3px;
+    }
+
+    .profile-stat {
+      min-width: 54px;
+    }
+
+    .profile-stat-number {
+      font-size: 21px;
+    }
+
+    .profile-stat-label {
+      font-size: 8px;
+      letter-spacing: 0.08em;
+    }
+
+    .profile-mainline {
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .booking-card {
+      display: none;
+    }
+
+    .profile-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .work-grid {
+      grid-template-columns: 1fr;
+      padding: 12px;
+      gap: 12px;
+    }
+
+    .work-media {
+      aspect-ratio: 4 / 5;
+    }
+
+    .profile-section-head,
+    .section-body {
+      padding: 17px;
+    }
+
+    .mobile-booking-bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 60;
+      display: block;
+      padding: 12px;
+      background: rgba(245, 241, 232, 0.88);
+      border-top: 1px solid rgba(15, 14, 13, 0.08);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .mobile-booking-bar .book-button {
+      margin: 0;
+    }
   }
 </style>
 
-<!-- HERO -->
-<div class="sb-hero">
-  <div class="sb-hero-cover">
-    {% if profile_user.profile.cover_url %}
-      <img src="{{ profile_user.profile.cover_url }}" alt="Cover">
-    {% endif %}
-  </div>
+<div class="public-profile">
+  <div class="profile-shell">
+    <div class="public-brand">
+      <a href="/" class="public-logo">SHOWPIECE</a>
 
-  <div class="sb-hero-body">
-    <div class="sb-hero-row">
-      <div class="sb-hero-avatar">
-        {% if profile_user.profile.avatar_url %}
-          <img src="{{ profile_user.profile.avatar_url }}" alt="{{ profile_user.username }}">
+      {% if is_own_profile %}
+        <div class="owner-actions">
+          <button onclick="copyProfileLink()" class="btn-ghost">
+            <span data-lucide="link-2"></span>
+            Share
+          </button>
+          <a href="{% url 'profile_edit' %}" class="btn-gold">Edit</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <section class="profile-hero">
+      <div class="profile-cover">
+        {% if profile_user.profile.cover_url %}
+          <img src="{{ profile_user.profile.cover_url }}" alt="{{ profile_user.username }} cover">
         {% else %}
-          {{ profile_user.username|slice:":2"|upper }}
+          <div class="profile-cover-empty"></div>
         {% endif %}
       </div>
 
-      <div class="sb-hero-stats">
-        <div class="sb-hero-stat">
-          <div class="sb-hero-stat-num">{{ portfolio_count }}</div>
-          <div class="sb-hero-stat-label">Works</div>
-        </div>
-        <div class="sb-hero-stat">
-          <div class="sb-hero-stat-num">{{ client_count }}</div>
-          <div class="sb-hero-stat-label">Clients</div>
-        </div>
-        <div class="sb-hero-stat">
-          <div class="sb-hero-stat-num">{{ profile_user.profile.years_exp|default:'—' }}</div>
-          <div class="sb-hero-stat-label">Years</div>
-        </div>
-      </div>
-    </div>
+      <div class="profile-body">
+        <div class="profile-top">
+          <div class="profile-avatar">
+            {% if profile_user.profile.avatar_url %}
+              <img src="{{ profile_user.profile.avatar_url }}" alt="{{ profile_user.username }}">
+            {% else %}
+              {{ profile_user.username|slice:":2"|upper }}
+            {% endif %}
+          </div>
 
-    <div class="flex items-start justify-between gap-4 flex-wrap">
-      <div class="flex-1 min-w-0">
-        <span class="sb-hero-name">{{ profile_user.get_full_name|default:profile_user.username }}</span>
-        {% if profile_user.profile.specialty %}
-          <span class="sb-hero-specialty">{{ profile_user.profile.get_specialty_display }}</span>
-        {% endif %}
-      </div>
+          <div></div>
 
-      {% if profile_user.profile.is_open_for_bookings %}
-        <a href="/book/{{ profile_user.username }}/?src={{ request.GET.src|default:'profile_link' }}"
-           class="sb-book-btn">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" class="flex-shrink-0">
-            <rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="2" y1="6" x2="14" y2="6" stroke="currentColor" stroke-width="1.5"/>
-            <line x1="5" y1="2" x2="5" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="11" y1="2" x2="11" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-          <span>Book appointment</span>
-        </a>
-      {% endif %}
-    </div>
-
-    {% if profile_user.profile.studio_name or profile_user.profile.location %}
-      <p class="sb-hero-location">
-        {% if profile_user.profile.studio_name %}{{ profile_user.profile.studio_name }}{% endif %}
-        {% if profile_user.profile.studio_name and profile_user.profile.location %} · {% endif %}
-        {% if profile_user.profile.location %}{{ profile_user.profile.location }}{% endif %}
-      </p>
-    {% endif %}
-
-    <div class="sb-hero-chips">
-      {% if profile_user.profile.phone %}
-        <a href="tel:{{ profile_user.profile.phone }}" class="sb-hero-chip">
-          📞 {{ profile_user.profile.phone }}
-        </a>
-      {% endif %}
-      {% if profile_user.profile.ig_handle %}
-        <a href="https://instagram.com/{{ profile_user.profile.ig_handle }}" target="_blank" class="sb-hero-chip">
-          📷 @{{ profile_user.profile.ig_handle }}
-        </a>
-      {% endif %}
-      {% if profile_user.profile.pricing_from %}
-        <span class="sb-hero-chip gold">From ${{ profile_user.profile.pricing_from }}</span>
-      {% endif %}
-      {% if profile_user.profile.home_visits %}
-        <span class="sb-hero-chip">
-          🏠 Home visits
-          {% if profile_user.profile.travel_radius_km %} · {{ profile_user.profile.travel_radius_km }} km{% endif %}
-        </span>
-      {% endif %}
-    </div>
-  </div>
-</div>
-
-<!-- ═════════════════════════════════════════════════ -->
-<!-- TWO-COLUMN BODY                                     -->
-<!-- ═════════════════════════════════════════════════ -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-  <!-- ─── LEFT (main, 2/3) — WORK-FIRST ORDER ──────── -->
-  <div class="lg:col-span-2 space-y-6">
-
-    <!-- 1. Recent work — TOP of profile -->
-    <div class="card">
-      <div class="flex items-center justify-between mb-4">
-        <p class="section-title mb-0">Recent work</p>
-        {% if portfolio_count > 6 %}
-          <a href="{% url 'portfolio' %}"
-             class="text-xs text-muted hover:text-ink transition-colors">
-            View all {{ portfolio_count }} →
-          </a>
-        {% endif %}
-      </div>
-
-      {% if portfolio_items %}
-        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {% for item in portfolio_items %}
-            <div class="group">
-              <div class="card p-0 overflow-hidden">
-                <div class="aspect-square overflow-hidden bg-cream">
-                  {% if item.generated_image %}
-                    {% if 'http' in item.generated_image %}
-                      <img src="{{ item.generated_image }}"
-                           alt="{{ item.service }}"
-                           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    {% else %}
-                      <img src="/media/generated/{{ item.generated_image }}"
-                           alt="{{ item.service }}"
-                           class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                    {% endif %}
-                  {% else %}
-                    <img src="/media/uploads/{{ item.image }}"
-                         alt="{{ item.service }}"
-                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                  {% endif %}
-                </div>
-                <div class="p-3">
-                  <p class="text-sm font-medium text-ink truncate">{{ item.service }}</p>
-                  <p class="text-xs text-muted mt-0.5">{{ item.date }}</p>
-                </div>
-              </div>
+          <div class="profile-stats">
+            <div class="profile-stat">
+              <div class="profile-stat-number">{{ portfolio_count }}</div>
+              <div class="profile-stat-label">Works</div>
             </div>
-          {% endfor %}
+            <div class="profile-stat">
+              <div class="profile-stat-number">{{ client_count }}</div>
+              <div class="profile-stat-label">Clients</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-number">{{ profile_user.profile.years_exp|default:"-" }}</div>
+              <div class="profile-stat-label">Years</div>
+            </div>
+          </div>
         </div>
-      {% else %}
-        <div class="flex flex-col items-center justify-center py-12 text-center">
-          <p class="text-sm font-medium text-ink mb-1">No work uploaded yet</p>
-          <p class="text-sm text-muted">Portfolio items will appear here.</p>
-          {% if is_own_profile %}
-            <a href="{% url 'instagram' %}" class="btn-gold mt-4">
-              Upload first work
-            </a>
+
+        <div class="profile-mainline">
+          <div>
+            <div class="profile-name-row">
+              <h1 class="profile-name">
+                {{ profile_user.get_full_name|default:profile_user.username }}
+              </h1>
+
+              {% if profile_user.profile.specialty %}
+                <span class="profile-specialty">
+                  {{ profile_user.profile.get_specialty_display }}
+                </span>
+              {% endif %}
+            </div>
+
+            {% if profile_user.profile.studio_name or profile_user.profile.location %}
+              <p class="profile-location">
+                {% if profile_user.profile.studio_name %}{{ profile_user.profile.studio_name }}{% endif %}
+                {% if profile_user.profile.studio_name and profile_user.profile.location %} &middot; {% endif %}
+                {% if profile_user.profile.location %}{{ profile_user.profile.location }}{% endif %}
+              </p>
+            {% endif %}
+
+            <div class="profile-chips">
+              {% if profile_user.profile.phone %}
+                <a href="tel:{{ profile_user.profile.phone }}" class="profile-chip">
+                  <span data-lucide="phone"></span>
+                  {{ profile_user.profile.phone }}
+                </a>
+              {% endif %}
+
+              {% if profile_user.profile.ig_handle %}
+                <a href="https://instagram.com/{{ profile_user.profile.ig_handle }}" target="_blank" rel="noopener" class="profile-chip">
+                  <span data-lucide="instagram"></span>
+                  @{{ profile_user.profile.ig_handle }}
+                </a>
+              {% endif %}
+
+              {% if profile_user.profile.pricing_from %}
+                <span class="profile-chip">
+                  <span data-lucide="badge-dollar-sign"></span>
+                  From ${{ profile_user.profile.pricing_from }}
+                </span>
+              {% endif %}
+
+              {% if profile_user.profile.home_visits %}
+                <span class="profile-chip">
+                  <span data-lucide="home"></span>
+                  Home visits{% if profile_user.profile.travel_radius_km %} &middot; {{ profile_user.profile.travel_radius_km }} km{% endif %}
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if profile_user.profile.is_open_for_bookings %}
+            <aside class="booking-card">
+              <div class="booking-card-title">Ready to book?</div>
+              <div class="booking-card-sub">Choose a service and available time directly from this profile.</div>
+              <a href="/book/{{ profile_user.username }}/?src={{ request.GET.src|default:'profile_link' }}" class="book-button">
+                <span data-lucide="calendar-plus"></span>
+                Book appointment
+              </a>
+            </aside>
           {% endif %}
         </div>
-      {% endif %}
-    </div>
-
-    <!-- 2. About -->
-    {% if profile_user.profile.bio %}
-      <div class="card">
-        <p class="section-title">About</p>
-        <p class="text-sm text-ink leading-relaxed whitespace-pre-line">
-          {{ profile_user.profile.bio }}
-        </p>
       </div>
-    {% endif %}
+    </section>
 
-    <!-- 3. Experience timeline -->
-    {% if experiences %}
-      <div class="card">
-        <p class="section-title">Experience</p>
-        <div class="space-y-5">
-          {% for exp in experiences %}
-            <div class="flex gap-4">
-              <!-- Timeline dot + line -->
-              <div class="flex flex-col items-center pt-1">
-                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0
-                            {% if exp.is_current %}bg-gold{% else %}bg-cream-border{% endif %}"></div>
-                {% if not forloop.last %}
-                  <div class="w-px flex-1 bg-cream-border mt-1" style="min-height: 30px;"></div>
-                {% endif %}
-              </div>
+    <div class="profile-layout">
+      <main class="info-stack">
+        <section class="profile-section">
+          <div class="profile-section-head">
+            <h2 class="profile-section-title">Recent work</h2>
+            {% if portfolio_count > 6 and is_own_profile %}
+              <a href="{% url 'portfolio' %}" class="profile-section-link">View all {{ portfolio_count }}</a>
+            {% endif %}
+          </div>
 
-              <!-- Content -->
-              <div class="flex-1 pb-1">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <p class="text-sm font-semibold text-ink">{{ exp.title }}</p>
-                  {% if exp.is_current %}
-                    <span class="px-2 py-0.5 bg-gold-light text-gold-dark text-[10px]
-                                 font-semibold rounded-full uppercase tracking-wide">Current</span>
-                  {% endif %}
-                </div>
-                {% if exp.studio_name or exp.city %}
-                  <p class="text-sm text-muted mt-0.5">
-                    {% if exp.studio_name %}{{ exp.studio_name }}{% endif %}
-                    {% if exp.studio_name and exp.city %} · {% endif %}
-                    {% if exp.city %}{{ exp.city }}{% endif %}
-                  </p>
-                {% endif %}
-                <p class="text-xs text-muted mt-1">{{ exp.period_display }}</p>
-                {% if exp.description %}
-                  <p class="text-sm text-ink mt-2 leading-relaxed whitespace-pre-line">
-                    {{ exp.description }}
-                  </p>
-                {% endif %}
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- 4. Honors + Certificates (side-by-side on desktop) -->
-    {% if honors or certificates %}
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-
-        {% if honors %}
-          <div class="card">
-            <p class="section-title">Honors</p>
-            <div class="space-y-4">
-              {% for honor in honors %}
-                <div class="flex gap-3">
-                  <div class="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden
-                              flex items-center justify-center text-xl"
-                       style="background: linear-gradient(135deg, #F5EDD8, #C9A96E); color: #fff;">
-                    {% if honor.image_url %}
-                      <img src="{{ honor.image_url }}" alt="{{ honor.title }}"
-                           class="w-full h-full object-cover">
+          {% if portfolio_items %}
+            <div class="work-grid">
+              {% for item in portfolio_items %}
+                <article class="work-card">
+                  {% if item.generated_image %}
+                    {% if 'http' in item.generated_image %}
+                      <button type="button"
+                              class="work-media"
+                              data-full-src="{{ item.generated_image }}"
+                              data-title="{{ item.service }}">
+                        <img src="{{ item.generated_image }}" alt="{{ item.service }}">
+                      </button>
+                    {% elif '/media/' in item.generated_image %}
+                      <button type="button"
+                              class="work-media"
+                              data-full-src="{{ item.generated_image }}"
+                              data-title="{{ item.service }}">
+                        <img src="{{ item.generated_image }}" alt="{{ item.service }}">
+                      </button>
                     {% else %}
-                      🏆
+                      <button type="button"
+                              class="work-media"
+                              data-full-src="/media/generated/{{ item.generated_image }}"
+                              data-title="{{ item.service }}">
+                        <img src="/media/generated/{{ item.generated_image }}" alt="{{ item.service }}">
+                      </button>
                     {% endif %}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-ink">{{ honor.title }}</p>
-                    <p class="text-xs text-muted mt-0.5">
-                      {% if honor.issuer %}{{ honor.issuer }} · {% endif %}{{ honor.year }}
-                    </p>
-                    {% if honor.description %}
-                      <p class="text-xs text-ink mt-1.5 leading-relaxed">{{ honor.description }}</p>
-                    {% endif %}
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        {% endif %}
-
-        {% if certificates %}
-          <div class="card">
-            <p class="section-title">Certificates</p>
-            <div class="space-y-4">
-              {% for cert in certificates %}
-                <div class="flex gap-3">
-                  <div class="w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden
-                              flex items-center justify-center text-[10px] font-bold
-                              {% if cert.file_kind == 'pdf' %}bg-cream{% else %}bg-cream-border{% endif %}">
-                    {% if cert.file_url and cert.file_kind == 'image' %}
-                      <img src="{{ cert.file_url }}" alt="{{ cert.name }}"
-                           class="w-full h-full object-cover">
-                    {% elif cert.file_url and cert.file_kind == 'pdf' %}
-                      <span class="text-gold-dark">PDF</span>
+                  {% elif item.image %}
+                    {% if 'http' in item.image %}
+                      <button type="button"
+                              class="work-media"
+                              data-full-src="{{ item.image }}"
+                              data-title="{{ item.service }}">
+                        <img src="{{ item.image }}" alt="{{ item.service }}">
+                      </button>
+                    {% elif '/media/' in item.image %}
+                      <button type="button"
+                              class="work-media"
+                              data-full-src="{{ item.image }}"
+                              data-title="{{ item.service }}">
+                        <img src="{{ item.image }}" alt="{{ item.service }}">
+                      </button>
                     {% else %}
-                      <span class="text-muted">—</span>
+                      <button type="button"
+                              class="work-media"
+                              data-full-src="/media/uploads/{{ item.image }}"
+                              data-title="{{ item.service }}">
+                        <img src="/media/uploads/{{ item.image }}" alt="{{ item.service }}">
+                      </button>
                     {% endif %}
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-ink">{{ cert.name }}</p>
-                    <p class="text-xs text-muted mt-0.5">{{ cert.institution }} · {{ cert.year }}</p>
-                    {% if cert.file_url %}
-                      <a href="{{ cert.file_url }}" target="_blank"
-                         class="text-xs text-gold-dark hover:underline mt-1 inline-block">
-                        View →
-                      </a>
-                    {% endif %}
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-        {% endif %}
-
-      </div>
-    {% endif %}
-
-    <!-- 5. Skills -->
-    {% if profile_user.profile.skills %}
-      <div class="card">
-        <p class="section-title">Skills</p>
-        <div class="flex flex-wrap gap-2">
-          {% for skill in profile_user.profile.skills.split %}
-            <span class="px-3 py-1.5 bg-cream border border-cream-border
-                         text-xs text-ink rounded-full">
-              {{ skill }}
-            </span>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
-
-  </div>
-
-  <!-- ─── RIGHT (sidebar, 1/3) ─────────────────────── -->
-  <div class="space-y-6">
-
-    <div class="card">
-      <p class="section-title">Details</p>
-      <dl class="space-y-3 text-sm">
-        <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
-          <dt class="text-xs text-muted uppercase tracking-wide">Specialty</dt>
-          <dd class="text-ink font-medium">
-            {{ profile_user.profile.get_specialty_display|default:'—' }}
-          </dd>
-        </div>
-
-        {% if profile_user.profile.years_exp %}
-          <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
-            <dt class="text-xs text-muted uppercase tracking-wide">Experience</dt>
-            <dd class="text-ink font-medium">{{ profile_user.profile.years_exp }} years</dd>
-          </div>
-        {% endif %}
-
-        {% if profile_user.profile.years_at_location %}
-          <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
-            <dt class="text-xs text-muted uppercase tracking-wide">At current studio</dt>
-            <dd class="text-ink font-medium">
-              {{ profile_user.profile.years_at_location }} year{{ profile_user.profile.years_at_location|pluralize }}
-            </dd>
-          </div>
-        {% endif %}
-
-        {% if profile_user.profile.location %}
-          <div class="flex items-center justify-between py-1.5 border-b border-cream-border">
-            <dt class="text-xs text-muted uppercase tracking-wide">Location</dt>
-            <dd class="text-ink font-medium">{{ profile_user.profile.location }}</dd>
-          </div>
-        {% endif %}
-
-        <div class="flex items-center justify-between py-1.5">
-          <dt class="text-xs text-muted uppercase tracking-wide">Member since</dt>
-          <dd class="text-ink font-medium">{{ profile_user.date_joined|date:"M Y" }}</dd>
-        </div>
-      </dl>
-    </div>
-
-    {% if profile_user.profile.languages %}
-      <div class="card">
-        <p class="section-title">Languages</p>
-        <div class="flex flex-wrap gap-2">
-          {% for lang in profile_user.profile.languages %}
-            <span class="px-3 py-1.5 bg-cream border border-cream-border
-                         text-xs text-ink rounded-full">
-              {{ lang }}
-            </span>
-          {% endfor %}
-        </div>
-      </div>
-    {% endif %}
-
-    {% if profile_user.profile.working_hours %}
-      <div class="card">
-        <p class="section-title">Working hours</p>
-        <dl class="space-y-1.5 text-sm">
-          {% for day_key, day_label in days %}
-            {% with day=profile_user.profile.working_hours|get_day:day_key %}
-              <div class="flex items-center justify-between py-1">
-                <dt class="text-xs text-muted uppercase tracking-wide">{{ day_label }}</dt>
-                <dd class="text-ink">
-                  {% if day.closed %}
-                    <span class="text-muted">Closed</span>
                   {% else %}
-                    {{ day.open }} – {{ day.close }}
+                    <div class="work-media"></div>
                   {% endif %}
-                </dd>
+
+                  <div class="work-body">
+                    <div class="work-title">{{ item.service|default:"Portfolio work" }}</div>
+                    <div class="work-meta">
+                      {% if item.client_name %}{{ item.client_name }}{% else %}Recent work{% endif %}
+                      {% if item.date %} &middot; {{ item.date }}{% endif %}
+                    </div>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-work">
+              <div class="empty-work-title">No work uploaded yet</div>
+              <div class="empty-work-copy">Portfolio items will appear here.</div>
+              {% if is_own_profile %}
+                <a href="{% url 'instagram' %}" class="btn-gold mt-4">Upload first work</a>
+              {% endif %}
+            </div>
+          {% endif %}
+        </section>
+
+        {% if profile_user.profile.bio %}
+          <section class="profile-section">
+            <div class="profile-section-head">
+              <h2 class="profile-section-title">About</h2>
+            </div>
+            <div class="section-body">
+              <p class="about-copy">{{ profile_user.profile.bio }}</p>
+            </div>
+          </section>
+        {% endif %}
+
+        {% if experiences %}
+          <section class="profile-section">
+            <div class="profile-section-head">
+              <h2 class="profile-section-title">Experience</h2>
+            </div>
+            <div class="section-body">
+              <div class="timeline">
+                {% for exp in experiences %}
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div>
+                      <div class="timeline-title">{{ exp.title }}</div>
+                      {% if exp.studio_name or exp.city %}
+                        <div class="timeline-meta">
+                          {% if exp.studio_name %}{{ exp.studio_name }}{% endif %}
+                          {% if exp.studio_name and exp.city %} &middot; {% endif %}
+                          {% if exp.city %}{{ exp.city }}{% endif %}
+                        </div>
+                      {% endif %}
+                      <div class="timeline-meta">{{ exp.period_display }}</div>
+                      {% if exp.description %}
+                        <div class="timeline-copy">{{ exp.description }}</div>
+                      {% endif %}
+                    </div>
+                  </div>
+                {% endfor %}
               </div>
-            {% endwith %}
-          {% endfor %}
-        </dl>
-      </div>
-    {% endif %}
+            </div>
+          </section>
+        {% endif %}
+      </main>
 
+      <aside class="info-stack">
+        <section class="profile-section">
+          <div class="profile-section-head">
+            <h2 class="profile-section-title">Details</h2>
+          </div>
+
+          <div class="section-body">
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt class="detail-label">Specialty</dt>
+                <dd class="detail-value">{{ profile_user.profile.get_specialty_display|default:"-" }}</dd>
+              </div>
+
+              {% if profile_user.profile.years_exp %}
+                <div class="detail-row">
+                  <dt class="detail-label">Experience</dt>
+                  <dd class="detail-value">{{ profile_user.profile.years_exp }} years</dd>
+                </div>
+              {% endif %}
+
+              {% if profile_user.profile.years_at_location %}
+                <div class="detail-row">
+                  <dt class="detail-label">At studio</dt>
+                  <dd class="detail-value">{{ profile_user.profile.years_at_location }} year{{ profile_user.profile.years_at_location|pluralize }}</dd>
+                </div>
+              {% endif %}
+
+              {% if profile_user.profile.location %}
+                <div class="detail-row">
+                  <dt class="detail-label">Location</dt>
+                  <dd class="detail-value">{{ profile_user.profile.location }}</dd>
+                </div>
+              {% endif %}
+
+              <div class="detail-row">
+                <dt class="detail-label">Member since</dt>
+                <dd class="detail-value">{{ profile_user.date_joined|date:"M Y" }}</dd>
+              </div>
+            </dl>
+          </div>
+        </section>
+
+        {% if profile_user.profile.languages %}
+          <section class="profile-section">
+            <div class="profile-section-head">
+              <h2 class="profile-section-title">Languages</h2>
+            </div>
+            <div class="section-body">
+              <div class="tag-list">
+                {% for lang in profile_user.profile.languages %}
+                  <span class="tag">{{ lang }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+        {% endif %}
+
+        {% if profile_user.profile.working_hours %}
+          <section class="profile-section">
+            <div class="profile-section-head">
+              <h2 class="profile-section-title">Working hours</h2>
+            </div>
+
+            <div class="section-body">
+              <dl class="detail-list">
+                {% for day_key, day_label in days %}
+                  {% with day=profile_user.profile.working_hours|get_day:day_key %}
+                    <div class="detail-row">
+                      <dt class="detail-label">{{ day_label }}</dt>
+                      <dd class="detail-value">
+                        {% if day.closed %}
+                          Closed
+                        {% else %}
+                          {{ day.open }} - {{ day.close }}
+                        {% endif %}
+                      </dd>
+                    </div>
+                  {% endwith %}
+                {% endfor %}
+              </dl>
+            </div>
+          </section>
+        {% endif %}
+
+        {% if profile_user.profile.skills %}
+          <section class="profile-section">
+            <div class="profile-section-head">
+              <h2 class="profile-section-title">Skills</h2>
+            </div>
+            <div class="section-body">
+              <div class="tag-list">
+                {% for skill in profile_user.profile.skills.split %}
+                  <span class="tag">{{ skill }}</span>
+                {% endfor %}
+              </div>
+            </div>
+          </section>
+        {% endif %}
+      </aside>
+    </div>
   </div>
-
 </div>
 
-<!-- Copy link toast -->
+{% if profile_user.profile.is_open_for_bookings %}
+  <div class="mobile-booking-bar">
+    <a href="/book/{{ profile_user.username }}/?src={{ request.GET.src|default:'profile_link' }}" class="book-button">
+      <span data-lucide="calendar-plus"></span>
+      Book appointment
+    </a>
+  </div>
+{% endif %}
+
+<div class="image-modal" id="workModal" aria-hidden="true">
+  <div class="image-modal-panel">
+    <img src="" alt="" class="image-modal-img" id="workModalImg">
+    <div class="image-modal-bar">
+      <div class="image-modal-title" id="workModalTitle">Portfolio work</div>
+      <div class="image-modal-actions">
+        <a href="#" download class="modal-btn" id="workModalDownload">
+          <span data-lucide="download"></span>
+          Download
+        </a>
+        <button type="button" class="modal-btn" id="workModalClose">
+          <span data-lucide="x"></span>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="linkBanner"
-     class="hidden fixed bottom-6 left-1/2 -translate-x-1/2
-            bg-ink text-white text-sm font-medium
-            px-5 py-3 rounded-full shadow-lg">
-  Profile link copied to clipboard
+     class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-ink text-white text-sm font-medium px-5 py-3 rounded-full shadow-lg">
+  Profile link copied
 </div>
-
 {% endblock %}
 
 {% block extra_scripts %}
@@ -572,8 +1104,53 @@ function copyProfileLink() {
   navigator.clipboard.writeText(url).then(() => {
     const banner = document.getElementById('linkBanner');
     banner.classList.remove('hidden');
-    setTimeout(() => banner.classList.add('hidden'), 2500);
+    setTimeout(() => banner.classList.add('hidden'), 2200);
   });
 }
+
+(function() {
+  const modal = document.getElementById('workModal');
+  const image = document.getElementById('workModalImg');
+  const title = document.getElementById('workModalTitle');
+  const download = document.getElementById('workModalDownload');
+  const close = document.getElementById('workModalClose');
+
+  if (!modal || !image || !title || !download || !close) return;
+
+  document.querySelectorAll('.work-media[data-full-src]').forEach(button => {
+    button.addEventListener('click', () => {
+      const src = button.dataset.fullSrc;
+      const itemTitle = button.dataset.title || 'Portfolio work';
+
+      image.src = src;
+      image.alt = itemTitle;
+      title.textContent = itemTitle;
+      download.href = src;
+
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    });
+  });
+
+  function closeModal() {
+    modal.classList.remove('is-open');
+    modal.setAttribute('aria-hidden', 'true');
+    image.src = '';
+    document.body.style.overflow = '';
+  }
+
+  close.addEventListener('click', closeModal);
+
+  modal.addEventListener('click', event => {
+    if (event.target === modal) closeModal();
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+      closeModal();
+    }
+  });
+})();
 </script>
 {% endblock %}
