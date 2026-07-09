@@ -528,6 +528,31 @@
       padding: 14px;
     }
   }
+    .dash-work-media {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    background: #F5F1E8;
+  }
+
+  .dash-work-img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: block;
+    object-fit: cover;
+    background: #F5F1E8;
+  }
+
+  .dash-work-placeholder {
+    display: grid;
+    place-items: center;
+    color: #B5B0A6;
+  }
+
+  .dash-work-placeholder span {
+    width: 28px;
+    height: 28px;
+  }
 </style>
 
 <div class="dash-grid">
@@ -770,16 +795,33 @@
       <div class="dash-recent-grid">
         {% for item in recent_portfolio %}
           <article class="dash-work-card">
-            {% if item.generated_image %}
-              <img src="/media/generated/{{ item.generated_image }}" alt="{{ item.service }}" class="dash-work-img">
-            {% elif item.image %}
-              <img src="/media/uploads/{{ item.image }}" alt="{{ item.service }}" class="dash-work-img">
-            {% else %}
-              <div class="dash-work-img"></div>
-            {% endif %}
+            <a href="{% url 'portfolio' %}" class="dash-work-media">
+              {% if item.generated_image %}
+                {% if 'http' in item.generated_image %}
+                  <img src="{{ item.generated_image }}" alt="{{ item.service }}" class="dash-work-img">
+                {% elif '/media/' in item.generated_image %}
+                  <img src="{{ item.generated_image }}" alt="{{ item.service }}" class="dash-work-img">
+                {% else %}
+                  <img src="/media/generated/{{ item.generated_image }}" alt="{{ item.service }}" class="dash-work-img">
+                {% endif %}
+              {% elif item.image %}
+                {% if 'http' in item.image %}
+                  <img src="{{ item.image }}" alt="{{ item.service }}" class="dash-work-img">
+                {% elif '/media/' in item.image %}
+                  <img src="{{ item.image }}" alt="{{ item.service }}" class="dash-work-img">
+                {% else %}
+                  <img src="/media/uploads/{{ item.image }}" alt="{{ item.service }}" class="dash-work-img">
+                {% endif %}
+              {% else %}
+                <div class="dash-work-img dash-work-placeholder">
+                  <span data-lucide="image"></span>
+                </div>
+              {% endif %}
+            </a>
+
             <div class="dash-work-body">
-              <div class="dash-work-title">{{ item.service }}</div>
-              <div class="dash-work-sub">{{ item.client_name|default:"Portfolio item" }}</div>
+              <div class="dash-work-title">{{ item.service|default:"Portfolio item" }}</div>
+              <div class="dash-work-sub">{{ item.client_name|default:"Client work" }}</div>
             </div>
           </article>
         {% endfor %}
