@@ -702,20 +702,24 @@
         </div>
 
         <div id="fallbackWarning" class="ig-warning"></div>
-
+        <div id="shareWarning" class="ig-warning"></div>
         <div class="ig-result-actions">
-          <a id="downloadLink" href="#" download class="btn-cobalt">
-            Download PNG
-          </a>
+        <button type="button" id="instagramShareBtn" onclick="shareOnInstagram()" class="btn-cobalt">
+          Share on Instagram
+        </button>
 
-          <button type="button" onclick="regenerate()" class="btn-ghost">
-            Try a different template
-          </button>
+        <a id="downloadLink" href="#" download class="btn-ghost">
+          Download PNG
+        </a>
 
-          <a href="{% url 'portfolio' %}" class="btn-ghost">
-            View in portfolio
-          </a>
-        </div>
+        <button type="button" onclick="regenerate()" class="btn-ghost">
+          Try a different template
+        </button>
+
+        <a href="{% url 'portfolio' %}" class="btn-ghost">
+          View in portfolio
+        </a>
+      </div>
       </div>
 
       <div id="errorState" class="hidden card ig-error-state">
@@ -870,6 +874,9 @@ const submit = document.getElementById('submitBtn');
 const formErr = document.getElementById('formError');
 
 let pollTimer = null;
+let currentGeneratedImageUrl = '';
+let currentGeneratedCaption = '';
+let currentGeneratedHashtags = '';
 
 form.addEventListener('submit', function(event) {
   event.preventDefault();
@@ -956,6 +963,10 @@ function showResult(data) {
   submit.disabled = false;
   submit.textContent = 'Generate post';
 
+  currentGeneratedImageUrl = data.image_url;
+  currentGeneratedCaption = data.caption || '';
+  currentGeneratedHashtags = data.hashtags || '';
+
   $('resultImg').src = data.image_url;
   $('downloadLink').href = data.image_url;
 
@@ -987,6 +998,71 @@ function showError(message) {
   $('errorMsg').textContent = message;
 
   showState('errorState');
+}
+
+async function shareOnInstagram() {
+  const warning = $('shareWarning');
+  const button = $('instagramShareBtn');
+
+  warning.classList.remove('is-visible');
+  warning.textContent = '';
+
+  if (!currentGeneratedImageUrl) {
+    warning.textContent = 'Generate a post first.';
+    warning.classList.add('is-visible');
+    return;
+  }
+
+  const shareText = [currentGeneratedCaption, currentGeneratedHashtags]
+    .filter(Boolean)
+    .join('\n\n');
+
+  button.disabled = true;
+  button.textContent = 'Preparing share...';
+
+  try {
+    const response = await fetch(currentGeneratedImageUrl, { mode: 'cors' });
+    if (!response.ok) throw new Error('Could not load generated image.');
+
+    const blob = await response.blob();
+    const file = new File([blob], 'showpiece-story.png', {
+      type: blob.type || 'image/png',
+    });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: 'Showpiece story',
+        text: shareText,
+      });
+
+      button.textContent = 'Share on Instagram';
+      button.disabled = false;
+      return;
+    }
+
+    throw new Error('File sharing is not supported on this browser.');
+  } catch (error) {
+    try {
+      if (shareText && navigator.clipboard) {
+        await navigator.clipboard.writeText(shareText);
+      }
+    } catch (_) {}
+
+    warning.innerHTML = `
+      Instagram sharing is limited in this browser.
+      The caption was copied if supported. Download the PNG, then upload it to your Instagram Story.
+    `;
+    warning.classList.add('is-visible');
+
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = 'instagram://story-camera';
+    }
+  } finally {
+    button.textContent = 'Share on Instagram';
+    button.disabled = false;
+  }
 }
 
 window.resetForm = function() {
