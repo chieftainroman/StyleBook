@@ -327,7 +327,7 @@ def _send_booking_confirmed_emails(booking, request=None):
     cancel_token     = make_action_token(booking.reference_code, 'cancel')
     reschedule_token = make_action_token(booking.reference_code, 'reschedule')
 
-    site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
+    site_url = getattr(settings, 'SITE_URL', 'https://showpiecehub.com').rstrip('/')
     cancel_url     = f'{site_url}/manage/cancel/{cancel_token}/'
     reschedule_url = f'{site_url}/manage/reschedule/{reschedule_token}/'
 
@@ -1094,7 +1094,7 @@ def qr_code_image(request, username):
         size = 400
     size = max(120, min(1200, size))
 
-    site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
+    site_url = getattr(settings, 'SITE_URL', 'https://showpiecehub.com').rstrip('/')
     profile_url = f'{site_url}/profile/{user.username}/?src=qr'
 
     # Build the QR
@@ -1129,7 +1129,7 @@ def qr_code_image(request, username):
 @login_required
 def qr_code_page(request):
     """Page showing the master their QR code with download options + share."""
-    site_url = getattr(settings, 'SITE_URL', 'https://stylebook.onrender.com').rstrip('/')
+    site_url = getattr(settings, 'SITE_URL', 'https://showpiecehub.com').rstrip('/')
     profile_url = f'{site_url}/profile/{request.user.username}/'
 
     return render(request, 'bookings/qr_code.html', {
