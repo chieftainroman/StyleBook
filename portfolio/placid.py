@@ -23,6 +23,10 @@ PLACID_API_BASE = "https://api.placid.app/api/rest"
 
 TEMPLATES = {
     'story': [
+        {'id': 'xdsp8lyxun32e', 'name': 'New Standard',     'style': 'Technical editorial with neon accents'},
+        {'id': 'lef9fpabxfjml', 'name': 'Perfect Details',  'style': 'Torn-paper feature with bold typography'},
+        {'id': 'ujr36f5svwato', 'name': 'Black Label',      'style': 'Premium archive-inspired cover'},
+        {'id': '3xqjvqdeosxho', 'name': 'Noir Proof',       'style': 'Refined monochrome proof sheet'},
         {'id': 'k2nuwsqxf3q40', 'name': 'Editorial',    'style': 'Bold magazine-style layout'},
         {'id': 'iewbvoab8dikx', 'name': 'Spotlight',    'style': 'Centered focus with clean type'},
         {'id': 'e25nljmewvxmx', 'name': 'Modern Frame', 'style': 'Photo with elegant text framing'},
