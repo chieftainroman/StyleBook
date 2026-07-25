@@ -2,6 +2,10 @@ from django.shortcuts import redirect
 from django.urls import reverse, NoReverseMatch
 
 
+PUBLIC_EXACT_PATHS = (
+    '/',
+)
+
 # Paths where the user is allowed to be even while not onboarded.
 # Everything else redirects to /onboarding/.
 ALLOWED_PATH_PREFIXES = (
@@ -44,6 +48,9 @@ class OnboardingRequiredMiddleware:
 
         # 2. Allowed paths — let through
         path = request.path
+        if path in PUBLIC_EXACT_PATHS:
+            return False
+
         for prefix in ALLOWED_PATH_PREFIXES:
             if path.startswith(prefix):
                 return False
@@ -53,7 +60,14 @@ class OnboardingRequiredMiddleware:
             return False
 
         # 4. Already onboarded — let through
-        if request.user.profile.onboarding_completed:
+        profile = request.user.profile
+        if profile.onboarding_completed:
+            return False
+
+        # Repair profiles completed outside the wizard.
+        if profile.is_complete():
+            profile.onboarding_completed = True
+            profile.save(update_fields=['onboarding_completed'])
             return False
 
         # 5. Everything else — redirect
