@@ -1,2 +1,0 @@
-Client-secret: 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
-Client-Id: 784980312316-30qbs5ch7jnobnne0nscc2vuiopjdeat.apps.googleusercontent.com
