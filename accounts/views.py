@@ -173,11 +173,7 @@ def logout_view(request):
     return redirect('login')
 
 
-#re_46RiEDbW_LrVQTC8cPCVJhzLeMbEZNg8W
 
-# ═════════════════════════════════════════════════════
-# Onboarding wizard
-# ═════════════════════════════════════════════════════
 
 # Step config: (step_number, name, mandatory, partial_template)
 ONBOARDING_STEPS = [
