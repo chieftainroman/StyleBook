@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 from django.test import SimpleTestCase
 
-from .middleware import OnboardingRequiredMiddleware
+from accounts.middleware import OnboardingRequiredMiddleware
 
 
 class OnboardingRequiredMiddlewareTests(SimpleTestCase):

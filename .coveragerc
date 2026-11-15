@@ -1,0 +1,10 @@
+[run]
+source = accounts, bookings, portfolio
+omit =
+    */migrations/*
+    */tests/*
+    */admin.py
+    */apps.py
+
+[report]
+skip_empty = True
