@@ -20,10 +20,19 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+import re
+
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 from django.utils.http import url_has_allowed_host_and_scheme
 
 logger = logging.getLogger(__name__)
+
+# Usernames appear in URLs (showpiecehub.com/book/<username>/), so keep them simple.
+USERNAME_RE = re.compile(r'^[A-Za-z0-9._-]{2,30}$')
+# Single-segment paths under /profile/ that a username must not take over.
+RESERVED_USERNAMES = {'edit', 'upload-avatar', 'upload-cover', 'upload-cert-file', 'upload-honor-image'}
 
 # Usernames appear in URLs (showpiecehub.com/book/<username>/), so keep them simple.
 USERNAME_RE = re.compile(r'^[A-Za-z0-9._-]{2,30}$')
@@ -88,7 +97,18 @@ def register_view(request):
             messages.error(request, 'Password must be at least 6 characters.')
             return redirect('register')
 
-        if User.objects.filter(username=username).exists():
+        if not USERNAME_RE.match(username) or username.lower() in RESERVED_USERNAMES:
+            messages.error(request, 'Username can use letters, numbers, dots, dashes and underscores '
+                                    '(2 to 30 characters).')
+            return redirect('register')
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, 'Please enter a valid email address.')
+            return redirect('register')
+
+        if User.objects.filter(username__iexact=username).exists():
             messages.error(request, 'Username already taken.')
             return redirect('register')
 

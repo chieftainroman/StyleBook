@@ -87,7 +87,6 @@ class AccountBugs(TestCase):
         self.assertEqual(production_errors(DEBUG=True, SECRET_KEY='dev-secret-change-this'), [])  # your laptop
 
     # ── Bug 12 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug12_usernames_that_break_pages_are_refused(self):
         """
         Registration accepts any username. "john/doe" breaks every link to
@@ -105,7 +104,6 @@ class AccountBugs(TestCase):
                 self.assertNotEqual(response.status_code, 500)
                 self.assertFalse(User.objects.filter(username=bad).exists())
 
-    @tag('known_bug')
     def test_bug12b_email_must_look_like_an_email(self):
         """Booking notifications go to this address, so 'not-an-email' must be refused."""
         self.client.post('/auth/register/', {'username': 'ana', 'email': 'not-an-email',
