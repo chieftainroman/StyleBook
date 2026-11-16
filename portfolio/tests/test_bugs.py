@@ -24,7 +24,6 @@ class PortfolioBugs(TestCase):
         return self.lenient.post(url, data=json.dumps(payload), content_type='application/json')
 
     # ── Bug 3 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug03_deleting_a_service_with_bookings_hides_it_instead_of_crashing(self):
         """
         Booking.service is on_delete=PROTECT, so deleting a service that was

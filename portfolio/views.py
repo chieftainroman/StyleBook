@@ -1085,10 +1085,16 @@ def service_edit(request, pk):
 def service_delete(request, pk):
     """Soft-delete: deactivate. Hard-delete only if no bookings reference it."""
     service = get_object_or_404(Service, pk=pk, profile=request.user.profile)
-    # In step 3 we'll add the Booking model; for now hard delete is fine.
     name = service.name
-    service.delete()
-    messages.success(request, f'Removed "{name}"')
+    if service.bookings.exists():
+        # Bookings point at this service (on_delete=PROTECT): keep the history,
+        # hide the service from clients instead.
+        service.is_active = False
+        service.save(update_fields=['is_active'])
+        messages.success(request, f'"{name}" has bookings, so it was hidden instead of deleted.')
+    else:
+        service.delete()
+        messages.success(request, f'Removed "{name}"')
     return redirect(f"{reverse('profile_edit')}?tab=services")
 
 
