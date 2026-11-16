@@ -88,7 +88,6 @@ class BookingBugs(TestCase):
         self.assertEqual(settings.TIME_ZONE, 'America/New_York')
 
     # ── Bug 4 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug04_cancel_link_still_works_for_a_booking_two_months_out(self):
         """
         Clients may book up to 90 days ahead, but the cancel/reschedule links

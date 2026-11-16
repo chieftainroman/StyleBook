@@ -324,11 +324,14 @@ def _send_booking_confirmed_emails(booking, request=None):
     from django.core.mail import EmailMultiAlternatives
     from django.template.loader import render_to_string
     from django.conf import settings
-    from .tokens import make_action_token
+    from .tokens import DEFAULT_TOKEN_LIFETIME, make_action_token
 
     # Build absolute cancel + reschedule URLs from SITE_URL (deterministic)
-    cancel_token     = make_action_token(booking.reference_code, 'cancel')
-    reschedule_token = make_action_token(booking.reference_code, 'reschedule')
+    # Links must keep working until the appointment (plus a day), however far ahead it is.
+    until_appointment = int((booking.start_time - timezone.now()).total_seconds()) + 24 * 3600
+    lifetime = max(DEFAULT_TOKEN_LIFETIME, until_appointment)
+    cancel_token     = make_action_token(booking.reference_code, 'cancel', lifetime=lifetime)
+    reschedule_token = make_action_token(booking.reference_code, 'reschedule', lifetime=lifetime)
 
     site_url = getattr(settings, 'SITE_URL', 'https://showpiecehub.com').rstrip('/')
     cancel_url     = f'{site_url}/manage/cancel/{cancel_token}/'
