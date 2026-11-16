@@ -36,7 +36,6 @@ class AccountBugs(TestCase):
         self.lenient = Client(raise_request_exception=False)   # shows a 500 as a response instead of crashing the test
 
     # ── Bug 6 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug06_login_never_redirects_to_another_site(self):
         """
         login_view does redirect(next) with whatever ?next= says, so

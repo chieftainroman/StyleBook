@@ -17,6 +17,8 @@ from django.contrib import messages
 from .models import MasterProfile
 import logging
 
+from django.utils.http import url_has_allowed_host_and_scheme
+
 logger = logging.getLogger(__name__)
 
 def login_view(request):
@@ -24,6 +26,10 @@ def login_view(request):
         return redirect('dashboard')
 
     next_page = request.GET.get('next') or request.POST.get('next') or ''
+    # Only follow ?next= to pages on this site; anything else is a phishing trick.
+    if not url_has_allowed_host_and_scheme(next_page, allowed_hosts={request.get_host()},
+                                           require_https=request.is_secure()):
+        next_page = ''
 
     if request.method == 'POST':
         login_value = request.POST.get('username', '').strip()
