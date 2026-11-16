@@ -303,7 +303,7 @@ def _send_otp_email(booking, code):
         'booking': booking,
         'code': code,
         'master_name': booking.master.user.username,
-        'site_name': 'StyleBook',
+        'site_name': 'Showpiece',
     }
     subject = f'Your verification code: {code}'
     text_body = render_to_string('emails/booking_otp.txt', ctx)
@@ -337,7 +337,7 @@ def _send_booking_confirmed_emails(booking, request=None):
     ctx = {
         'booking':         booking,
         'master_name':     booking.master.user.username,
-        'site_name':       'StyleBook',
+        'site_name':       'Showpiece',
         'cancel_url':      cancel_url,
         'reschedule_url':  reschedule_url,
     }
@@ -382,7 +382,7 @@ def _send_booking_cancelled_email(booking, cancelled_by='master', reason=''):
         'master_name':  booking.master.user.username,
         'cancelled_by': cancelled_by,
         'reason':       reason,
-        'site_name':    'StyleBook',
+        'site_name':    'Showpiece',
     }
     subject = f'Booking cancelled — {booking.reference_code}'
     text_body = render_to_string('emails/booking_cancelled.txt', ctx)
@@ -887,7 +887,7 @@ def _send_client_cancelled_notification(booking, reason=''):
     ctx = {
         'booking':    booking,
         'reason':     reason,
-        'site_name':  'StyleBook',
+        'site_name':  'Showpiece',
     }
     subject = f'Cancelled by client: {booking.client_name} — {booking.reference_code}'
     text_body = render_to_string('emails/booking_cancelled_by_client_master.txt', ctx)
@@ -1024,7 +1024,7 @@ def _send_reschedule_notifications(booking, old_start):
         'booking':     booking,
         'old_start':   old_start,
         'master_name': booking.master.user.username,
-        'site_name':   'StyleBook',
+        'site_name':   'Showpiece',
     }
 
     # Client
@@ -1139,7 +1139,7 @@ def qr_code_image(request, username):
 
     response = HttpResponse(buf.getvalue(), content_type='image/png')
     if request.GET.get('download'):
-        filename = f'stylebook-qr-{user.username}.png'
+        filename = f'showpiece-qr-{user.username}.png'
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
     else:
         response['Content-Disposition'] = 'inline'

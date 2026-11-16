@@ -198,9 +198,9 @@ def tpl_stacked(photo_path, fmt, service, ig_handle):
         draw.text((pad, service_y + i * int(w * 0.045)),
                   line, font=f_service, fill=(220, 220, 220))
 
-    # StyleBook watermark — bottom right
+    # Showpiece watermark — bottom right
     f_wm = font(int(w * 0.024))
-    wm   = "StyleBook"
+    wm   = "Showpiece"
     bb   = draw.textbbox((0, 0), wm, font=f_wm)
     draw.text((w - (bb[2] - bb[0]) - pad, h - int(h * 0.025) - (bb[3] - bb[1])),
               wm, font=f_wm, fill=(255, 255, 255, 120))
@@ -254,7 +254,7 @@ def tpl_editorial(photo_path, fmt, service, ig_handle):
 
     # Date-style subtext below service
     sub_y = h - int(h * 0.085)
-    draw.text((pad, sub_y), "StyleBook · Fresh work",
+    draw.text((pad, sub_y), "Showpiece · Fresh work",
               font=f_sub, fill=(180, 180, 180))
 
     return canvas.convert('RGB')
@@ -299,7 +299,7 @@ def tpl_coral(photo_path, fmt, service, ig_handle):
 
     # Logo top-left
     draw.text((pad, int(h * 0.042)),
-              "StyleBook", font=f_logo, fill=(255, 220, 200))
+              "Showpiece", font=f_logo, fill=(255, 220, 200))
 
     # Big headline
     hl_y   = int(h * 0.10)
@@ -373,9 +373,9 @@ def tpl_dark_minimal(photo_path, fmt, service, ig_handle):
     draw.rectangle([(pad, line_y), (int(w * 0.25), line_y + 3)],
                    fill=(201, 169, 110))
 
-    # StyleBook bottom
+    # Showpiece bottom
     f_wm = font(int(w * 0.025))
-    wm   = "StyleBook"
+    wm   = "Showpiece"
     bb   = draw.textbbox((0, 0), wm, font=f_wm)
     draw.text((w - (bb[2] - bb[0]) - pad, h - int(h * 0.025) - (bb[3] - bb[1])),
               wm, font=f_wm, fill=(201, 169, 110, 150))
@@ -418,9 +418,9 @@ def tpl_split(photo_path, fmt, service, ig_handle):
     f_service = font(int(w * 0.042), bold=True)
     f_wm      = font(int(w * 0.025))
 
-    # StyleBook logo top
+    # Showpiece logo top
     draw.text((pad, int(h * 0.042)),
-              "StyleBook", font=f_handle, fill=(201, 169, 110))
+              "Showpiece", font=f_handle, fill=(201, 169, 110))
 
     # Gold accent bar
     bar_y = int(h * 0.12)
@@ -469,7 +469,7 @@ def generate_instagram_image(photo_path, output_path, template_style,
         photo_path  = photo_path,
         fmt         = fmt,
         service     = service or 'Fresh work',
-        ig_handle   = (ig_handle or 'stylebook').lstrip('@'),
+        ig_handle   = (ig_handle or 'showpiecehub').lstrip('@'),
     )
     img.save(output_path, 'PNG', compress_level=1)
     return output_path

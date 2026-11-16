@@ -17,7 +17,6 @@ TEMPLATES_DIR = pathlib.Path(settings.BASE_DIR) / 'templates'
 
 class BrandingBugs(TestCase):
     # ── Bug 16 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug16_no_page_shows_the_old_name(self):
         """
         Page titles, the 404/500 pages, Google sign-up and password pages
@@ -28,7 +27,6 @@ class BrandingBugs(TestCase):
                            if 'StyleBook' in p.read_text(encoding='utf-8', errors='ignore'))
         self.assertEqual(offenders, [], 'templates that still say StyleBook')
 
-    @tag('known_bug')
     def test_bug16b_no_email_or_message_shows_the_old_name(self):
         make_master('ana', email='ana@example.com')
         self.client.post('/auth/forgot-password/', {'email': 'ana@example.com'})
@@ -42,7 +40,6 @@ class BrandingBugs(TestCase):
                                                        'password': 'secret-123', 'specialty': 'barber'}, follow=True)
         self.assertNotContains(welcome, 'Welcome to StyleBook')
 
-    @tag('known_bug')
     def test_bug16c_downloads_and_generated_images_use_the_new_name(self):
         master = make_master('dee')
         self.client.force_login(master.user)

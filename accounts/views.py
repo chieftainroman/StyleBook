@@ -113,7 +113,7 @@ def register_view(request):
         if not specialty:
             return redirect('onboarding_start')
 
-        messages.success(request, 'Welcome to StyleBook!')
+        messages.success(request, 'Welcome to Showpiece!')
         return redirect('dashboard')
 
     return render(request, 'register.html')
@@ -170,7 +170,7 @@ def register_view(request):
         if not specialty:
             return redirect('onboarding_start')
 
-        messages.success(request, 'Welcome to StyleBook!')
+        messages.success(request, 'Welcome to Showpiece!')
         return redirect('dashboard')
 
     return render(request, 'register.html')
@@ -348,7 +348,7 @@ def onboarding_finish(request):
     profile = request.user.profile
     profile.onboarding_completed = True
     profile.save(update_fields=['onboarding_completed'])
-    messages.success(request, 'Welcome to StyleBook! You can edit your profile anytime.')
+    messages.success(request, 'Welcome to Showpiece! You can edit your profile anytime.')
     return redirect('dashboard')
 
 

@@ -1,5 +1,5 @@
 """
-Placid API client for StyleBook.
+Placid API client for Showpiece.
 
 Flow:
     1. create_image()   → POSTs job, returns {placid_id, status}
@@ -66,7 +66,7 @@ def build_layer_payload(template_id, *, photo_url, service, client_name,
                         ig_handle, caption, hashtags, master_name,
                         specialty, years_exp, date_str):
 
-    handle = (ig_handle or '').lstrip('@') or 'stylebook'
+    handle = (ig_handle or '').lstrip('@') or 'showpiecehub'
     name   = (master_name or handle).strip()
     role   = specialty or 'Independent'
 

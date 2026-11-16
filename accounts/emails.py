@@ -12,10 +12,10 @@ def send_verification_email(request, user):
     context = {
         'user':       user,
         'verify_url': verify_url,
-        'site_name':  'StyleBook',
+        'site_name':  'Showpiece',
     }
 
-    subject = 'Verify your email address — StyleBook'
+    subject = 'Verify your email address — Showpiece'
     text_body = render_to_string('emails/verify_email.txt', context)
     html_body = render_to_string('emails/verify_email.html', context)
 
@@ -38,10 +38,10 @@ def send_password_reset_email(request, user):
     context = {
         'user':      user,
         'reset_url': reset_url,
-        'site_name': 'StyleBook',
+        'site_name': 'Showpiece',
     }
 
-    subject = 'Reset your password — StyleBook'
+    subject = 'Reset your password — Showpiece'
     text_body = render_to_string('emails/reset_password.txt', context)
     html_body = render_to_string('emails/reset_password.html', context)
 
