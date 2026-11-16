@@ -16,10 +16,19 @@ from django.contrib import messages
 
 from .models import MasterProfile
 import logging
+import re
+
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 from django.utils.http import url_has_allowed_host_and_scheme
 
 logger = logging.getLogger(__name__)
+
+# Usernames appear in URLs (showpiecehub.com/book/<username>/), so keep them simple.
+USERNAME_RE = re.compile(r'^[A-Za-z0-9._-]{2,30}$')
+# Single-segment paths under /profile/ that a username must not take over.
+RESERVED_USERNAMES = {'edit', 'upload-avatar', 'upload-cover', 'upload-cert-file', 'upload-honor-image'}
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -83,7 +92,7 @@ def register_view(request):
             messages.error(request, 'Username already taken.')
             return redirect('register')
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'Email already registered.')
             return redirect('register')
 
@@ -110,63 +119,6 @@ def register_view(request):
         login(request, user, backend='django.contrib.auth.backends.ModelBackend')
 
         # If they skipped specialty in step 2 send to onboarding
-        if not specialty:
-            return redirect('onboarding_start')
-
-        messages.success(request, 'Welcome to Showpiece!')
-        return redirect('dashboard')
-
-    return render(request, 'register.html')
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-
-    if request.method == 'POST':
-        username  = request.POST.get('username', '').strip()
-        email     = request.POST.get('email', '').strip()
-        password  = request.POST.get('password', '')
-        specialty = request.POST.get('specialty', '')
-        location  = request.POST.get('location', '').strip()
-        years_exp = request.POST.get('years_exp', '0').strip()
-        ig_handle = request.POST.get('ig_handle', '').strip()
-        bio       = request.POST.get('bio', '').strip()
-
-        if not username or not email or not password:
-            messages.error(request, 'All fields are required.')
-            return redirect('register')
-
-        if len(password) < 6:
-            messages.error(request, 'Password must be at least 6 characters.')
-            return redirect('register')
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Username already taken.')
-            return redirect('register')
-
-        if User.objects.filter(email=email).exists():
-            messages.error(request, 'Email already registered.')
-            return redirect('register')
-
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password,
-        )
-
-        try:
-            years = int(years_exp)
-        except ValueError:
-            years = 0
-
-        MasterProfile.objects.create(
-            user=user,
-            specialty=specialty,
-            location=location,
-            years_exp=years,
-            ig_handle=ig_handle,
-            bio=bio,
-        )
-
-        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
         if not specialty:
             return redirect('onboarding_start')
 

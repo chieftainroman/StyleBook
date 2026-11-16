@@ -52,7 +52,6 @@ class AccountBugs(TestCase):
                 self.assertEqual(response['Location'], '/dashboard/')
 
     # ── Bug 7 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug07_same_email_with_different_capitals_cannot_register_twice(self):
         """
         register_view checks `email=` (case-sensitive), but login looks users
