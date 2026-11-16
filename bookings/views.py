@@ -18,10 +18,13 @@ from accounts.models import MasterProfile, Service
 from .models import Booking
 from .slots import get_available_slots, get_availability_summary
 import json
+import logging
 import secrets
 import string
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.db import transaction
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def dashboard_view(request):
@@ -522,9 +525,17 @@ def create_booking(request, username):
     # Send OTP email (outside the transaction so DB doesn't roll back if email fails)
     try:
         _send_otp_email(booking, code)
-    except Exception as e:
-        # Still return success — they can request a resend
-        pass
+    except Exception:
+        # The client can't confirm without the code: say so, and free the slot
+        # instead of holding it for a booking that can never be confirmed.
+        logger.exception('Could not send booking code for %s', booking.reference_code)
+        booking.status = Booking.STATUS_CANCELLED
+        booking.cancelled_at = timezone.now()
+        booking.save(update_fields=['status', 'cancelled_at'])
+        return JsonResponse({
+            'error': "We couldn't email your confirmation code. Please check the email "
+                     "address and try again in a minute.",
+        }, status=502)
 
     return JsonResponse({
         'reference_code': booking.reference_code,

@@ -118,6 +118,7 @@ if RESEND_API_KEY:
     EMAIL_USE_TLS       = True
     EMAIL_HOST_USER     = 'resend'  
     EMAIL_HOST_PASSWORD = RESEND_API_KEY
+    EMAIL_TIMEOUT       = 10   # give up after 10 s instead of freezing the request
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

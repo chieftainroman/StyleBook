@@ -171,7 +171,6 @@ class BookingBugs(TestCase):
         self.assertTemplateUsed(response, 'bookings/client_action_invalid.html')
 
     # ── Bug 15 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug15_client_is_told_when_the_code_email_cannot_be_sent(self):
         """
         If the code email fails, the page still says "code sent" and the
