@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load static %}
 
 {% block title %}Portfolio - Showpiece{% endblock %}
 
@@ -13,8 +12,9 @@
 {% block page_title %}Portfolio{% endblock %}
 
 {% block page_sub %}
-  <p class="sp-page-sub">
-    Your work history - {{ portfolio_items|length }} post{{ portfolio_items|length|pluralize }}
+  <p class="sp-page-sub" id="pf-summary">
+    {{ portfolio_items|length }} post{{ portfolio_items|length|pluralize }} ·
+    <span id="pf-visible-count">{{ visible_count }}</span> on your profile
   </p>
 {% endblock %}
 
@@ -24,504 +24,198 @@
 
 {% block extra_head %}
 <style>
+  /* ── Toolbar ─────────────────────────────────────────── */
   .pf-toolbar {
-    position: sticky;
-    top: 66px;
-    z-index: 20;
-    margin: -6px -2px 18px;
-    padding: 6px 2px;
+    position: sticky; top: 66px; z-index: 20;
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;
+    margin: -6px -2px 18px; padding: 6px 2px;
     background: rgba(245,241,232,0.88);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   }
-
   .pf-filters {
-    display: flex;
-    gap: 4px;
-    padding: 3px;
-    background: rgba(15,14,13,0.04);
-    border: 1px solid rgba(15,14,13,0.06);
-    border-radius: 10px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    display: flex; gap: 4px; padding: 3px;
+    background: rgba(15,14,13,0.04); border: 1px solid rgba(15,14,13,0.06);
+    border-radius: 10px; overflow-x: auto; scrollbar-width: none;
   }
-
   .pf-filters::-webkit-scrollbar { display: none; }
-
   .pf-filter-btn {
-    height: 34px;
-    padding: 0 14px;
-    border: 0;
-    border-radius: 7px;
-    background: transparent;
-    color: rgba(15,14,13,0.55);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
+    height: 34px; padding: 0 14px; border: 0; border-radius: 7px;
+    background: transparent; color: rgba(15,14,13,0.55);
+    font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit; white-space: nowrap;
   }
-
   .pf-filter-btn.is-active {
-    background: #fff;
-    color: #0F0E0D;
+    background: #fff; color: #0F0E0D;
     box-shadow: 0 1px 2px rgba(15,14,13,0.06), 0 0 0 1px rgba(15,14,13,0.04);
   }
+  .pf-hint { font-size: 12px; color: rgba(15,14,13,0.5); }
 
-  .pf-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
-
-  @media (min-width: 760px) {
-    .pf-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 20px;
-    }
-  }
-
-  @media (min-width: 1180px) {
-    .pf-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
+  /* ── Pinterest-style masonry: columns keep each picture's own shape ── */
+  .pf-grid { column-count: 2; column-gap: 14px; }
+  @media (min-width: 900px)  { .pf-grid { column-count: 3; column-gap: 18px; } }
+  @media (min-width: 1280px) { .pf-grid { column-count: 4; } }
+  .portfolio-item { break-inside: avoid; margin-bottom: 14px; display: block; }
+  @media (min-width: 900px) { .portfolio-item { margin-bottom: 18px; } }
 
   .pf-card {
-    overflow: hidden;
-    padding: 0;
+    background: #fff; border-radius: 14px; overflow: hidden;
+    border: 1px solid rgba(15,14,13,0.06);
+    transition: box-shadow 0.18s, transform 0.18s;
   }
+  .pf-card:hover { box-shadow: 0 10px 30px -12px rgba(15,14,13,0.25); transform: translateY(-1px); }
 
   .pf-media {
-    position: relative;
-    aspect-ratio: 1 / 1;
-    background: #fff;
-    overflow: hidden;
+    position: relative; display: block; width: 100%; padding: 0; border: 0;
+    background: #EDE8DC; cursor: zoom-in;
   }
-
-  .pf-media img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-
-  .pf-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(15,14,13,0);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    opacity: 0;
-    transition: all 0.18s;
-    padding: 16px;
-  }
-
-  .pf-card:hover .pf-overlay {
-    background: rgba(15,14,13,0.38);
-    opacity: 1;
-  }
-
-  .pf-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-height: 38px;
-    padding: 0 14px;
-    border-radius: 10px;
-    border: 0;
-    background: #fff;
-    color: #0F0E0D;
-    font-size: 12px;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-  }
-
-  .pf-action:hover {
-    background: #3A3AFF;
-    color: #F5F1E8;
-  }
-
-  .pf-meta {
-    padding: 14px 15px 12px;
-  }
-
-  .pf-service {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0F0E0D;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .pf-subline {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 5px;
-  }
-
-  .pf-subline span {
-    min-width: 0;
-    font-size: 12px;
-    color: rgba(15,14,13,0.55);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .pf-style {
-    display: inline-flex;
-    align-items: center;
-    height: 26px;
-    padding: 0 10px;
-    margin-top: 11px;
-    border-radius: 999px;
-    background: rgba(58,58,255,0.08);
-    color: #2929E8;
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .pf-mobile-actions {
+  .pf-media img { display: block; width: 100%; height: auto; transition: opacity 0.18s, filter 0.18s; }
+  .pf-card.is-hidden .pf-media img { opacity: 0.45; filter: grayscale(0.6); }
+  .pf-badge {
+    position: absolute; top: 10px; left: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 999px; background: rgba(15,14,13,0.78); color: #F5F1E8;
     display: none;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    padding: 0 15px 15px;
   }
+  .pf-card.is-hidden .pf-badge { display: inline-block; }
 
-  .pf-mobile-actions .pf-action {
-    width: 100%;
-    min-height: 44px;
-    background: #0F0E0D;
-    color: #F5F1E8;
+  .pf-meta { padding: 12px 14px 4px; }
+  .pf-meta p, .pf-empty p { margin: 0; }
+  .pf-service { font-size: 14px; font-weight: 600; color: #0F0E0D; line-height: 1.3; }
+  .pf-subline { font-size: 12px; color: rgba(15,14,13,0.5); margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap; }
+  .pf-subline span + span::before { content: '·'; margin-right: 6px; }
+
+  .pf-controls {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    padding: 8px 10px 12px 14px;
   }
+  .pf-controls form { margin: 0; }
+  .pf-actions { display: flex; gap: 4px; }
 
-  .pf-mobile-actions .pf-action.secondary {
-    background: rgba(15,14,13,0.05);
-    color: #0F0E0D;
+  /* Show-on-profile switch */
+  .pf-switch {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: none; border: 0; padding: 4px 0; cursor: pointer; font-family: inherit;
+    font-size: 12px; font-weight: 500; color: #0F0E0D;
   }
-
-  .pf-mobile-actions.single {
-    grid-template-columns: 1fr;
+  .pf-switch-track {
+    position: relative; width: 32px; height: 18px; border-radius: 999px;
+    background: rgba(15,14,13,0.18); transition: background 0.15s; flex-shrink: 0;
   }
-
-  .pf-empty {
-    min-height: 360px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    text-align: center;
+  .pf-switch-thumb {
+    position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+    background: #fff; box-shadow: 0 1px 2px rgba(15,14,13,0.3); transition: transform 0.15s;
   }
+  .pf-switch[aria-checked="true"] .pf-switch-track { background: #3A3AFF; }
+  .pf-switch[aria-checked="true"] .pf-switch-thumb { transform: translateX(14px); }
+  .pf-switch-label { white-space: nowrap; }
+  @media (max-width: 600px) {
+    .pf-controls { padding: 6px 6px 10px 10px; gap: 4px; }
+    .pf-switch { gap: 6px; font-size: 11px; }
+    .pf-icon-btn { width: 28px; height: 28px; }
+    .pf-meta { padding: 10px 10px 2px; }
+    .pf-service { font-size: 13px; }
+  }
+  .pf-switch:focus-visible { outline: 2px solid #3A3AFF; outline-offset: 3px; border-radius: 6px; }
 
+  .pf-icon-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 8px; border: 0; background: transparent;
+    color: rgba(15,14,13,0.55); cursor: pointer; text-decoration: none; transition: all 0.15s;
+  }
+  .pf-icon-btn:hover { background: rgba(15,14,13,0.06); color: #0F0E0D; }
+  .pf-icon-btn.pf-delete:hover { background: rgba(220,38,38,0.08); color: #B91C1C; }
+
+  /* ── Empty state ─────────────────────────────────────── */
+  .pf-empty { text-align: center; padding: 56px 24px; }
   .pf-empty-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    background: rgba(15,14,13,0.04);
-    color: rgba(15,14,13,0.45);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(58,58,255,0.08); color: #3A3AFF;
   }
+  .pf-empty-title { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .pf-empty-copy { font-size: 13px; color: rgba(15,14,13,0.55); margin-bottom: 18px; }
 
-  .pf-empty-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: #0F0E0D;
-  }
-
-  .pf-empty-copy {
-    font-size: 13px;
-    color: rgba(15,14,13,0.55);
-    max-width: 320px;
-    line-height: 1.55;
-  }
-
+  /* ── Full-size preview ───────────────────────────────── */
   .pf-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+    position: fixed; inset: 0; z-index: 100; display: none;
+    align-items: center; justify-content: center; padding: 24px;
     background: rgba(15,14,13,0.72);
   }
-
   .pf-modal.is-open { display: flex; }
-
   .pf-modal-dialog {
-    width: min(92vw, 860px);
-    max-height: 92vh;
-    background: #fff;
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 24px 80px rgba(0,0,0,0.28);
+    background: #F5F1E8; border-radius: 16px; overflow: hidden;
+    max-width: min(560px, 100%); max-height: 100%; display: flex; flex-direction: column;
   }
-
-  .pf-modal-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    padding: 13px 15px;
-    border-bottom: 1px solid rgba(15,14,13,0.08);
-  }
-
-  .pf-modal-title strong {
-    display: block;
-    font-size: 14px;
-    color: #0F0E0D;
-  }
-
-  .pf-modal-title span {
-    display: block;
-    margin-top: 2px;
-    font-size: 12px;
-    color: rgba(15,14,13,0.55);
-  }
-
-  .pf-modal-close {
-    width: 34px;
-    height: 34px;
-    border: 0;
-    border-radius: 9px;
-    background: rgba(15,14,13,0.04);
-    color: #0F0E0D;
-    cursor: pointer;
-    font-size: 20px;
-  }
-
-  .pf-modal-body {
-    background: #F5F1E8;
-    padding: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .pf-modal-body img {
-    max-width: 100%;
-    max-height: calc(92vh - 98px);
-    object-fit: contain;
-    border-radius: 8px;
-    background: #fff;
-  }
-
-  @media (max-width: 640px) {
-    .pf-toolbar {
-      top: 58px;
-      margin-left: -20px;
-      margin-right: -20px;
-      padding: 8px 20px;
-    }
-
-    .pf-filters {
-      width: 100%;
-    }
-
-    .pf-filter-btn {
-      flex: 1 0 auto;
-      min-width: 78px;
-      height: 38px;
-    }
-
-    .pf-grid {
-      gap: 16px;
-    }
-
-    .pf-card {
-      border-radius: 12px;
-      margin-left: -2px;
-      margin-right: -2px;
-    }
-
-    .pf-media {
-      aspect-ratio: 1 / 1;
-      background: #fff;
-    }
-
-    .pf-overlay {
-      display: none;
-    }
-
-    .pf-meta {
-      padding: 13px 14px 10px;
-    }
-
-    .pf-service {
-      font-size: 15px;
-    }
-
-    .pf-subline span {
-      font-size: 12px;
-    }
-
-    .pf-mobile-actions {
-      display: grid;
-    }
-
-    .pf-modal {
-      padding: 12px;
-    }
-
-    .pf-modal.is-open {
-      display: flex !important;
-    }
-
-    .pf-modal-dialog {
-      width: 100%;
-      max-height: 94vh;
-      border-radius: 12px;
-    }
-
-    .pf-modal-body {
-      padding: 10px;
-    }
-
-    .pf-modal-body img {
-      max-height: calc(94vh - 90px);
-    }
-  }
+  .pf-modal-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; }
+  .pf-modal-title { display: flex; flex-direction: column; font-size: 13px; }
+  .pf-modal-title span { color: rgba(15,14,13,0.55); font-size: 12px; }
+  .pf-modal-close { border: 0; background: none; font-size: 26px; line-height: 1; cursor: pointer; color: #0F0E0D; }
+  .pf-modal-body { overflow: auto; background: #EDE8DC; }
+  .pf-modal-body img { display: block; width: 100%; height: auto; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<div class="pf-toolbar">
-  <div class="pf-filters" aria-label="Portfolio filters">
-    <button type="button" onclick="filterPortfolio('all', this)" class="filter-btn pf-filter-btn is-active">All</button>
-    <button type="button" onclick="filterPortfolio('Barber', this)" class="filter-btn pf-filter-btn">Barber</button>
-    <button type="button" onclick="filterPortfolio('Hair Stylist', this)" class="filter-btn pf-filter-btn">Hair</button>
-    <button type="button" onclick="filterPortfolio('Nail Master', this)" class="filter-btn pf-filter-btn">Nails</button>
-  </div>
-</div>
-
 {% if portfolio_items %}
+  <div class="pf-toolbar">
+    <div class="pf-filters" aria-label="Portfolio filters">
+      <button type="button" data-filter="all" class="pf-filter-btn is-active">All</button>
+      <button type="button" data-filter="visible" class="pf-filter-btn">On profile</button>
+      <button type="button" data-filter="hidden" class="pf-filter-btn">Hidden</button>
+    </div>
+    <span class="pf-hint">Switch a post off to hide it from your public profile.</span>
+  </div>
+
   <div class="pf-grid" id="portfolio-grid">
     {% for item in portfolio_items %}
-      <div class="portfolio-item" data-category="{{ item.category|default:'Other' }}">
-        <article class="card pf-card">
+      <div class="portfolio-item" data-visible="{{ item.show_on_profile|yesno:'1,0' }}">
+        <article class="pf-card{% if not item.show_on_profile %} is-hidden{% endif %}">
 
-          <div class="pf-media">
-            {% if item.generated_image %}
-              {% if 'http' in item.generated_image %}
-                <img src="{{ item.generated_image }}" alt="{{ item.service }}">
-              {% else %}
-                <img src="/media/generated/{{ item.generated_image }}" alt="{{ item.service }}">
-              {% endif %}
-            {% else %}
-              {% if 'http' in item.image %}
-                <img src="{{ item.image }}" alt="{{ item.service }}">
-              {% else %}
-                <img src="/media/uploads/{{ item.image }}" alt="{{ item.service }}">
-              {% endif %}
-            {% endif %}
-
-            <div class="pf-overlay">
-              {% if item.generated_image %}
-                {% if 'http' in item.generated_image %}
-                  <button type="button" class="pf-action pf-view-btn"
-                          data-preview-src="{{ item.generated_image }}"
-                          data-preview-title="{{ item.service }}"
-                          data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                    View full size
-                  </button>
-                  <a href="{{ item.generated_image }}" download class="pf-action">Download PNG</a>
-                {% else %}
-                  <button type="button" class="pf-action pf-view-btn"
-                          data-preview-src="/media/generated/{{ item.generated_image }}"
-                          data-preview-title="{{ item.service }}"
-                          data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                    View full size
-                  </button>
-                  <a href="/media/generated/{{ item.generated_image }}" download class="pf-action">Download PNG</a>
-                {% endif %}
-              {% else %}
-                {% if 'http' in item.image %}
-                  <button type="button" class="pf-action pf-view-btn"
-                          data-preview-src="{{ item.image }}"
-                          data-preview-title="{{ item.service }}"
-                          data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                    View full size
-                  </button>
-                {% else %}
-                  <button type="button" class="pf-action pf-view-btn"
-                          data-preview-src="/media/uploads/{{ item.image }}"
-                          data-preview-title="{{ item.service }}"
-                          data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                    View full size
-                  </button>
-                {% endif %}
-              {% endif %}
-            </div>
-          </div>
+          <button type="button" class="pf-media pf-view-btn"
+                  data-preview-src="{{ item.display_url }}"
+                  data-preview-title="{{ item.service }}"
+                  data-preview-meta="{{ item.client_name }}{% if item.client_name and item.date %} · {% endif %}{{ item.date }}"
+                  aria-label="View {{ item.service }} full size">
+            <img src="{{ item.display_url }}" alt="{{ item.service }}" loading="lazy">
+            <span class="pf-badge">Hidden</span>
+          </button>
 
           <div class="pf-meta">
             <p class="pf-service">{{ item.service }}</p>
-            <div class="pf-subline">
-              <span>{{ item.client_name }}</span>
-              <span>{{ item.date }}</span>
-            </div>
-            {% if item.template_style %}
-              <span class="pf-style">{{ item.template_style }}</span>
+            {% if item.client_name or item.date or item.template_style %}
+              <div class="pf-subline">
+                {% if item.client_name %}<span>{{ item.client_name }}</span>{% endif %}
+                {% if item.date %}<span>{{ item.date }}</span>{% endif %}
+                {% if item.template_style %}<span>{{ item.template_style }}</span>{% endif %}
+              </div>
             {% endif %}
           </div>
 
-          {% if item.generated_image %}
-            <div class="pf-mobile-actions">
-              {% if 'http' in item.generated_image %}
-                <button type="button"
-                        class="pf-action secondary pf-view-btn"
-                        data-preview-src="{{ item.generated_image }}"
-                        data-preview-title="{{ item.service }}"
-                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                  View
-                </button>
-                <a href="{{ item.generated_image }}" download class="pf-action">Download PNG</a>
-              {% else %}
-                <button type="button"
-                        class="pf-action secondary pf-view-btn"
-                        data-preview-src="/media/generated/{{ item.generated_image }}"
-                        data-preview-title="{{ item.service }}"
-                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                  View
-                </button>
-                <a href="/media/generated/{{ item.generated_image }}" download class="pf-action">Download PNG</a>
+          <div class="pf-controls">
+            <form method="post" action="{% url 'portfolio_toggle_visibility' item.pk %}" class="pf-visibility-form">
+              {% csrf_token %}
+              <button type="submit" class="pf-switch" role="switch"
+                      aria-checked="{{ item.show_on_profile|yesno:'true,false' }}">
+                <span class="pf-switch-track"><span class="pf-switch-thumb"></span></span>
+                <span class="pf-switch-label">{% if item.show_on_profile %}On profile{% else %}Hidden{% endif %}</span>
+              </button>
+            </form>
+
+            <div class="pf-actions">
+              {% if item.generated_image %}
+                <a href="{{ item.display_url }}" download class="pf-icon-btn" title="Download" aria-label="Download {{ item.service }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 4v11m0 0l-4-4m4 4l4-4M5 20h14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
               {% endif %}
-            </div>
-          {% else %}
-            <div class="pf-mobile-actions single">
-              {% if 'http' in item.image %}
-                <button type="button"
-                        class="pf-action secondary pf-view-btn"
-                        data-preview-src="{{ item.image }}"
-                        data-preview-title="{{ item.service }}"
-                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                  View full size
+              <form method="post" action="{% url 'portfolio_delete' item.pk %}"
+                    onsubmit="return confirm('Delete this post? Its image is removed for good and can\'t be recovered.');">
+                {% csrf_token %}
+                <button type="submit" class="pf-icon-btn pf-delete" title="Delete" aria-label="Delete {{ item.service }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M10 11v6m4-6v6M6 7l1 12a2 2 0 002 2h6a2 2 0 002-2l1-12M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
-              {% else %}
-                <button type="button"
-                        class="pf-action secondary pf-view-btn"
-                        data-preview-src="/media/uploads/{{ item.image }}"
-                        data-preview-title="{{ item.service }}"
-                        data-preview-meta="{{ item.client_name }} - {{ item.date }}">
-                  View full size
-                </button>
-              {% endif %}
+              </form>
             </div>
-          {% endif %}
+          </div>
 
         </article>
       </div>
@@ -535,13 +229,9 @@
           <strong id="portfolioModalTitle"></strong>
           <span id="portfolioModalMeta"></span>
         </div>
-        <button type="button" class="pf-modal-close" onclick="closePortfolioPreview()" aria-label="Close preview">
-          &times;
-        </button>
+        <button type="button" class="pf-modal-close" onclick="closePortfolioPreview()" aria-label="Close preview">&times;</button>
       </div>
-      <div class="pf-modal-body">
-        <img src="" alt="" id="portfolioModalImage">
-      </div>
+      <div class="pf-modal-body"><img src="" alt="" id="portfolioModalImage"></div>
     </div>
   </div>
 
@@ -555,7 +245,7 @@
       </svg>
     </div>
     <p class="pf-empty-title">No work uploaded yet</p>
-    <p class="pf-empty-copy">Complete a reservation, upload a photo, and your portfolio builds itself.</p>
+    <p class="pf-empty-copy">Upload a photo of your work and it appears here and on your profile.</p>
     <a href="{% url 'instagram' %}" class="btn-cobalt">+ Upload your first work</a>
   </div>
 {% endif %}
@@ -564,64 +254,87 @@
 
 {% block extra_scripts %}
 <script>
-function filterPortfolio(category, btn) {
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('is-active'));
-  btn.classList.add('is-active');
-
+/* Filters: All / On profile / Hidden */
+let currentFilter = 'all';
+function applyFilter() {
   document.querySelectorAll('.portfolio-item').forEach(item => {
-    item.style.display = category === 'all' || item.dataset.category === category ? '' : 'none';
+    const visible = item.dataset.visible === '1';
+    const show = currentFilter === 'all' || (currentFilter === 'visible') === visible;
+    item.style.display = show ? '' : 'none';
   });
 }
+document.querySelectorAll('.pf-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pf-filter-btn').forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    currentFilter = btn.dataset.filter;
+    applyFilter();
+  });
+});
 
+/* Show-on-profile switch: saves without reloading the page.
+   (Without JavaScript the form still posts normally and the page reloads.) */
+document.querySelectorAll('.pf-visibility-form').forEach(form => {
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('.pf-switch');
+    button.disabled = true;
+    try {
+      const response = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: new FormData(form),
+      });
+      if (!response.ok) throw new Error(response.status);
+      const data = await response.json();
+      const item = form.closest('.portfolio-item');
+      item.dataset.visible = data.show_on_profile ? '1' : '0';
+      item.querySelector('.pf-card').classList.toggle('is-hidden', !data.show_on_profile);
+      button.setAttribute('aria-checked', data.show_on_profile ? 'true' : 'false');
+      form.querySelector('.pf-switch-label').textContent = data.show_on_profile ? 'On profile' : 'Hidden';
+      const counter = document.getElementById('pf-visible-count');
+      if (counter) counter.textContent = document.querySelectorAll('.portfolio-item[data-visible="1"]').length;
+      applyFilter();
+    } catch (err) {
+      alert("Couldn't save that change. Please refresh the page and try again.");
+    } finally {
+      button.disabled = false;
+    }
+  });
+});
+
+/* Full-size preview */
 function openPortfolioPreview(src, title, meta) {
-
   const modal = document.getElementById('portfolioModal');
   const image = document.getElementById('portfolioModalImage');
-  const titleEl = document.getElementById('portfolioModalTitle');
-  const metaEl = document.getElementById('portfolioModalMeta');
-
-  if (!modal || !image || !titleEl || !metaEl) return;
-
+  if (!modal || !image) return;
   image.src = src;
   image.alt = title || 'Portfolio preview';
-  titleEl.textContent = title || 'Portfolio preview';
-  metaEl.textContent = meta || '';
+  document.getElementById('portfolioModalTitle').textContent = title || '';
+  document.getElementById('portfolioModalMeta').textContent = meta || '';
   modal.classList.add('is-open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 }
-
 function closePortfolioPreview() {
   const modal = document.getElementById('portfolioModal');
   const image = document.getElementById('portfolioModalImage');
-
   if (!modal || !image) return;
-
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
   image.src = '';
   document.body.style.overflow = '';
 }
-
 document.querySelectorAll('.pf-view-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    openPortfolioPreview(
-      btn.dataset.previewSrc,
-      btn.dataset.previewTitle,
-      btn.dataset.previewMeta
-    );
-  });
+  btn.addEventListener('click', () => openPortfolioPreview(
+    btn.dataset.previewSrc, btn.dataset.previewTitle, btn.dataset.previewMeta));
 });
-
 const portfolioModal = document.getElementById('portfolioModal');
 if (portfolioModal) {
   portfolioModal.addEventListener('click', event => {
     if (event.target === portfolioModal) closePortfolioPreview();
   });
 }
-
-document.addEventListener('keydown', event => {
-  if (event.key === 'Escape') closePortfolioPreview();
-});
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closePortfolioPreview(); });
 </script>
 {% endblock %}

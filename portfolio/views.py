@@ -23,6 +23,11 @@ from accounts.models import MasterProfile
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.db import models
+from django.db.models import Q
+import logging
+import re
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def portfolio_view(request):
@@ -33,6 +38,7 @@ def portfolio_view(request):
     return render(request, 'portfolio.html', {
         'active':          'portfolio',
         'portfolio_items': portfolio_items,
+        'visible_count':   portfolio_items.filter(show_on_profile=True).count(),
     })
 
 
@@ -77,12 +83,87 @@ def my_profile(request):
     return redirect('profile', username=request.user.username)
 
 
+# ── Portfolio: show on profile / delete ─────────────────────────────
+
+_CLOUDINARY_URL = re.compile(r'^https?://res\.cloudinary\.com/[^/]+/(image|video|raw)/upload/([^?#]+)')
+_VERSION = re.compile(r'^v\d+$')
+
+
+def _cloudinary_ref(url):
+    """
+    ('stylebook/generated/abc', 'image') for a Cloudinary delivery URL, else None.
+
+    https://res.cloudinary.com/<cloud>/image/upload/[<transformations>/]v<version>/<public_id>.<ext>
+    The public_id is everything after the version segment. Image extensions are
+    not part of the public_id; raw files (e.g. PDFs) keep theirs.
+    """
+    match = _CLOUDINARY_URL.match(url or '')
+    if not match:
+        return None
+    resource_type, path = match.groups()
+    segments = path.split('/')
+    versions = [i for i, seg in enumerate(segments) if _VERSION.match(seg)]
+    if versions:
+        segments = segments[versions[-1] + 1:]
+    public_id = '/'.join(segments)
+    if resource_type != 'raw':
+        public_id = public_id.rsplit('.', 1)[0] if '.' in segments[-1] else public_id
+    return (public_id, resource_type) if public_id else None
+
+
+def _destroy_cloudinary_image(url, deleting):
+    """Remove an image from Cloudinary, unless another post still uses it."""
+    ref = _cloudinary_ref(url)
+    if not ref:
+        return
+    public_id, resource_type = ref
+    still_used = (PortfolioItem.objects.exclude(pk=deleting.pk)
+                  .filter(Q(image__contains=public_id) | Q(generated_image__contains=public_id))
+                  .exists())
+    if still_used:
+        return
+    try:
+        cloudinary.uploader.destroy(public_id, resource_type=resource_type, invalidate=True)
+    except Exception:
+        # The post is deleted either way; a leftover file only costs storage.
+        logger.exception('Could not delete %s from Cloudinary', public_id)
+
+
+def _wants_json(request):
+    return request.headers.get('x-requested-with') == 'XMLHttpRequest'
+
+
+@login_required
+@require_POST
+def portfolio_toggle_visibility(request, pk):
+    item = get_object_or_404(PortfolioItem, pk=pk, user=request.user)
+    item.show_on_profile = not item.show_on_profile
+    item.save(update_fields=['show_on_profile'])
+    if _wants_json(request):
+        return JsonResponse({'show_on_profile': item.show_on_profile})
+    return redirect('portfolio')
+
+
+@login_required
+@require_POST
+def portfolio_delete(request, pk):
+    item = get_object_or_404(PortfolioItem, pk=pk, user=request.user)
+    for url in {item.generated_image, item.image}:
+        _destroy_cloudinary_image(url, deleting=item)
+    item.delete()
+    if _wants_json(request):
+        return JsonResponse({'deleted': True})
+    messages.success(request, 'Post deleted.')
+    return redirect('portfolio')
+
+
 def profile_view(request, username):
     profile_user = get_object_or_404(User, username=username)
     is_own_profile = request.user.is_authenticated and request.user.id == profile_user.id
 
+    # Only the posts the master chose to show (Portfolio page -> "On profile").
     portfolio_items = PortfolioItem.objects.filter(
-        user=profile_user
+        user=profile_user, show_on_profile=True,
     ).order_by('-id')
 
     portfolio_count = portfolio_items.count()

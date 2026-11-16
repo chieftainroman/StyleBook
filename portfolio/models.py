@@ -15,8 +15,20 @@ class PortfolioItem(models.Model):
     hashtags       = models.CharField(max_length=500, default='')
     date           = models.CharField(max_length=20, default='')
     fmt = models.CharField(max_length=20, default='story') 
+    # Shown on the master's public profile? New posts are; hide any you like.
+    show_on_profile = models.BooleanField(default=True)
     class Meta:
         ordering = ['-id']
 
     def __str__(self):
         return f'{self.service} — {self.client_name}'
+
+    @property
+    def display_url(self):
+        """The picture to show: the generated post if there is one, else the original photo."""
+        if self.generated_image:
+            return self.generated_image if self.generated_image.startswith('http') \
+                else f'/media/generated/{self.generated_image}'
+        if self.image:
+            return self.image if self.image.startswith('http') else f'/media/uploads/{self.image}'
+        return ''

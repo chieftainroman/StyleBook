@@ -3,6 +3,8 @@ from . import views
 
 urlpatterns = [
     path('portfolio/',                  views.portfolio_view,      name='portfolio'),
+    path('portfolio/<int:pk>/visibility/', views.portfolio_toggle_visibility, name='portfolio_toggle_visibility'),
+    path('portfolio/<int:pk>/delete/',     views.portfolio_delete,            name='portfolio_delete'),
     path('profile/edit/', views.edit_profile, name='profile_edit'),
     # Instagram generator
     path('instagram/',                  views.instagram_view,      name='instagram'),
