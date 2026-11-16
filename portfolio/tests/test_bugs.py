@@ -74,7 +74,6 @@ class PortfolioBugs(TestCase):
                 self.assertIsNone(self.master.pricing_from)
 
     # ── Bug 14 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug14_profile_client_count_comes_from_real_bookings(self):
         """
         The public profile's "clients" number counts the OLD Reservation

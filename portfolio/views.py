@@ -87,9 +87,15 @@ def profile_view(request, username):
 
     portfolio_count = portfolio_items.count()
 
-    all_reservations = Reservation.objects.filter(user=profile_user)
-    client_names     = set(r.client_name.lower().strip() for r in all_reservations)
-    client_count     = len(client_names)
+    # Real clients: distinct people with a confirmed or completed booking.
+    # (Used to count the old Reservation table, so new masters always showed 0.)
+    from django.db.models.functions import Lower
+    from bookings.models import Booking
+    client_count = (Booking.objects
+                    .filter(master__user=profile_user,
+                            status__in=[Booking.STATUS_CONFIRMED, Booking.STATUS_COMPLETED])
+                    .annotate(email_key=Lower('client_email'))
+                    .values('email_key').distinct().count())
 
     profile, _ = MasterProfile.objects.get_or_create(user=profile_user)
     experience_items = []
