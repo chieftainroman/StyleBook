@@ -69,7 +69,6 @@ class AccountBugs(TestCase):
         self.assertEqual(User.objects.filter(email__iexact='same@example.com').count(), 1)
 
     # ── Bug 11 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug11_production_refuses_to_start_with_unsafe_settings(self):
         """
         If Render is missing SECRET_KEY, DATABASE_URL or RESEND_API_KEY, the
