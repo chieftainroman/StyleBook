@@ -16,7 +16,7 @@ from portfolio.models import PortfolioItem
 from django.conf import settings
 from accounts.models import MasterProfile, Service
 from .models import Booking
-from .slots import get_available_slots, get_availability_summary
+from .slots import get_available_slots, get_availability_summary, has_capacity
 import json
 import logging
 import secrets
@@ -587,12 +587,22 @@ def verify_otp(request, username):
             return JsonResponse({'error': 'Too many wrong attempts. Please resend.'}, status=429)
         return JsonResponse({'error': f'Wrong code. {remaining} attempts left.'}, status=400)
 
-    # Success
-    otp.verified_at = timezone.now()
-    otp.save(update_fields=['verified_at', 'attempts'])
+    # Correct code. Confirm, unless the slot was taken by someone else after
+    # this booking's 15-minute hold ran out (see PENDING_HOLD_MINUTES).
+    with transaction.atomic():
+        MasterProfile.objects.select_for_update().get(pk=booking.master_id)
+        if not has_capacity(booking.master, booking.start_time, booking.end_time, exclude_pk=booking.pk):
+            otp.save(update_fields=['attempts'])
+            booking.status = Booking.STATUS_CANCELLED
+            booking.cancelled_at = timezone.now()
+            booking.save(update_fields=['status', 'cancelled_at'])
+            return JsonResponse({'error': 'Sorry, that time was just booked by someone else. '
+                                          'Please pick another time.'}, status=409)
 
-    booking.status = Booking.STATUS_CONFIRMED
-    booking.save(update_fields=['status'])
+        otp.verified_at = timezone.now()
+        otp.save(update_fields=['verified_at', 'attempts'])
+        booking.status = Booking.STATUS_CONFIRMED
+        booking.save(update_fields=['status'])
 
     # Send confirmation emails — log any errors but don't fail the request
     try:

@@ -48,7 +48,6 @@ class BookingBugs(TestCase):
         return self.post_json('/book/ana/verify-otp/', {'reference_code': ref, 'code': code})
 
     # ── Bug 1 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug01_abandoned_pending_booking_releases_the_slot(self):
         """
         A client starts booking, then never enters the code (closed the tab,
@@ -60,7 +59,6 @@ class BookingBugs(TestCase):
         Booking.objects.filter(pk=ghost.pk).update(created_at=timezone.now() - timedelta(hours=1))
         self.assertIn(self.slot, get_available_slots(self.master, self.cut, self.day))
 
-    @tag('known_bug')
     def test_bug01b_late_code_cannot_double_book_a_slot_someone_else_took(self):
         """
         Guard for the bug 1 fix: once the hold has expired and someone else has

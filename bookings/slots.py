@@ -12,8 +12,31 @@ Algorithm:
 """
 
 from datetime import datetime, timedelta, date as date_cls
+from django.db.models import Q
 from django.utils import timezone
 from .models import Booking
+
+# A pending_otp booking holds its slot only this long. After that, an
+# abandoned attempt (closed tab, mistyped email) stops blocking other clients.
+PENDING_HOLD_MINUTES = 15
+
+
+def active_holds(master, exclude_pk=None):
+    """Bookings that currently use up capacity: confirmed, or pending and still fresh."""
+    cutoff = timezone.now() - timedelta(minutes=PENDING_HOLD_MINUTES)
+    qs = Booking.objects.filter(master=master).filter(
+        Q(status=Booking.STATUS_CONFIRMED)
+        | Q(status=Booking.STATUS_PENDING_OTP, created_at__gte=cutoff)
+    )
+    if exclude_pk is not None:
+        qs = qs.exclude(pk=exclude_pk)
+    return qs
+
+
+def has_capacity(master, start, end, exclude_pk=None):
+    """Final check, made inside a locked transaction right before saving."""
+    overlapping = active_holds(master, exclude_pk).filter(start_time__lt=end, end_time__gt=start)
+    return overlapping.count() < master.concurrent_clients
 
 
 # Slot granularity: we offer slots every 15 minutes within working hours.
@@ -101,9 +124,7 @@ def get_available_slots(master, service, target_date, now=None):
         blocked_ranges.append((bs, be))
 
     # ── 5. Existing bookings ──
-    existing_bookings_raw = Booking.objects.filter(
-        master=master,
-        status__in=[Booking.STATUS_PENDING_OTP, Booking.STATUS_CONFIRMED],
+    existing_bookings_raw = active_holds(master).filter(
         start_time__lt=day_end,
         end_time__gt=day_start,
     )
