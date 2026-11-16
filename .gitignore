@@ -4,3 +4,11 @@
 
 venv/
 db.sqlite3
+# Python compiles these on every run; they differ per machine (Mac vs Windows)
+__pycache__/
+*.pyc
+
+# Generated locally
+staticfiles/
+.coverage
+htmlcov/
