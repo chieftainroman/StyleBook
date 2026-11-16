@@ -1,0 +1,44 @@
+# Runs the whole test suite on GitHub every time you push.
+# Results: your repo on GitHub -> "Actions" tab (green tick = all passed).
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:                       # a throwaway Postgres, only for this test run
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/stylebook
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"      # same as Render
+          cache: pip
+
+      - name: Install packages
+        run: pip install -r requirements.txt coverage
+
+      - name: Run tests
+        # known_bug tests are bugs you've written down but not fixed yet: they don't block a push
+        run: coverage run manage.py test --settings=core.settings_test --exclude-tag=known_bug
+
+      - name: Show coverage
+        run: coverage report

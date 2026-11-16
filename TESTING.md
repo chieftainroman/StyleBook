@@ -1,6 +1,6 @@
 # Testing Showpiece
 
-339 tests. 312 pass today. The other 27 describe 17 known bugs and fail on purpose until each fix is applied.
+340 tests, all passing. They also run automatically on GitHub after every push (the **Actions** tab).
 
 ## Run the tests
 
@@ -10,9 +10,8 @@ You need a **local** Postgres (not SQLite: `MasterProfile.languages` is an `Arra
 source venv/bin/activate
 export TEST_DATABASE_URL=postgres://localhost:5432/stylebook   # LOCAL Postgres only, never Render
 
-python manage.py test --settings=core.settings_test --exclude-tag=known_bug   # should end with OK
-python manage.py test --settings=core.settings_test --tag=known_bug           # the open bugs (fail until fixed)
-python manage.py test --settings=core.settings_test                           # everything
+python manage.py test --settings=core.settings_test                           # everything: should end with OK
+python manage.py test --settings=core.settings_test --tag=known_bug           # bugs written down but not fixed yet
 python manage.py test --settings=core.settings_test portfolio.tests.test_services   # one file
 ```
 
@@ -36,12 +35,12 @@ coverage html         # then open htmlcov/index.html: untested lines are red
 | `accounts/tests/` | Login, sign-up, password reset, email verification, onboarding, middleware |
 | `portfolio/tests/` | Profile, edit profile, services, experience/certificates/honors, uploads, ownership, Instagram generator, template filters |
 | `core/tests/` | Every page opens without a server error; branding |
-| `*/tests/test_bugs.py` | The 17 known bugs below, tagged `known_bug` |
+| `*/tests/test_bugs.py` | One test (or more) per bug found before launch: they keep fixed bugs fixed |
 | `core/factories.py` | Helpers that build test data: `make_master`, `make_service`, `make_booking`, `make_otp`, `day_at`, `future_day` |
 
-## Known bugs
+## Bugs found before launch (all fixed)
 
-Each fix patch removes the `known_bug` tag from its own tests, so a fixed bug is guarded from then on.
+Each was found by a test first, then fixed. The tests stay, so if a bug ever comes back, they fail.
 
 | # | Bug |
 | --- | --- |
