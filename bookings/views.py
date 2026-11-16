@@ -812,6 +812,12 @@ def booking_change_status(request, ref):
         master=request.user.profile,
     )
 
+    # A cancelled or refused booking's slot may already belong to someone else,
+    # so it can't be brought back. The client books again instead.
+    if booking.status in (Booking.STATUS_CANCELLED, Booking.STATUS_REFUSED):
+        messages.error(request, "Cancelled bookings can't be changed. Ask the client to book again.")
+        return redirect('booking_detail', ref=ref)
+
     new_status = request.POST.get('status', '').strip()
     allowed = {
         Booking.STATUS_COMPLETED,

@@ -106,7 +106,6 @@ class BookingBugs(TestCase):
         self.assertTemplateUsed(response, 'bookings/client_cancel_confirm.html')
 
     # ── Bug 5 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug05_master_cannot_revive_a_cancelled_booking_into_a_double_booking(self):
         """
         The status endpoint allows → 'confirmed' from ANY state. After a
