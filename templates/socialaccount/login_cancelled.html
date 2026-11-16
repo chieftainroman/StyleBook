@@ -1,0 +1,8 @@
+{% extends "account/_auth_base.html" %}
+{% block title %}Sign-in cancelled{% endblock %}
+{% block eyebrow %}Google sign-in{% endblock %}
+{% block heading %}Sign-in cancelled{% endblock %}
+{% block content %}
+  <p class="lg-sub">You cancelled signing in with Google. You can try again, or sign in with your email and password.</p>
+  <a href="/auth/login/" class="au-btn">Back to sign in</a>
+{% endblock %}

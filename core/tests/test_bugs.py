@@ -4,6 +4,7 @@ Tests tagged `known_bug` fail until their fix is applied (see accounts/tests/tes
 """
 import inspect
 import pathlib
+import re
 
 from django.conf import settings
 from django.core import mail
@@ -46,3 +47,13 @@ class BrandingBugs(TestCase):
         disposition = self.client.get('/qr/dee.png?download=1')['Content-Disposition']
         self.assertNotIn('stylebook', disposition.lower())
         self.assertNotIn('"StyleBook"', inspect.getsource(utils), 'Instagram images are watermarked StyleBook')
+
+    def test_bug16d_no_logo_spells_the_old_name_in_pieces(self):
+        """
+        Found after the first fix: eight pages built the logo as
+        <span>Style</span><span>Book</span>, which the word search above missed.
+        """
+        split_logo = re.compile(r'Style\s*</span>\s*<span[^>]*>\s*Book')
+        offenders = sorted(str(p.relative_to(TEMPLATES_DIR)) for p in TEMPLATES_DIR.rglob('*.html')
+                           if split_logo.search(p.read_text(encoding='utf-8', errors='ignore')))
+        self.assertEqual(offenders, [], 'templates whose logo still spells StyleBook')
