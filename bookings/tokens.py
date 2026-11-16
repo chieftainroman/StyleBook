@@ -46,7 +46,9 @@ def parse_action_token(token):
         return None
 
     expected_sig = _sign(payload)
-    if not hmac.compare_digest(sig, expected_sig):
+    # Compare as bytes: compare_digest raises TypeError on non-ASCII text
+    # (e.g. a link mangled by an email client), which crashed the page.
+    if not hmac.compare_digest(sig.encode(), expected_sig.encode()):
         return None
 
     try:

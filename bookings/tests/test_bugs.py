@@ -149,7 +149,6 @@ class BookingBugs(TestCase):
         self.assertEqual(Booking.objects.filter(start_time=self.slot).count(), 1)
 
     # ── Bug 10 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug10_garbled_link_shows_the_invalid_page_not_a_500(self):
         """
         A link with a non-ASCII character (e.g. mangled by an email client)
