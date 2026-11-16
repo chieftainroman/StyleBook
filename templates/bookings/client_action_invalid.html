@@ -153,7 +153,11 @@
     <div class="icon-wrap">X</div>
 
     <h1>Link unavailable</h1>
+    {% if message %}
+    <p>{{ message }}</p>
+    {% else %}
     <p>This booking link is invalid, expired, or the booking can no longer be changed.</p>
+    {% endif %}
 
     <div class="actions">
       <a href="/" class="btn btn-primary">Go to Showpiece</a>

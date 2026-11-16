@@ -182,7 +182,6 @@ class BookingBugs(TestCase):
         self.assertIn(self.slot, get_available_slots(self.master, self.cut, self.day))
 
     # ── Bug 17 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug17_link_unavailable_page_says_why(self):
         """
         The view works out WHY a link can't be used, but the page ignores it
