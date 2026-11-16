@@ -141,3 +141,7 @@ LOGGING = {
     'root': {'handlers': ['console'], 'level': 'INFO'},
     'loggers': {'django': {'handlers': ['console'], 'level': 'INFO', 'propagate': False}},
 }
+# Showpiece's masters are in New York. Times are stored as naive wall-clock
+# times in this zone. (Before this was set, Django used America/Chicago.)
+TIME_ZONE = 'America/New_York'
+USE_TZ = False

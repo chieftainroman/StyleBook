@@ -78,7 +78,6 @@ class BookingBugs(TestCase):
         self.assertEqual(Booking.objects.filter(start_time=self.slot, status=Booking.STATUS_CONFIRMED).count(), 1)
 
     # ── Bug 2 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug02_server_clock_uses_new_york_time(self):
         """
         settings.py sets neither TIME_ZONE nor USE_TZ, so Django 4.2 runs on
