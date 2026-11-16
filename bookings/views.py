@@ -501,6 +501,13 @@ def create_booking(request, username):
 
     # Create the booking in 'pending_otp' state
     with transaction.atomic():
+        # Lock this master's row so two requests arriving at the same moment
+        # can't both pass the capacity check (the slot check above isn't locked).
+        MasterProfile.objects.select_for_update().get(pk=profile.pk)
+        end_time = start_time + timedelta(minutes=service.duration_minutes)
+        if not has_capacity(profile, start_time, end_time):
+            return JsonResponse({'error': 'That time slot is no longer available'}, status=409)
+
         booking = Booking.objects.create(
             master=profile,
             service=service,

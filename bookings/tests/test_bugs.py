@@ -134,7 +134,6 @@ class BookingBugs(TestCase):
         self.assertEqual(booking.start_time, day_at(self.day, '10:15'))
 
     # ── Bug 9 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug09_simultaneous_requests_cannot_double_book(self):
         """
         create_booking checks availability, THEN inserts, with nothing locking
