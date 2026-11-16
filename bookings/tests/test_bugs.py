@@ -121,7 +121,6 @@ class BookingBugs(TestCase):
         self.assertEqual(old.status, Booking.STATUS_CANCELLED)
 
     # ── Bug 8 ────────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug08_client_can_move_their_booking_15_minutes_later(self):
         """
         When rescheduling, the client's OWN booking still counts as taking the

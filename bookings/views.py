@@ -993,7 +993,8 @@ def client_reschedule(request, token):
             return redirect('client_reschedule', token=token)
 
         # Re-validate the slot is still available
-        available = get_available_slots(booking.master, booking.service, new_start.date())
+        available = get_available_slots(booking.master, booking.service, new_start.date(),
+                                        exclude_booking_id=booking.pk)
         naive_new = new_start.replace(tzinfo=None) if timezone.is_aware(new_start) else new_start
         available_naive = [
             (s.replace(tzinfo=None) if hasattr(s, 'tzinfo') and s.tzinfo else s)
@@ -1076,7 +1077,7 @@ def client_reschedule_slots_api(request, token):
     except ValueError:
         return JsonResponse({'error': 'Invalid date'}, status=400)
 
-    slots = get_available_slots(booking.master, booking.service, target_date)
+    slots = get_available_slots(booking.master, booking.service, target_date, exclude_booking_id=booking.pk)
     return JsonResponse({
         'slots': [
             {'time': s.strftime('%H:%M'), 'display': s.strftime('%-I:%M %p'), 'iso': s.isoformat()}
@@ -1096,7 +1097,8 @@ def client_reschedule_summary_api(request, token):
     except Booking.DoesNotExist:
         return JsonResponse({'error': 'Booking not found'}, status=404)
 
-    summary = get_availability_summary(booking.master, booking.service, num_days=30)
+    summary = get_availability_summary(booking.master, booking.service, num_days=30,
+                                       exclude_booking_id=booking.pk)
     return JsonResponse({
         'availability': {d.isoformat(): bool(has) for d, has in summary.items()},
     })

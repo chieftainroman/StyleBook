@@ -50,7 +50,7 @@ SLOT_STEP_MINUTES = 15
 WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
 
-def get_available_slots(master, service, target_date, now=None):
+def get_available_slots(master, service, target_date, now=None, exclude_booking_id=None):
     """
     Return available slot start times for `service` with `master` on `target_date`.
     Works with USE_TZ=True or False.
@@ -124,7 +124,8 @@ def get_available_slots(master, service, target_date, now=None):
         blocked_ranges.append((bs, be))
 
     # ── 5. Existing bookings ──
-    existing_bookings_raw = active_holds(master).filter(
+    # exclude_booking_id: when a client reschedules, their own booking must not block them
+    existing_bookings_raw = active_holds(master, exclude_booking_id).filter(
         start_time__lt=day_end,
         end_time__gt=day_start,
     )
@@ -182,7 +183,7 @@ def _overlaps_any(start, end, ranges):
 
 # ─── Higher-level: get next N days with availability ──────
 
-def get_availability_summary(master, service, num_days=14, start_date=None, now=None):
+def get_availability_summary(master, service, num_days=14, start_date=None, now=None, exclude_booking_id=None):
     """
     Return a dict like:
       {
@@ -200,6 +201,6 @@ def get_availability_summary(master, service, num_days=14, start_date=None, now=
     summary = {}
     for offset in range(num_days):
         d = start_date + timedelta(days=offset)
-        slots = get_available_slots(master, service, d, now=now)
+        slots = get_available_slots(master, service, d, now=now, exclude_booking_id=exclude_booking_id)
         summary[d] = len(slots) > 0
     return summary
