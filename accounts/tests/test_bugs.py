@@ -115,7 +115,6 @@ class AccountBugs(TestCase):
         self.assertFalse(User.objects.filter(username='ana').exists())
 
     # ── Bug 13 ───────────────────────────────────────────────────────────
-    @tag('known_bug')
     def test_bug13_forgot_password_does_not_crash_when_email_is_down(self):
         """
         If the email service fails, "Forgot password" shows a server error
@@ -126,7 +125,6 @@ class AccountBugs(TestCase):
             response = self.lenient.post('/auth/forgot-password/', {'email': 'ana@example.com'})
         self.assertNotEqual(response.status_code, 500)
 
-    @tag('known_bug')
     def test_bug13b_resend_verification_does_not_crash_when_email_is_down(self):
         master = make_master('ana', email='ana@example.com')
         self.lenient.force_login(master.user)

@@ -50,7 +50,7 @@ def instagram_view(request):
     prefill_client  = ''
     reservation_id  = request.GET.get('reservation_id')
 
-    if reservation_id:
+    if reservation_id and reservation_id.isdigit():
         res = Reservation.objects.filter(
             id=int(reservation_id),
             user=request.user
@@ -381,9 +381,13 @@ def _safe_decimal(value):
         return None
     try:
         from decimal import Decimal, InvalidOperation
-        return Decimal(value)
-    except (InvalidOperation, ValueError):
+        number = Decimal(str(value))
+    except (InvalidOperation, ValueError, TypeError):
         return None
+    # NaN/Infinity, or more than the database column can hold (max 999999.99)
+    if not number.is_finite() or abs(number) >= 1_000_000:
+        return None
+    return number
 
 
 def _parse_working_hours(post_data):
@@ -495,7 +499,7 @@ def instagram_generate(request):
     # Create PortfolioItem in pending state
     item = PortfolioItem.objects.create(
         user            = request.user,
-        reservation_id  = int(reservation_id) if reservation_id else None,
+        reservation_id  = int(reservation_id) if str(reservation_id or '').isdigit() else None,
         client_name     = client_name,
         service         = service,
         category        = profile.specialty or '',
@@ -987,8 +991,10 @@ def _parse_service(post_data):
         return None, 'Duration must be between 5 minutes and 8 hours.'
 
     try:
-        price = Decimal(post_data.get('price', '0'))
-    except (InvalidOperation, ValueError):
+        price = Decimal(str(post_data.get('price', '0')))
+    except (InvalidOperation, ValueError, TypeError):
+        return None, 'Price must be a number.'
+    if not price.is_finite():                      # 'NaN' and 'Infinity' parse as Decimals
         return None, 'Price must be a number.'
     if price < 0 or price > 100000:
         return None, 'Invalid price.'
@@ -1014,8 +1020,10 @@ def service_add(request):
         try:
             payload = json.loads(request.body)
             services_data = payload.get('services', [])
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, AttributeError):
             return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        if not isinstance(services_data, list) or not all(isinstance(i, dict) for i in services_data):
+            return JsonResponse({'error': 'Expected {"services": [{...}, ...]}'}, status=400)
 
         created = []
         # Find current max sort_order to append new services at the end
@@ -1101,8 +1109,11 @@ def service_reorder(request):
     import json
     try:
         data = json.loads(request.body)
-        ids = data.get('ids', [])
-    except (ValueError, KeyError):
+        raw_ids = data.get('ids', [])
+        if not isinstance(raw_ids, list):
+            raise ValueError
+        ids = [int(sid) for sid in raw_ids]
+    except (ValueError, KeyError, TypeError, AttributeError):
         return JsonResponse({'error': 'Invalid payload'}, status=400)
 
     # Update sort_order for each service belonging to this user
@@ -1128,15 +1139,21 @@ def upload_service_photo(request):
         return JsonResponse({'error': 'Only images allowed'}, status=400)
 
     import cloudinary.uploader
-    result = cloudinary.uploader.upload(
-        f,
-        folder=f'stylebook/services/{request.user.id}/',
-        resource_type='image',
-        transformation=[
-            {'width': 800, 'height': 800, 'crop': 'fill', 'quality': 'auto'},
-        ],
-    )
-    return JsonResponse({'url': result['secure_url']})
+    try:
+        result = cloudinary.uploader.upload(
+            f,
+            folder=f'stylebook/services/{request.user.id}/',
+            resource_type='image',
+            transformation=[
+                {'width': 800, 'height': 800, 'crop': 'fill', 'quality': 'auto'},
+            ],
+        )
+    except Exception:
+        return JsonResponse({'error': 'Upload failed. Please try again.'}, status=502)
+    url = result.get('secure_url')
+    if not url:
+        return JsonResponse({'error': 'Upload failed. Please try again.'}, status=502)
+    return JsonResponse({'url': url})
 
 
 @login_required

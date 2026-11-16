@@ -15,6 +15,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
 from .models import MasterProfile
+import logging
+
+logger = logging.getLogger(__name__)
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -382,7 +385,12 @@ def resend_verification(request):
         messages.info(request, 'Your email is already verified.')
         return redirect('dashboard')
 
-    send_verification_email(request, request.user)
+    try:
+        send_verification_email(request, request.user)
+    except Exception:
+        logger.exception('Could not send verification email to user %s', request.user.pk)
+        messages.error(request, "We couldn't send the email right now. Please try again in a few minutes.")
+        return redirect('dashboard')
     messages.success(request, f'Verification email sent to {request.user.email}. Check your inbox.')
     return redirect('dashboard')
 
@@ -406,7 +414,10 @@ def forgot_password(request):
         if users.exists():
             from .emails import send_password_reset_email
             for user in users:
-                send_password_reset_email(request, user)
+                try:
+                    send_password_reset_email(request, user)
+                except Exception:
+                    logger.exception('Could not send password reset email to user %s', user.pk)
 
         messages.success(request, f'If an account exists for {email}, a reset link has been sent.')
         return redirect('login')

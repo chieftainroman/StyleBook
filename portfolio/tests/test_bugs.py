@@ -39,26 +39,22 @@ class PortfolioBugs(TestCase):
         self.assertEqual(Booking.objects.filter(service=self.cut).count(), 1)
 
     # ── Bug 13: bad input or a failing outside service shows a server error ──
-    @tag('known_bug')
     def test_bug13c_price_nan_is_refused_not_a_crash(self):
         """Decimal('NaN') can't be compared with <, so the price check itself crashes."""
         response = self.lenient.post('/profile/service/add/', {'name': 'Odd', 'duration_minutes': '30', 'price': 'NaN'})
         self.assertNotEqual(response.status_code, 500)
         self.assertFalse(Service.objects.filter(name='Odd').exists())
 
-    @tag('known_bug')
     def test_bug13d_malformed_preset_import_is_400_not_a_crash(self):
         for payload in ([1, 2, 3], {'services': ['Haircut']}, {'services': 'Haircut'}):
             with self.subTest(payload=payload):
                 self.assertEqual(self.post_json('/profile/service/add/', payload).status_code, 400)
 
-    @tag('known_bug')
     def test_bug13e_malformed_reorder_is_400_not_a_crash(self):
         for payload in ({'ids': ['abc']}, {'ids': 'abc'}, [1, 2]):
             with self.subTest(payload=payload):
                 self.assertEqual(self.post_json('/profile/service/reorder/', payload).status_code, 400)
 
-    @tag('known_bug')
     def test_bug13f_service_photo_reports_cloudinary_failure(self):
         """The other upload endpoints answer 502 with a message; this one crashes."""
         with mock.patch('cloudinary.uploader.upload', side_effect=ConnectionError('cloudinary down')):
@@ -66,9 +62,17 @@ class PortfolioBugs(TestCase):
                                          {'file': SimpleUploadedFile('a.jpg', b'jpg', content_type='image/jpeg')})
         self.assertEqual(response.status_code, 502)
 
-    @tag('known_bug')
     def test_bug13g_instagram_page_survives_a_bad_reservation_id(self):
         self.assertEqual(self.lenient.get('/instagram/?reservation_id=abc').status_code, 200)
+
+    def test_bug13h_edit_profile_price_nan_infinity_or_huge_is_ignored(self):
+        """Found while fixing 13c: 'Starting from' price on Edit profile had the same problem."""
+        for bad in ('NaN', 'Infinity', '1e30'):
+            with self.subTest(price=bad):
+                response = self.lenient.post('/profile/edit/', {'specialty': 'barber', 'pricing_from': bad})
+                self.assertEqual(response.status_code, 302)
+                self.master.refresh_from_db()
+                self.assertIsNone(self.master.pricing_from)
 
     # ── Bug 14 ───────────────────────────────────────────────────────────
     @tag('known_bug')
